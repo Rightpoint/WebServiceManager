@@ -146,7 +146,9 @@
         
         NSString* testDataPath = [[self bundlePath] stringByAppendingPathComponent:@"TestData.json"];
         NSInputStream* stream = [NSInputStream inputStreamWithFileAtPath:testDataPath];
+        [stream open];
         NSDictionary* testData = [NSJSONSerialization JSONObjectWithStream:stream options:0 error:nil];
+        [stream close];
         
         STAssertTrue([testData isEqualToDictionary:receivedData], @"json data: %@ does not match expected results,: %@", receivedData, testData);
         
