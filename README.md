@@ -24,6 +24,8 @@ I'm glad you asked. Check out the included WebServiceManagerTests project for a 
 4. Create a WebServiceManager object; you'll need to give it the path to the plist file containing your web service information.
 5. Call makeRequestWithKey:(NSString*)key andTarget:(id)target on the WebServiceManager object. "key" refers to the key of the API you defined in the PList. Target is the object that will handle the callbacks from the manager; this object should implement the success and failure cases defined in your plist for this api. 
 
+### Overrides
+* There aren't may things you can currently override, but as you can see in Test Case 5 (concurrent requests), you have the ability to override the success and failure cases of a request programatically. This of course defeats the purpose of using this framework, and should be avoided. 
 
 ### Roadmap
 These items are the short term features I would like to add to this project. 
