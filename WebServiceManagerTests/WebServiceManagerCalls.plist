@@ -31,7 +31,7 @@
 	<key>getPList</key>
 	<dict>
 		<key>URL</key>
-		<string>http://www.raizlabs.com</string>
+		<string>https://raw.github.com/Raizlabs/WebServiceManager/master/WebServiceManagerTests/TestData.plist</string>
 		<key>Method</key>
 		<string>GET</string>
 		<key>ExpectedResultType</key>
@@ -44,7 +44,7 @@
 	<key>getJSON</key>
 	<dict>
 		<key>URL</key>
-		<string>http://www.raizlabs.com</string>
+		<string>https://raw.github.com/Raizlabs/WebServiceManager/master/WebServiceManagerTests/TestData.json</string>
 		<key>Method</key>
 		<string>GET</string>
 		<key>ExpectedResultType</key>

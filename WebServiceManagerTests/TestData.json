@@ -1,0 +1,1 @@
+{"response":{"roles":{"Administrator":{"Access":1},"Guest":{"Access":0}},"users":[{"lastName":"Spitzkoff","roleKey":"Administrator","firstName":"Craig"},{"lastName":"Raiz","roleKey":"Guest","firstName":"Greg"}]}}

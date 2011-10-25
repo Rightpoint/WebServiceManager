@@ -63,7 +63,6 @@
     }
 }
 
-/*
 -(void) test4GetJSON
 {
     [self.webServiceManager makeRequestWithKey:@"getJSON" andTarget:self];
@@ -71,7 +70,7 @@
         [[NSRunLoop currentRunLoop] runUntilDate:[NSDate dateWithTimeIntervalSinceNow:1]];
     }
 }
-*/
+
 
 //
 // Image callbacks. 
@@ -138,17 +137,18 @@
 }
 
 // JSON Callbacks
--(void) JSONCompleted:(id)data
+-(void) jsonCompleted:(id)data
 {
     if ([data isKindOfClass:[NSDictionary class]]) {
         
         // compare this dictionary to the included data, which should match. 
         NSDictionary* receivedData = (NSDictionary*)data;
         
-        NSString* testDataPath = [[self bundlePath] stringByAppendingPathComponent:@"TestData.plist"];
-        NSDictionary* testData = [NSDictionary dictionaryWithContentsOfFile:testDataPath];
+        NSString* testDataPath = [[self bundlePath] stringByAppendingPathComponent:@"TestData.json"];
+        NSInputStream* stream = [NSInputStream inputStreamWithFileAtPath:testDataPath];
+        NSDictionary* testData = [NSJSONSerialization JSONObjectWithStream:stream options:0 error:nil];
         
-        STAssertTrue([testData isEqualToDictionary:receivedData], @"plist data: %@ does not match expected results,: %@", receivedData, testData);
+        STAssertTrue([testData isEqualToDictionary:receivedData], @"json data: %@ does not match expected results,: %@", receivedData, testData);
         
     }
     else
@@ -157,5 +157,11 @@
     }
     
     self.apiCallCompleted = YES;
+}
+
+-(void) jsonFailed:(NSError*)error
+{
+    STAssertTrue(NO, @"getJSON failed with error: %@", error);
+    self.apiCallCompleted = YES; 
 }
 @end
