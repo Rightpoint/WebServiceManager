@@ -59,13 +59,15 @@
     [self startNextRequest];
 }
 
--(void) makeRequestWithKey:(NSString*)key andTarget:(id)target
+-(WebServiceRequest*) makeRequestWithKey:(NSString*)key andTarget:(id)target
 {
     NSDictionary* apiCall = [self.apiCalls objectForKey:key];
         
     WebServiceRequest* request = [[WebServiceRequest alloc] initWithApiInfo:apiCall target:target];
                                   
     [self enqueueRequest:request];
+
+    return request;
 }
 
 -(void) cancelRequestsForTarget:(id)target
@@ -94,33 +96,24 @@
 #pragma mark - WebServiceRequestDelegate
 -(void) webServiceRequest:(WebServiceRequest*)request failedWithError:(NSError*)error
 {
-    NSString* failureHandler = [request.apiInfo objectForKey:kFailureHandlerKey];
-    if (nil != failureHandler) {
-        SEL failureSelector = NSSelectorFromString(failureHandler);
-
-        if([request.target respondsToSelector:failureSelector])
-        {
-            NSMethodSignature* signature = [request.target methodSignatureForSelector:failureSelector];
-            NSInvocation* invocation = [NSInvocation invocationWithMethodSignature:signature];
-            [invocation setTarget:request.target];
-            [invocation setSelector:failureSelector];
-            [invocation setArgument:&error atIndex:2];
-            [invocation invoke];            
-        }
-
+    if(nil != request.failureHandler && [request.target respondsToSelector:request.failureHandler])
+    {
+        NSMethodSignature* signature = [request.target methodSignatureForSelector:request.failureHandler];
+        NSInvocation* invocation = [NSInvocation invocationWithMethodSignature:signature];
+        [invocation setTarget:request.target];
+        [invocation setSelector:request.failureHandler];
+        [invocation setArgument:&error atIndex:2];
+        [invocation invoke];            
     }
-    
+
     [self.requests removeObject:request];
+    self.requestInProcess = NO;
     [self startNextRequest];
 }
 
 -(void) webServiceRequest:(WebServiceRequest *)request completedWithData:(NSData*)data
 {
-    NSString* successHandler = [request.apiInfo objectForKey:kSuccessHandlerKey];
-    if (nil != successHandler) {
-        SEL successSelector = NSSelectorFromString(successHandler);
-    
-        if ([request.target respondsToSelector:successSelector]) {
+    if (nil != request.successHandler && [request.target respondsToSelector:request.successHandler]) {
             
             // try to convert the data to the expected type. 
             NSString* expectedDataType = [request.apiInfo objectForKey:kExpectedResultTypeKey];
@@ -169,19 +162,18 @@
                 }
             }
             
-            NSMethodSignature* signature = [request.target methodSignatureForSelector:successSelector];
+            NSMethodSignature* signature = [request.target methodSignatureForSelector:request.successHandler];
             NSInvocation* invocation = [NSInvocation invocationWithMethodSignature:signature];
             [invocation setTarget:request.target];
-            [invocation setSelector:successSelector];
+            [invocation setSelector:request.successHandler];
             [invocation setArgument:&convertedResult atIndex:2];
             [invocation invoke];
             
-        }
+        
     }
     
-    
-    
     [self.requests removeObject:request];    
+    self.requestInProcess = NO;
     [self startNextRequest];
 }
 

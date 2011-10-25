@@ -25,6 +25,8 @@ extern NSString* const kSuccessHandlerKey;
 -(void) cancel;
 
 @property (unsafe_unretained, nonatomic) id target;
+@property (assign, nonatomic) SEL successHandler;
+@property (assign, nonatomic) SEL failureHandler;
 @property (strong, nonatomic) NSDictionary* apiInfo;
 @property (strong, nonatomic) NSURL* url;
 @property (unsafe_unretained, nonatomic) id<WebServiceRequestDelegate> delegate;

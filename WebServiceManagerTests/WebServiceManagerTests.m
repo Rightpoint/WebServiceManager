@@ -8,9 +8,14 @@
 
 #import "WebServiceManagerTests.h"
 
+@interface WebServiceManagerTests()
+@property (nonatomic, assign) NSUInteger concurrencyCallbackCount;
+@end
+
 @implementation WebServiceManagerTests
 @synthesize apiCallCompleted = _apiCallCompleted;
 @synthesize webServiceManager = _webServiceManager;
+@synthesize concurrencyCallbackCount = _concurrencyCallbackCount;
 
 -(NSString*) bundlePath
 {
@@ -35,7 +40,6 @@
     
     [super tearDown];
 }
-
 - (void)test1GetLogo
 {
     [self.webServiceManager makeRequestWithKey:@"getLogo" andTarget:self];
@@ -71,6 +75,22 @@
     }
 }
 
+// What happens when we make many calls at once? They should queue up, one at a time. This will 
+// test this feature, and override the callbacks specified in the plist so we can count the callbacks. 
+-(void) test5Concurrency
+{
+    self.concurrencyCallbackCount = 0;
+    SEL callback = @selector(concurrencyCallback:);
+    
+    [[self.webServiceManager makeRequestWithKey:@"getLogo" andTarget:self] setSuccessHandler:callback];
+    [[self.webServiceManager makeRequestWithKey:@"getContent" andTarget:self] setSuccessHandler:callback];
+    [[self.webServiceManager makeRequestWithKey:@"getPList" andTarget:self] setSuccessHandler:callback];
+    [[self.webServiceManager makeRequestWithKey:@"getJSON" andTarget:self] setSuccessHandler:callback];   
+    
+    while (!self.apiCallCompleted) {
+        [[NSRunLoop currentRunLoop] runUntilDate:[NSDate dateWithTimeIntervalSinceNow:1]];
+    }
+}
 
 //
 // Image callbacks. 
@@ -165,5 +185,14 @@
 {
     STAssertTrue(NO, @"getJSON failed with error: %@", error);
     self.apiCallCompleted = YES; 
+}
+
+-(void) concurrencyCallback:(id)data
+{
+    self.concurrencyCallbackCount++;
+    
+    if (self.concurrencyCallbackCount >= 4) {
+        self.apiCallCompleted = YES;
+    }
 }
 @end

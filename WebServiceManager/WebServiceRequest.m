@@ -29,7 +29,8 @@ NSString *const kSuccessHandlerKey = @"SuccessHandler";
 @synthesize connection = _connection;
 @synthesize url = _url;
 @synthesize delegate  = _delegate;
-
+@synthesize successHandler = _successHandler;
+@synthesize failureHandler = _failureHandler;
 
 -(id) initWithApiInfo:(NSDictionary *)apiInfo target:(id)target
 {
@@ -40,6 +41,9 @@ NSString *const kSuccessHandlerKey = @"SuccessHandler";
 
     NSString* urlStr = [apiInfo objectForKey:kURLkey];
     NSURL* url = [NSURL URLWithString:urlStr];
+    
+    self.successHandler = NSSelectorFromString([apiInfo objectForKey:kSuccessHandlerKey]);
+    self.failureHandler = NSSelectorFromString([apiInfo objectForKey:kFailureHandlerKey]);
     
     self.connection = [[NSURLConnection alloc] initWithRequest:[NSURLRequest requestWithURL:url] delegate:self startImmediately:NO];
     

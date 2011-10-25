@@ -64,6 +64,7 @@
 		CBFFEB3114565F1E00A003D6 /* JSONKit.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = JSONKit.m; sourceTree = "<group>"; };
 		CBFFEB3214565F1E00A003D6 /* README.md */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = README.md; sourceTree = "<group>"; };
 		CBFFEB381456662300A003D6 /* TestData.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = TestData.json; sourceTree = "<group>"; };
+		CBFFEB3D14566BDD00A003D6 /* README.md */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = README.md; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -92,6 +93,7 @@
 		CB588CB21453C6730052A336 = {
 			isa = PBXGroup;
 			children = (
+				CBFFEB3D14566BDD00A003D6 /* README.md */,
 				CB588CC21453C6730052A336 /* WebServiceManager */,
 				CB588CD61453C6730052A336 /* WebServiceManagerTests */,
 				CB588CBF1453C6730052A336 /* Frameworks */,
