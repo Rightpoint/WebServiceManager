@@ -1,0 +1,3 @@
+[submodule "WebServiceManager/JSONKit"]
+	path = WebServiceManager/JSONKit
+	url = https://github.com/johnezang/JSONKit.git
