@@ -1,0 +1,161 @@
+//
+//  WebServiceManagerTests.m
+//  WebServiceManagerTests
+//
+//  Created by Craig Spitzkoff on 10/22/11.
+//  Copyright (c) 2011 Raizlabs Corporation. All rights reserved.
+//
+
+#import "WebServiceManagerTests.h"
+
+@implementation WebServiceManagerTests
+@synthesize apiCallCompleted = _apiCallCompleted;
+@synthesize webServiceManager = _webServiceManager;
+
+-(NSString*) bundlePath
+{
+    return [[NSBundle bundleForClass:[WebServiceManagerTests class]] bundlePath];
+}
+
+- (void)setUp
+{
+    [super setUp];
+    
+    //NSString *path = [[NSBundle bundleForClass:[WebServiceManagerTests class]] pathForResource:@"WebServiceManagerCalls" ofType:@"plist"];
+    
+    NSString* path = [[self bundlePath] stringByAppendingPathComponent:@"WebServiceManagerCalls.plist"];
+    
+    self.webServiceManager = [[WebServiceManager alloc] initWithCallsPath:path];
+    self.apiCallCompleted = NO;
+}
+
+- (void)tearDown
+{
+    // Tear-down code here.
+    
+    [super tearDown];
+}
+
+- (void)test1GetLogo
+{
+    [self.webServiceManager makeRequestWithKey:@"getLogo" andTarget:self];
+    
+    while (!self.apiCallCompleted) {
+        [[NSRunLoop currentRunLoop] runUntilDate:[NSDate dateWithTimeIntervalSinceNow:1]];
+    }
+
+}
+
+-(void) test2GetContent
+{
+    [self.webServiceManager makeRequestWithKey:@"getContent" andTarget:self];
+    
+    while (!self.apiCallCompleted) {
+        [[NSRunLoop currentRunLoop] runUntilDate:[NSDate dateWithTimeIntervalSinceNow:1]];
+    }
+}
+
+-(void) test3GetPlist
+{
+    [self.webServiceManager makeRequestWithKey:@"getPList" andTarget:self];
+    while (!self.apiCallCompleted) {
+        [[NSRunLoop currentRunLoop] runUntilDate:[NSDate dateWithTimeIntervalSinceNow:1]];
+    }
+}
+
+/*
+-(void) test4GetJSON
+{
+    [self.webServiceManager makeRequestWithKey:@"getJSON" andTarget:self];
+    while (!self.apiCallCompleted) {
+        [[NSRunLoop currentRunLoop] runUntilDate:[NSDate dateWithTimeIntervalSinceNow:1]];
+    }
+}
+*/
+
+//
+// Image callbacks. 
+//
+-(void) logoCompleted:(UIImage*)photo
+{
+    NSLog(@"Recieved photo %lf wide by %lf high", photo.size.width, photo.size.height);
+    self.apiCallCompleted = YES;
+    
+    STAssertNotNil(photo, @"getLogo failed: no image returned");
+}
+
+-(void) logoFailed:(NSError*)error
+{
+    STAssertTrue(NO, @"getLogo failed with error: %@", error);
+    self.apiCallCompleted = YES; 
+
+}
+
+//
+// Content Callbakcks
+//
+-(void) contentCompleted:(NSString*) content
+{
+    NSLog(@"Received Content: %@", content);
+    
+    STAssertNotNil(content, @"getContent failed: no content returned");
+    
+    self.apiCallCompleted = YES;     
+}
+
+-(void) contentFailed:(NSError*)error
+{
+    STAssertTrue(NO, @"getContent failed with error: %@", error);
+    self.apiCallCompleted = YES; 
+}
+
+// PList Callbacks
+-(void) plistCompleted:(id) data
+{
+    if ([data isKindOfClass:[NSDictionary class]]) {
+        
+        // compare this dictionary to the included data, which should match. 
+        NSDictionary* receivedData = (NSDictionary*)data;
+        
+        NSString* testDataPath = [[self bundlePath] stringByAppendingPathComponent:@"TestData.plist"];
+        NSDictionary* testData = [NSDictionary dictionaryWithContentsOfFile:testDataPath];
+        
+        STAssertTrue([testData isEqualToDictionary:receivedData], @"plist data: %@ does not match expected results,: %@", receivedData, testData);
+        
+    }
+    else
+    {
+        STAssertTrue(NO, @"plist operation returned wrong data type: %@", data);
+    }
+    
+    self.apiCallCompleted = YES;
+}
+
+-(void) plistFailed:(NSError*)error
+{
+    STAssertTrue(NO, @"getPList failed with error: %@", error);
+    self.apiCallCompleted = YES; 
+}
+
+// JSON Callbacks
+-(void) JSONCompleted:(id)data
+{
+    if ([data isKindOfClass:[NSDictionary class]]) {
+        
+        // compare this dictionary to the included data, which should match. 
+        NSDictionary* receivedData = (NSDictionary*)data;
+        
+        NSString* testDataPath = [[self bundlePath] stringByAppendingPathComponent:@"TestData.plist"];
+        NSDictionary* testData = [NSDictionary dictionaryWithContentsOfFile:testDataPath];
+        
+        STAssertTrue([testData isEqualToDictionary:receivedData], @"plist data: %@ does not match expected results,: %@", receivedData, testData);
+        
+    }
+    else
+    {
+        STAssertTrue(NO, @"plist operation returned wrong data type: %@", data);
+    }
+    
+    self.apiCallCompleted = YES;
+}
+@end

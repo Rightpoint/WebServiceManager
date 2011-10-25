@@ -1,0 +1,465 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 46;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		CB588CC11453C6730052A336 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = CB588CC01453C6730052A336 /* Foundation.framework */; };
+		CB588CCF1453C6730052A336 /* SenTestingKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = CB588CCE1453C6730052A336 /* SenTestingKit.framework */; };
+		CB588CD11453C6730052A336 /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = CB588CD01453C6730052A336 /* UIKit.framework */; };
+		CB588CD21453C6730052A336 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = CB588CC01453C6730052A336 /* Foundation.framework */; };
+		CB588CD51453C6730052A336 /* libWebServiceManager.a in Frameworks */ = {isa = PBXBuildFile; fileRef = CB588CBD1453C6730052A336 /* libWebServiceManager.a */; };
+		CB588CDB1453C6730052A336 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = CB588CD91453C6730052A336 /* InfoPlist.strings */; };
+		CB588CDE1453C6730052A336 /* WebServiceManagerTests.m in Sources */ = {isa = PBXBuildFile; fileRef = CB588CDD1453C6730052A336 /* WebServiceManagerTests.m */; };
+		CB588CEB1453C6B40052A336 /* WebServiceManager.h in Headers */ = {isa = PBXBuildFile; fileRef = CB588CE71453C6B40052A336 /* WebServiceManager.h */; };
+		CB588CEC1453C6B40052A336 /* WebServiceManager.m in Sources */ = {isa = PBXBuildFile; fileRef = CB588CE81453C6B40052A336 /* WebServiceManager.m */; };
+		CB588CED1453C6B40052A336 /* WebServiceManager.m in Sources */ = {isa = PBXBuildFile; fileRef = CB588CE81453C6B40052A336 /* WebServiceManager.m */; };
+		CB588CEE1453C6B40052A336 /* WebServiceRequest.h in Headers */ = {isa = PBXBuildFile; fileRef = CB588CE91453C6B40052A336 /* WebServiceRequest.h */; };
+		CB588CEF1453C6B40052A336 /* WebServiceRequest.m in Sources */ = {isa = PBXBuildFile; fileRef = CB588CEA1453C6B40052A336 /* WebServiceRequest.m */; };
+		CB588CF01453C6B40052A336 /* WebServiceRequest.m in Sources */ = {isa = PBXBuildFile; fileRef = CB588CEA1453C6B40052A336 /* WebServiceRequest.m */; };
+		CB588CF61453C9730052A336 /* WebServiceManagerCalls.plist in Resources */ = {isa = PBXBuildFile; fileRef = CB588CF51453C9730052A336 /* WebServiceManagerCalls.plist */; };
+		CBFFEB2C1456589100A003D6 /* raizlabs-logo-sheetrock.png in Resources */ = {isa = PBXBuildFile; fileRef = CBFFEB2B1456589100A003D6 /* raizlabs-logo-sheetrock.png */; };
+		CBFFEB2D145658A900A003D6 /* TestData.plist in Resources */ = {isa = PBXBuildFile; fileRef = CBFFEB2A1456570000A003D6 /* TestData.plist */; };
+		CBFFEB3314565F1E00A003D6 /* CHANGELOG.md in Resources */ = {isa = PBXBuildFile; fileRef = CBFFEB2F14565F1E00A003D6 /* CHANGELOG.md */; };
+		CBFFEB3414565F1E00A003D6 /* JSONKit.h in Headers */ = {isa = PBXBuildFile; fileRef = CBFFEB3014565F1E00A003D6 /* JSONKit.h */; };
+		CBFFEB3514565F1E00A003D6 /* JSONKit.m in Sources */ = {isa = PBXBuildFile; fileRef = CBFFEB3114565F1E00A003D6 /* JSONKit.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
+		CBFFEB3614565F1E00A003D6 /* JSONKit.m in Sources */ = {isa = PBXBuildFile; fileRef = CBFFEB3114565F1E00A003D6 /* JSONKit.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
+		CBFFEB3714565F1E00A003D6 /* README.md in Resources */ = {isa = PBXBuildFile; fileRef = CBFFEB3214565F1E00A003D6 /* README.md */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		CB588CD31453C6730052A336 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = CB588CB41453C6730052A336 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = CB588CBC1453C6730052A336;
+			remoteInfo = WebServiceManager;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXFileReference section */
+		CB588CBD1453C6730052A336 /* libWebServiceManager.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libWebServiceManager.a; sourceTree = BUILT_PRODUCTS_DIR; };
+		CB588CC01453C6730052A336 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
+		CB588CC41453C6730052A336 /* WebServiceManager-Prefix.pch */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "WebServiceManager-Prefix.pch"; sourceTree = "<group>"; };
+		CB588CCD1453C6730052A336 /* WebServiceManagerTests.octest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = WebServiceManagerTests.octest; sourceTree = BUILT_PRODUCTS_DIR; };
+		CB588CCE1453C6730052A336 /* SenTestingKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SenTestingKit.framework; path = Library/Frameworks/SenTestingKit.framework; sourceTree = DEVELOPER_DIR; };
+		CB588CD01453C6730052A336 /* UIKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UIKit.framework; path = Library/Frameworks/UIKit.framework; sourceTree = DEVELOPER_DIR; };
+		CB588CD81453C6730052A336 /* WebServiceManagerTests-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "WebServiceManagerTests-Info.plist"; sourceTree = "<group>"; };
+		CB588CDA1453C6730052A336 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/InfoPlist.strings; sourceTree = "<group>"; };
+		CB588CDC1453C6730052A336 /* WebServiceManagerTests.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = WebServiceManagerTests.h; sourceTree = "<group>"; };
+		CB588CDD1453C6730052A336 /* WebServiceManagerTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = WebServiceManagerTests.m; sourceTree = "<group>"; };
+		CB588CE71453C6B40052A336 /* WebServiceManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WebServiceManager.h; sourceTree = "<group>"; };
+		CB588CE81453C6B40052A336 /* WebServiceManager.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WebServiceManager.m; sourceTree = "<group>"; };
+		CB588CE91453C6B40052A336 /* WebServiceRequest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WebServiceRequest.h; sourceTree = "<group>"; };
+		CB588CEA1453C6B40052A336 /* WebServiceRequest.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WebServiceRequest.m; sourceTree = "<group>"; };
+		CB588CF51453C9730052A336 /* WebServiceManagerCalls.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = WebServiceManagerCalls.plist; sourceTree = "<group>"; };
+		CBFFEB2A1456570000A003D6 /* TestData.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = TestData.plist; sourceTree = "<group>"; };
+		CBFFEB2B1456589100A003D6 /* raizlabs-logo-sheetrock.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "raizlabs-logo-sheetrock.png"; sourceTree = "<group>"; };
+		CBFFEB2F14565F1E00A003D6 /* CHANGELOG.md */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = CHANGELOG.md; sourceTree = "<group>"; };
+		CBFFEB3014565F1E00A003D6 /* JSONKit.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = JSONKit.h; sourceTree = "<group>"; };
+		CBFFEB3114565F1E00A003D6 /* JSONKit.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = JSONKit.m; sourceTree = "<group>"; };
+		CBFFEB3214565F1E00A003D6 /* README.md */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = README.md; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		CB588CBA1453C6730052A336 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				CB588CC11453C6730052A336 /* Foundation.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		CB588CC91453C6730052A336 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				CB588CCF1453C6730052A336 /* SenTestingKit.framework in Frameworks */,
+				CB588CD11453C6730052A336 /* UIKit.framework in Frameworks */,
+				CB588CD21453C6730052A336 /* Foundation.framework in Frameworks */,
+				CB588CD51453C6730052A336 /* libWebServiceManager.a in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		CB588CB21453C6730052A336 = {
+			isa = PBXGroup;
+			children = (
+				CB588CC21453C6730052A336 /* WebServiceManager */,
+				CB588CD61453C6730052A336 /* WebServiceManagerTests */,
+				CB588CBF1453C6730052A336 /* Frameworks */,
+				CB588CBE1453C6730052A336 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		CB588CBE1453C6730052A336 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				CB588CBD1453C6730052A336 /* libWebServiceManager.a */,
+				CB588CCD1453C6730052A336 /* WebServiceManagerTests.octest */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		CB588CBF1453C6730052A336 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				CB588CC01453C6730052A336 /* Foundation.framework */,
+				CB588CCE1453C6730052A336 /* SenTestingKit.framework */,
+				CB588CD01453C6730052A336 /* UIKit.framework */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		CB588CC21453C6730052A336 /* WebServiceManager */ = {
+			isa = PBXGroup;
+			children = (
+				CBFFEB2E14565F1E00A003D6 /* JSONKit */,
+				CB588CE71453C6B40052A336 /* WebServiceManager.h */,
+				CB588CE81453C6B40052A336 /* WebServiceManager.m */,
+				CB588CE91453C6B40052A336 /* WebServiceRequest.h */,
+				CB588CEA1453C6B40052A336 /* WebServiceRequest.m */,
+				CB588CC31453C6730052A336 /* Supporting Files */,
+			);
+			path = WebServiceManager;
+			sourceTree = "<group>";
+		};
+		CB588CC31453C6730052A336 /* Supporting Files */ = {
+			isa = PBXGroup;
+			children = (
+				CB588CC41453C6730052A336 /* WebServiceManager-Prefix.pch */,
+			);
+			name = "Supporting Files";
+			sourceTree = "<group>";
+		};
+		CB588CD61453C6730052A336 /* WebServiceManagerTests */ = {
+			isa = PBXGroup;
+			children = (
+				CBFFEB28145656D500A003D6 /* Test Data */,
+				CB588CDC1453C6730052A336 /* WebServiceManagerTests.h */,
+				CB588CDD1453C6730052A336 /* WebServiceManagerTests.m */,
+				CB588CD71453C6730052A336 /* Supporting Files */,
+				CB588CF51453C9730052A336 /* WebServiceManagerCalls.plist */,
+			);
+			path = WebServiceManagerTests;
+			sourceTree = "<group>";
+		};
+		CB588CD71453C6730052A336 /* Supporting Files */ = {
+			isa = PBXGroup;
+			children = (
+				CB588CD81453C6730052A336 /* WebServiceManagerTests-Info.plist */,
+				CB588CD91453C6730052A336 /* InfoPlist.strings */,
+			);
+			name = "Supporting Files";
+			sourceTree = "<group>";
+		};
+		CBFFEB28145656D500A003D6 /* Test Data */ = {
+			isa = PBXGroup;
+			children = (
+				CBFFEB2B1456589100A003D6 /* raizlabs-logo-sheetrock.png */,
+				CBFFEB2A1456570000A003D6 /* TestData.plist */,
+			);
+			name = "Test Data";
+			sourceTree = "<group>";
+		};
+		CBFFEB2E14565F1E00A003D6 /* JSONKit */ = {
+			isa = PBXGroup;
+			children = (
+				CBFFEB2F14565F1E00A003D6 /* CHANGELOG.md */,
+				CBFFEB3014565F1E00A003D6 /* JSONKit.h */,
+				CBFFEB3114565F1E00A003D6 /* JSONKit.m */,
+				CBFFEB3214565F1E00A003D6 /* README.md */,
+			);
+			path = JSONKit;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXHeadersBuildPhase section */
+		CB588CBB1453C6730052A336 /* Headers */ = {
+			isa = PBXHeadersBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				CB588CEB1453C6B40052A336 /* WebServiceManager.h in Headers */,
+				CB588CEE1453C6B40052A336 /* WebServiceRequest.h in Headers */,
+				CBFFEB3414565F1E00A003D6 /* JSONKit.h in Headers */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXHeadersBuildPhase section */
+
+/* Begin PBXNativeTarget section */
+		CB588CBC1453C6730052A336 /* WebServiceManager */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = CB588CE11453C6730052A336 /* Build configuration list for PBXNativeTarget "WebServiceManager" */;
+			buildPhases = (
+				CB588CB91453C6730052A336 /* Sources */,
+				CB588CBA1453C6730052A336 /* Frameworks */,
+				CB588CBB1453C6730052A336 /* Headers */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = WebServiceManager;
+			productName = WebServiceManager;
+			productReference = CB588CBD1453C6730052A336 /* libWebServiceManager.a */;
+			productType = "com.apple.product-type.library.static";
+		};
+		CB588CCC1453C6730052A336 /* WebServiceManagerTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = CB588CE41453C6730052A336 /* Build configuration list for PBXNativeTarget "WebServiceManagerTests" */;
+			buildPhases = (
+				CB588CC81453C6730052A336 /* Sources */,
+				CB588CC91453C6730052A336 /* Frameworks */,
+				CB588CCA1453C6730052A336 /* Resources */,
+				CB588CCB1453C6730052A336 /* ShellScript */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				CB588CD41453C6730052A336 /* PBXTargetDependency */,
+			);
+			name = WebServiceManagerTests;
+			productName = WebServiceManagerTests;
+			productReference = CB588CCD1453C6730052A336 /* WebServiceManagerTests.octest */;
+			productType = "com.apple.product-type.bundle";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		CB588CB41453C6730052A336 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				LastUpgradeCheck = 0420;
+				ORGANIZATIONNAME = "Raizlabs Corporation";
+			};
+			buildConfigurationList = CB588CB71453C6730052A336 /* Build configuration list for PBXProject "WebServiceManager" */;
+			compatibilityVersion = "Xcode 3.2";
+			developmentRegion = English;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+			);
+			mainGroup = CB588CB21453C6730052A336;
+			productRefGroup = CB588CBE1453C6730052A336 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				CB588CBC1453C6730052A336 /* WebServiceManager */,
+				CB588CCC1453C6730052A336 /* WebServiceManagerTests */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		CB588CCA1453C6730052A336 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				CBFFEB2D145658A900A003D6 /* TestData.plist in Resources */,
+				CB588CDB1453C6730052A336 /* InfoPlist.strings in Resources */,
+				CB588CF61453C9730052A336 /* WebServiceManagerCalls.plist in Resources */,
+				CBFFEB2C1456589100A003D6 /* raizlabs-logo-sheetrock.png in Resources */,
+				CBFFEB3314565F1E00A003D6 /* CHANGELOG.md in Resources */,
+				CBFFEB3714565F1E00A003D6 /* README.md in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXShellScriptBuildPhase section */
+		CB588CCB1453C6730052A336 /* ShellScript */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "# Run the unit tests in this test bundle.\n\"${SYSTEM_DEVELOPER_DIR}/Tools/RunUnitTests\"\n";
+		};
+/* End PBXShellScriptBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		CB588CB91453C6730052A336 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				CB588CEC1453C6B40052A336 /* WebServiceManager.m in Sources */,
+				CB588CEF1453C6B40052A336 /* WebServiceRequest.m in Sources */,
+				CBFFEB3514565F1E00A003D6 /* JSONKit.m in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		CB588CC81453C6730052A336 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				CB588CDE1453C6730052A336 /* WebServiceManagerTests.m in Sources */,
+				CB588CED1453C6B40052A336 /* WebServiceManager.m in Sources */,
+				CB588CF01453C6B40052A336 /* WebServiceRequest.m in Sources */,
+				CBFFEB3614565F1E00A003D6 /* JSONKit.m in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		CB588CD41453C6730052A336 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = CB588CBC1453C6730052A336 /* WebServiceManager */;
+			targetProxy = CB588CD31453C6730052A336 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin PBXVariantGroup section */
+		CB588CD91453C6730052A336 /* InfoPlist.strings */ = {
+			isa = PBXVariantGroup;
+			children = (
+				CB588CDA1453C6730052A336 /* en */,
+			);
+			name = InfoPlist.strings;
+			sourceTree = "<group>";
+		};
+/* End PBXVariantGroup section */
+
+/* Begin XCBuildConfiguration section */
+		CB588CDF1453C6730052A336 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ARCHS = "$(ARCHS_STANDARD_32_BIT)";
+				CLANG_ENABLE_OBJC_ARC = YES;
+				COPY_PHASE_STRIP = NO;
+				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
+				GCC_VERSION = com.apple.compilers.llvm.clang.1_0;
+				GCC_WARN_ABOUT_MISSING_PROTOTYPES = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 5.0;
+				SDKROOT = iphoneos;
+			};
+			name = Debug;
+		};
+		CB588CE01453C6730052A336 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ARCHS = "$(ARCHS_STANDARD_32_BIT)";
+				CLANG_ENABLE_OBJC_ARC = YES;
+				COPY_PHASE_STRIP = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_VERSION = com.apple.compilers.llvm.clang.1_0;
+				GCC_WARN_ABOUT_MISSING_PROTOTYPES = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 5.0;
+				SDKROOT = iphoneos;
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
+		CB588CE21453C6730052A336 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				DSTROOT = /tmp/WebServiceManager.dst;
+				GCC_PRECOMPILE_PREFIX_HEADER = YES;
+				GCC_PREFIX_HEADER = "WebServiceManager/WebServiceManager-Prefix.pch";
+				OTHER_LDFLAGS = "-ObjC";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+			};
+			name = Debug;
+		};
+		CB588CE31453C6730052A336 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				DSTROOT = /tmp/WebServiceManager.dst;
+				GCC_PRECOMPILE_PREFIX_HEADER = YES;
+				GCC_PREFIX_HEADER = "WebServiceManager/WebServiceManager-Prefix.pch";
+				OTHER_LDFLAGS = "-ObjC";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+			};
+			name = Release;
+		};
+		CB588CE51453C6730052A336 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(SDKROOT)/Developer/Library/Frameworks",
+					"$(DEVELOPER_LIBRARY_DIR)/Frameworks",
+				);
+				GCC_PRECOMPILE_PREFIX_HEADER = YES;
+				GCC_PREFIX_HEADER = "WebServiceManager/WebServiceManager-Prefix.pch";
+				INFOPLIST_FILE = "WebServiceManagerTests/WebServiceManagerTests-Info.plist";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				WRAPPER_EXTENSION = octest;
+			};
+			name = Debug;
+		};
+		CB588CE61453C6730052A336 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(SDKROOT)/Developer/Library/Frameworks",
+					"$(DEVELOPER_LIBRARY_DIR)/Frameworks",
+				);
+				GCC_PRECOMPILE_PREFIX_HEADER = YES;
+				GCC_PREFIX_HEADER = "WebServiceManager/WebServiceManager-Prefix.pch";
+				INFOPLIST_FILE = "WebServiceManagerTests/WebServiceManagerTests-Info.plist";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				WRAPPER_EXTENSION = octest;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		CB588CB71453C6730052A336 /* Build configuration list for PBXProject "WebServiceManager" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				CB588CDF1453C6730052A336 /* Debug */,
+				CB588CE01453C6730052A336 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		CB588CE11453C6730052A336 /* Build configuration list for PBXNativeTarget "WebServiceManager" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				CB588CE21453C6730052A336 /* Debug */,
+				CB588CE31453C6730052A336 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		CB588CE41453C6730052A336 /* Build configuration list for PBXNativeTarget "WebServiceManagerTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				CB588CE51453C6730052A336 /* Debug */,
+				CB588CE61453C6730052A336 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = CB588CB41453C6730052A336 /* Project object */;
+}

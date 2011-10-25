@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>getLogo</key>
+	<dict>
+		<key>URL</key>
+		<string>http://www.raizlabs.com/cms/wp-content/uploads/2011/06/raizlabs-logo-sheetrock.png</string>
+		<key>Method</key>
+		<string>GET</string>
+		<key>ExpectedResultType</key>
+		<string>Image</string>
+		<key>FailureHandler</key>
+		<string>logoFailed:</string>
+		<key>SuccessHandler</key>
+		<string>logoCompleted:</string>
+	</dict>
+	<key>getContent</key>
+	<dict>
+		<key>URL</key>
+		<string>http://www.raizlabs.com</string>
+		<key>Method</key>
+		<string>GET</string>
+		<key>ExpectedResultType</key>
+		<string>Text</string>
+		<key>FailureHandler</key>
+		<string>contentFailed:</string>
+		<key>SuccessHandler</key>
+		<string>contentCompleted:</string>
+	</dict>
+	<key>getPList</key>
+	<dict>
+		<key>URL</key>
+		<string>http://www.raizlabs.com</string>
+		<key>Method</key>
+		<string>GET</string>
+		<key>ExpectedResultType</key>
+		<string>PList</string>
+		<key>FailureHandler</key>
+		<string>plistFailed:</string>
+		<key>SuccessHandler</key>
+		<string>plistCompleted:</string>
+	</dict>
+	<key>getJSON</key>
+	<dict>
+		<key>URL</key>
+		<string>http://www.raizlabs.com</string>
+		<key>Method</key>
+		<string>GET</string>
+		<key>ExpectedResultType</key>
+		<string>JSON</string>
+		<key>FailureHandler</key>
+		<string>jsonFailed:</string>
+		<key>SuccessHandler</key>
+		<string>jsonCompleted:</string>
+	</dict>
+</dict>
+</plist>
