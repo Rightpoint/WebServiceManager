@@ -19,6 +19,9 @@
 -(RZWebServiceRequest*) makeRequestWithKey:(NSString*)key andTarget:(id)target;
 -(RZWebServiceRequest*) makeRequestWithKey:(NSString*)key andTarget:(id)target andParameters:(NSDictionary*)parameters;
 
+// add a request to the queue. This will execute the request when there are enough active slots for it.
+-(void) enqueueRequest:(RZWebServiceRequest*)request;
+
 -(void) cancelRequestsForTarget:(id)target;
 
 @end

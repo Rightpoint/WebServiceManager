@@ -121,19 +121,17 @@
     if (nil != request.successHandler && [request.target respondsToSelector:request.successHandler]) {
             
             // try to convert the data to the expected type. 
-            NSString* expectedDataType = [request.apiInfo objectForKey:kExpectedResultTypeKey];
-
             id convertedResult = nil;
             
-            if([expectedDataType isEqualToString:@"Image"])
+            if([request.expectedResultType isEqualToString:@"Image"])
             {
                 convertedResult = [UIImage imageWithData:data];
             }
-            else if([expectedDataType isEqualToString:@"Text"])
+            else if([request.expectedResultType isEqualToString:@"Text"])
             {
                 convertedResult = [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding];
             }
-            else if([expectedDataType isEqualToString:@"JSON"])
+            else if([request.expectedResultType isEqualToString:@"JSON"])
             {
                 NSError* jsonError = nil;
                 
@@ -156,7 +154,7 @@
                     return;
                 }
             }
-            else if([expectedDataType isEqualToString:@"PList"])
+            else if([request.expectedResultType isEqualToString:@"PList"])
             {
                 NSError* plistError  = nil;
                 convertedResult = [NSPropertyListSerialization propertyListWithData:data options: NSPropertyListImmutable format:nil error:&plistError];

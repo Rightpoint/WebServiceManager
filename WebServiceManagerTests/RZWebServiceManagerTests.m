@@ -112,6 +112,24 @@
 
 }
 
+-(void) test7ManuallyAddARequest
+{
+
+    // sometimes you want to add your own request, without relying on the PList. Create a request, and add it to the queue.
+    RZWebServiceRequest* request = [[RZWebServiceRequest alloc] initWithURL:[NSURL URLWithString:@"http://www.raizlabs.com/cms/wp-content/uploads/2011/06/raizlabs-logo-sheetrock.png"]
+                                                                                     httpMethod:@"GET"
+                                                                                      andTarget:self successCallback:@selector(logoCompleted:)
+                                                                                failureCallback:@selector(logoFailed:)
+                                                                             expectedResultType:@"Image"
+                                                                                  andParameters:nil];
+    
+    [self.webServiceManager enqueueRequest:request];
+    
+    while (!self.apiCallCompleted) {
+        [[NSRunLoop currentRunLoop] runUntilDate:[NSDate dateWithTimeIntervalSinceNow:1]];
+    }
+    
+}
 //
 // Image callbacks. 
 //

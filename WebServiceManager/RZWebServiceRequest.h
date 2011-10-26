@@ -23,6 +23,15 @@ extern NSString* const kSuccessHandlerKey;
 -(id) initWithApiInfo:(NSDictionary*)apiInfo target:(id)target;
 -(id) initWithApiInfo:(NSDictionary *)apiInfo target:(id)target parameters:(NSDictionary*)parameters;
 
+// create a request
+-(id) initWithURL:(NSURL*)url 
+       httpMethod:(NSString*)httpMethod
+        andTarget:(id)target 
+  successCallback:(SEL)successCallback
+  failureCallback:(SEL)failureCallback
+expectedResultType:(NSString*)expectedResultType
+    andParameters:(NSDictionary*)parameters;
+
 -(void) start;
 -(void) cancel;
 
@@ -30,8 +39,9 @@ extern NSString* const kSuccessHandlerKey;
 @property (assign, nonatomic) SEL successHandler;
 @property (assign, nonatomic) SEL failureHandler;
 @property (strong, nonatomic) NSMutableURLRequest* urlRequest;
-@property (strong, nonatomic) NSDictionary* apiInfo;
 @property (strong, nonatomic) NSURL* url;
+@property (strong, nonatomic) NSString* httpMethod;
+@property (strong, nonatomic) NSString* expectedResultType;
 @property (strong, nonatomic) NSDictionary* parameters;
 @property (unsafe_unretained, nonatomic) id<WebServiceRequestDelegate> delegate;
 
