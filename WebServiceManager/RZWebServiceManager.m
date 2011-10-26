@@ -6,14 +6,14 @@
 //  Copyright (c) 2011 Raizlabs Corporation. All rights reserved.
 //
 
-#import "WebServiceManager.h"
+#import "RZWebServiceManager.h"
 #if __IPHONE_OS_VERSION_MIN_REQUIRED < __IPHONE_5_0
 #import "JSONKit.h"
 #endif
 
 //static NSString* const kWebServiceRoot = @"http://bloomingdales.raizlabs.com/api";
 
-@interface WebServiceManager()
+@interface RZWebServiceManager()
 
 @property (strong, nonatomic) NSMutableArray* requests; 
 @property (assign, nonatomic) BOOL requestInProcess;
@@ -23,7 +23,7 @@
 @end
 
 
-@implementation WebServiceManager
+@implementation RZWebServiceManager
 @synthesize requests = _requests;
 @synthesize requestInProcess = _requestInProcess;
 @synthesize apiCalls = _apiCalls;
@@ -47,7 +47,7 @@
     return self;
 }
 
--(void) enqueueRequest:(WebServiceRequest*)request
+-(void) enqueueRequest:(RZWebServiceRequest*)request
 {
     if (nil == self.requests) {
         self.requests = [[NSMutableArray alloc] initWithCapacity:10];
@@ -59,16 +59,16 @@
     [self startNextRequest];
 }
 
--(WebServiceRequest*) makeRequestWithKey:(NSString*)key andTarget:(id)target
+-(RZWebServiceRequest*) makeRequestWithKey:(NSString*)key andTarget:(id)target
 {
     return [self makeRequestWithKey:key andTarget:target andParameters:nil];
 }
 
--(WebServiceRequest*) makeRequestWithKey:(NSString*)key andTarget:(id)target andParameters:(NSDictionary*)parameters {
+-(RZWebServiceRequest*) makeRequestWithKey:(NSString*)key andTarget:(id)target andParameters:(NSDictionary*)parameters {
 
     NSDictionary* apiCall = [self.apiCalls objectForKey:key];
     
-    WebServiceRequest* request = [[WebServiceRequest alloc] initWithApiInfo:apiCall target:target parameters:parameters];
+    RZWebServiceRequest* request = [[RZWebServiceRequest alloc] initWithApiInfo:apiCall target:target parameters:parameters];
     
     [self enqueueRequest:request];
     
@@ -78,7 +78,7 @@
 -(void) cancelRequestsForTarget:(id)target
 {
     NSArray* matchingRequests = [self.requests filteredArrayUsingPredicate:[NSPredicate predicateWithFormat:@"target == %@", target]];     
-    for (WebServiceRequest* request in matchingRequests) {
+    for (RZWebServiceRequest* request in matchingRequests) {
         [request cancel];
     }
 }
@@ -88,7 +88,7 @@
     if(!self.requestInProcess) {
         if (self.requests.count > 0) {
             self.requestInProcess = YES;
-            WebServiceRequest* request = [self.requests objectAtIndex:0];
+            RZWebServiceRequest* request = [self.requests objectAtIndex:0];
             [request start];
         }
         else
@@ -99,7 +99,7 @@
 }
                     
 #pragma mark - WebServiceRequestDelegate
--(void) webServiceRequest:(WebServiceRequest*)request failedWithError:(NSError*)error
+-(void) webServiceRequest:(RZWebServiceRequest*)request failedWithError:(NSError*)error
 {
     if(nil != request.failureHandler && [request.target respondsToSelector:request.failureHandler])
     {
@@ -116,7 +116,7 @@
     [self startNextRequest];
 }
 
--(void) webServiceRequest:(WebServiceRequest *)request completedWithData:(NSData*)data
+-(void) webServiceRequest:(RZWebServiceRequest *)request completedWithData:(NSData*)data
 {
     if (nil != request.successHandler && [request.target respondsToSelector:request.successHandler]) {
             

@@ -6,14 +6,14 @@
 //  Copyright (c) 2011 Raizlabs Corporation. All rights reserved.
 //
 
-#import "WebServiceManagerTests.h"
+#import "RZWebServiceManagerTests.h"
 
-@interface WebServiceManagerTests()
+@interface RZWebServiceManagerTests()
 @property (nonatomic, assign) NSUInteger concurrencyCallbackCount;
 @property (nonatomic, strong) NSDictionary* echoGetResult;
 @end
 
-@implementation WebServiceManagerTests
+@implementation RZWebServiceManagerTests
 @synthesize apiCallCompleted = _apiCallCompleted;
 @synthesize webServiceManager = _webServiceManager;
 @synthesize concurrencyCallbackCount = _concurrencyCallbackCount;
@@ -21,7 +21,7 @@
 
 -(NSString*) bundlePath
 {
-    return [[NSBundle bundleForClass:[WebServiceManagerTests class]] bundlePath];
+    return [[NSBundle bundleForClass:[RZWebServiceManagerTests class]] bundlePath];
 }
 
 - (void)setUp
@@ -32,7 +32,7 @@
     
     NSString* path = [[self bundlePath] stringByAppendingPathComponent:@"WebServiceManagerCalls.plist"];
     
-    self.webServiceManager = [[WebServiceManager alloc] initWithCallsPath:path];
+    self.webServiceManager = [[RZWebServiceManager alloc] initWithCallsPath:path];
     self.apiCallCompleted = NO;
 }
 

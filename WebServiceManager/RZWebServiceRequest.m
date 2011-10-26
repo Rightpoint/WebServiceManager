@@ -6,8 +6,8 @@
 //  Copyright (c) 2011 Raizlabs Corporation. All rights reserved.
 //
 
-#import "WebServiceRequest.h"
-#import "WebService_NSURL.h"
+#import "RZWebServiceRequest.h"
+#import "RZWebService_NSURL.h"
 
 NSString *const kURLkey = @"URL";
 NSString *const kHTTPMethodKey = @"Method";
@@ -15,7 +15,7 @@ NSString *const kExpectedResultTypeKey = @"ExpectedResultType";
 NSString *const kFailureHandlerKey = @"FailureHandler";
 NSString *const kSuccessHandlerKey = @"SuccessHandler";
 
-@interface WebServiceRequest()
+@interface RZWebServiceRequest()
 
 @property (strong, nonatomic) NSMutableData* receivedData;
 @property (strong, nonatomic) NSURLConnection* connection;
@@ -23,7 +23,7 @@ NSString *const kSuccessHandlerKey = @"SuccessHandler";
 @end
 
 
-@implementation WebServiceRequest
+@implementation RZWebServiceRequest
 @synthesize target = _target;
 @synthesize apiInfo = _apiInfo;
 @synthesize receivedData = _receivedData;

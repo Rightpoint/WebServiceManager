@@ -7,17 +7,17 @@
 //
 
 #import <Foundation/Foundation.h>
-#import "WebServiceRequest.h"
+#import "RZWebServiceRequest.h"
 
-@interface WebServiceManager : NSObject <WebServiceRequestDelegate>
+@interface RZWebServiceManager : NSObject <WebServiceRequestDelegate>
 
 @property (strong, nonatomic) NSDictionary* apiCalls;
 
 -(id) initWithCallsPath:(NSString*)callsPath;
 -(id) initWithCalls:(NSDictionary*)apiCalls;
 
--(WebServiceRequest*) makeRequestWithKey:(NSString*)key andTarget:(id)target;
--(WebServiceRequest*) makeRequestWithKey:(NSString*)key andTarget:(id)target andParameters:(NSDictionary*)parameters;
+-(RZWebServiceRequest*) makeRequestWithKey:(NSString*)key andTarget:(id)target;
+-(RZWebServiceRequest*) makeRequestWithKey:(NSString*)key andTarget:(id)target andParameters:(NSDictionary*)parameters;
 
 -(void) cancelRequestsForTarget:(id)target;
 

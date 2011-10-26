@@ -1,5 +1,5 @@
 //
-//  NSURL+WebService_NSURL.h
+//  RZWebService_NSURL.h
 //  WebServiceManager
 //
 //  Created by Craig Spitzkoff on 10/25/11.
@@ -8,7 +8,7 @@
 
 #import <Foundation/Foundation.h>
 
-@interface NSURL (WebService_NSURL)
+@interface NSURL (RZWebService_NSURL)
 
 - (NSURL *)URLByAddingParameters:(NSDictionary *)parameters;
 

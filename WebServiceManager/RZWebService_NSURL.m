@@ -6,9 +6,9 @@
 //  Copyright (c) 2011 Raizlabs Corporation. All rights reserved.
 //
 
-#import "WebService_NSURL.h"
+#import "RZWebService_NSURL.h"
 
-@implementation NSURL (WebService_NSURL)
+@implementation NSURL (RZWebService_NSURL)
 
 - (NSURL *)URLByAddingParameters:(NSDictionary *)parameters {
     

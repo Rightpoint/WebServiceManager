@@ -13,13 +13,13 @@
 		CB588CD21453C6730052A336 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = CB588CC01453C6730052A336 /* Foundation.framework */; };
 		CB588CD51453C6730052A336 /* libWebServiceManager.a in Frameworks */ = {isa = PBXBuildFile; fileRef = CB588CBD1453C6730052A336 /* libWebServiceManager.a */; };
 		CB588CDB1453C6730052A336 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = CB588CD91453C6730052A336 /* InfoPlist.strings */; };
-		CB588CDE1453C6730052A336 /* WebServiceManagerTests.m in Sources */ = {isa = PBXBuildFile; fileRef = CB588CDD1453C6730052A336 /* WebServiceManagerTests.m */; };
-		CB588CEB1453C6B40052A336 /* WebServiceManager.h in Headers */ = {isa = PBXBuildFile; fileRef = CB588CE71453C6B40052A336 /* WebServiceManager.h */; };
-		CB588CEC1453C6B40052A336 /* WebServiceManager.m in Sources */ = {isa = PBXBuildFile; fileRef = CB588CE81453C6B40052A336 /* WebServiceManager.m */; };
-		CB588CED1453C6B40052A336 /* WebServiceManager.m in Sources */ = {isa = PBXBuildFile; fileRef = CB588CE81453C6B40052A336 /* WebServiceManager.m */; };
-		CB588CEE1453C6B40052A336 /* WebServiceRequest.h in Headers */ = {isa = PBXBuildFile; fileRef = CB588CE91453C6B40052A336 /* WebServiceRequest.h */; };
-		CB588CEF1453C6B40052A336 /* WebServiceRequest.m in Sources */ = {isa = PBXBuildFile; fileRef = CB588CEA1453C6B40052A336 /* WebServiceRequest.m */; };
-		CB588CF01453C6B40052A336 /* WebServiceRequest.m in Sources */ = {isa = PBXBuildFile; fileRef = CB588CEA1453C6B40052A336 /* WebServiceRequest.m */; };
+		CB588CDE1453C6730052A336 /* RZWebServiceManagerTests.m in Sources */ = {isa = PBXBuildFile; fileRef = CB588CDD1453C6730052A336 /* RZWebServiceManagerTests.m */; };
+		CB588CEB1453C6B40052A336 /* RZWebServiceManager.h in Headers */ = {isa = PBXBuildFile; fileRef = CB588CE71453C6B40052A336 /* RZWebServiceManager.h */; };
+		CB588CEC1453C6B40052A336 /* RZWebServiceManager.m in Sources */ = {isa = PBXBuildFile; fileRef = CB588CE81453C6B40052A336 /* RZWebServiceManager.m */; };
+		CB588CED1453C6B40052A336 /* RZWebServiceManager.m in Sources */ = {isa = PBXBuildFile; fileRef = CB588CE81453C6B40052A336 /* RZWebServiceManager.m */; };
+		CB588CEE1453C6B40052A336 /* RZWebServiceRequest.h in Headers */ = {isa = PBXBuildFile; fileRef = CB588CE91453C6B40052A336 /* RZWebServiceRequest.h */; };
+		CB588CEF1453C6B40052A336 /* RZWebServiceRequest.m in Sources */ = {isa = PBXBuildFile; fileRef = CB588CEA1453C6B40052A336 /* RZWebServiceRequest.m */; };
+		CB588CF01453C6B40052A336 /* RZWebServiceRequest.m in Sources */ = {isa = PBXBuildFile; fileRef = CB588CEA1453C6B40052A336 /* RZWebServiceRequest.m */; };
 		CB588CF61453C9730052A336 /* WebServiceManagerCalls.plist in Resources */ = {isa = PBXBuildFile; fileRef = CB588CF51453C9730052A336 /* WebServiceManagerCalls.plist */; };
 		CBFFEB2C1456589100A003D6 /* raizlabs-logo-sheetrock.png in Resources */ = {isa = PBXBuildFile; fileRef = CBFFEB2B1456589100A003D6 /* raizlabs-logo-sheetrock.png */; };
 		CBFFEB2D145658A900A003D6 /* TestData.plist in Resources */ = {isa = PBXBuildFile; fileRef = CBFFEB2A1456570000A003D6 /* TestData.plist */; };
@@ -29,9 +29,9 @@
 		CBFFEB3614565F1E00A003D6 /* JSONKit.m in Sources */ = {isa = PBXBuildFile; fileRef = CBFFEB3114565F1E00A003D6 /* JSONKit.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
 		CBFFEB3714565F1E00A003D6 /* README.md in Resources */ = {isa = PBXBuildFile; fileRef = CBFFEB3214565F1E00A003D6 /* README.md */; };
 		CBFFEB391456662300A003D6 /* TestData.json in Resources */ = {isa = PBXBuildFile; fileRef = CBFFEB381456662300A003D6 /* TestData.json */; };
-		CBFFEC1A1457936000A003D6 /* WebService_NSURL.h in Headers */ = {isa = PBXBuildFile; fileRef = CBFFEC181457936000A003D6 /* WebService_NSURL.h */; };
-		CBFFEC1B1457936000A003D6 /* WebService_NSURL.m in Sources */ = {isa = PBXBuildFile; fileRef = CBFFEC191457936000A003D6 /* WebService_NSURL.m */; };
-		CBFFEC1C1457936000A003D6 /* WebService_NSURL.m in Sources */ = {isa = PBXBuildFile; fileRef = CBFFEC191457936000A003D6 /* WebService_NSURL.m */; };
+		CBFFEC1A1457936000A003D6 /* RZWebService_NSURL.h in Headers */ = {isa = PBXBuildFile; fileRef = CBFFEC181457936000A003D6 /* RZWebService_NSURL.h */; };
+		CBFFEC1B1457936000A003D6 /* RZWebService_NSURL.m in Sources */ = {isa = PBXBuildFile; fileRef = CBFFEC191457936000A003D6 /* RZWebService_NSURL.m */; };
+		CBFFEC1C1457936000A003D6 /* RZWebService_NSURL.m in Sources */ = {isa = PBXBuildFile; fileRef = CBFFEC191457936000A003D6 /* RZWebService_NSURL.m */; };
 		CBFFEC201457A2DD00A003D6 /* echoGet.php in Resources */ = {isa = PBXBuildFile; fileRef = CBFFEC1F1457A2DD00A003D6 /* echoGet.php */; };
 /* End PBXBuildFile section */
 
@@ -54,12 +54,12 @@
 		CB588CD01453C6730052A336 /* UIKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UIKit.framework; path = Library/Frameworks/UIKit.framework; sourceTree = DEVELOPER_DIR; };
 		CB588CD81453C6730052A336 /* WebServiceManagerTests-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "WebServiceManagerTests-Info.plist"; sourceTree = "<group>"; };
 		CB588CDA1453C6730052A336 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/InfoPlist.strings; sourceTree = "<group>"; };
-		CB588CDC1453C6730052A336 /* WebServiceManagerTests.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = WebServiceManagerTests.h; sourceTree = "<group>"; };
-		CB588CDD1453C6730052A336 /* WebServiceManagerTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = WebServiceManagerTests.m; sourceTree = "<group>"; };
-		CB588CE71453C6B40052A336 /* WebServiceManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WebServiceManager.h; sourceTree = "<group>"; };
-		CB588CE81453C6B40052A336 /* WebServiceManager.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WebServiceManager.m; sourceTree = "<group>"; };
-		CB588CE91453C6B40052A336 /* WebServiceRequest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WebServiceRequest.h; sourceTree = "<group>"; };
-		CB588CEA1453C6B40052A336 /* WebServiceRequest.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WebServiceRequest.m; sourceTree = "<group>"; };
+		CB588CDC1453C6730052A336 /* RZWebServiceManagerTests.h */ = {isa = PBXFileReference; path = RZWebServiceManagerTests.h; sourceTree = "<group>"; };
+		CB588CDD1453C6730052A336 /* RZWebServiceManagerTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = RZWebServiceManagerTests.m; sourceTree = "<group>"; };
+		CB588CE71453C6B40052A336 /* RZWebServiceManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RZWebServiceManager.h; sourceTree = "<group>"; };
+		CB588CE81453C6B40052A336 /* RZWebServiceManager.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RZWebServiceManager.m; sourceTree = "<group>"; };
+		CB588CE91453C6B40052A336 /* RZWebServiceRequest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RZWebServiceRequest.h; sourceTree = "<group>"; };
+		CB588CEA1453C6B40052A336 /* RZWebServiceRequest.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RZWebServiceRequest.m; sourceTree = "<group>"; };
 		CB588CF51453C9730052A336 /* WebServiceManagerCalls.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = WebServiceManagerCalls.plist; sourceTree = "<group>"; };
 		CBFFEB2A1456570000A003D6 /* TestData.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = TestData.plist; sourceTree = "<group>"; };
 		CBFFEB2B1456589100A003D6 /* raizlabs-logo-sheetrock.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "raizlabs-logo-sheetrock.png"; sourceTree = "<group>"; };
@@ -69,8 +69,8 @@
 		CBFFEB3214565F1E00A003D6 /* README.md */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = README.md; sourceTree = "<group>"; };
 		CBFFEB381456662300A003D6 /* TestData.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = TestData.json; sourceTree = "<group>"; };
 		CBFFEB3D14566BDD00A003D6 /* README.md */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = README.md; sourceTree = "<group>"; };
-		CBFFEC181457936000A003D6 /* WebService_NSURL.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WebService_NSURL.h; sourceTree = "<group>"; };
-		CBFFEC191457936000A003D6 /* WebService_NSURL.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WebService_NSURL.m; sourceTree = "<group>"; };
+		CBFFEC181457936000A003D6 /* RZWebService_NSURL.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RZWebService_NSURL.h; sourceTree = "<group>"; };
+		CBFFEC191457936000A003D6 /* RZWebService_NSURL.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RZWebService_NSURL.m; sourceTree = "<group>"; };
 		CBFFEC1F1457A2DD00A003D6 /* echoGet.php */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.php; path = echoGet.php; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -131,13 +131,13 @@
 			isa = PBXGroup;
 			children = (
 				CBFFEB2E14565F1E00A003D6 /* JSONKit */,
-				CB588CE71453C6B40052A336 /* WebServiceManager.h */,
-				CB588CE81453C6B40052A336 /* WebServiceManager.m */,
-				CB588CE91453C6B40052A336 /* WebServiceRequest.h */,
-				CB588CEA1453C6B40052A336 /* WebServiceRequest.m */,
+				CB588CE71453C6B40052A336 /* RZWebServiceManager.h */,
+				CB588CE81453C6B40052A336 /* RZWebServiceManager.m */,
+				CB588CE91453C6B40052A336 /* RZWebServiceRequest.h */,
+				CB588CEA1453C6B40052A336 /* RZWebServiceRequest.m */,
 				CB588CC31453C6730052A336 /* Supporting Files */,
-				CBFFEC181457936000A003D6 /* WebService_NSURL.h */,
-				CBFFEC191457936000A003D6 /* WebService_NSURL.m */,
+				CBFFEC181457936000A003D6 /* RZWebService_NSURL.h */,
+				CBFFEC191457936000A003D6 /* RZWebService_NSURL.m */,
 			);
 			path = WebServiceManager;
 			sourceTree = "<group>";
@@ -155,8 +155,8 @@
 			children = (
 				CBFFEC1E1457A2A500A003D6 /* Test Web Scripts */,
 				CBFFEB28145656D500A003D6 /* Test Data */,
-				CB588CDC1453C6730052A336 /* WebServiceManagerTests.h */,
-				CB588CDD1453C6730052A336 /* WebServiceManagerTests.m */,
+				CB588CDC1453C6730052A336 /* RZWebServiceManagerTests.h */,
+				CB588CDD1453C6730052A336 /* RZWebServiceManagerTests.m */,
 				CB588CD71453C6730052A336 /* Supporting Files */,
 				CB588CF51453C9730052A336 /* WebServiceManagerCalls.plist */,
 			);
@@ -208,10 +208,10 @@
 			isa = PBXHeadersBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				CB588CEB1453C6B40052A336 /* WebServiceManager.h in Headers */,
-				CB588CEE1453C6B40052A336 /* WebServiceRequest.h in Headers */,
+				CB588CEB1453C6B40052A336 /* RZWebServiceManager.h in Headers */,
+				CB588CEE1453C6B40052A336 /* RZWebServiceRequest.h in Headers */,
 				CBFFEB3414565F1E00A003D6 /* JSONKit.h in Headers */,
-				CBFFEC1A1457936000A003D6 /* WebService_NSURL.h in Headers */,
+				CBFFEC1A1457936000A003D6 /* RZWebService_NSURL.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -320,10 +320,10 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				CB588CEC1453C6B40052A336 /* WebServiceManager.m in Sources */,
-				CB588CEF1453C6B40052A336 /* WebServiceRequest.m in Sources */,
+				CB588CEC1453C6B40052A336 /* RZWebServiceManager.m in Sources */,
+				CB588CEF1453C6B40052A336 /* RZWebServiceRequest.m in Sources */,
 				CBFFEB3514565F1E00A003D6 /* JSONKit.m in Sources */,
-				CBFFEC1B1457936000A003D6 /* WebService_NSURL.m in Sources */,
+				CBFFEC1B1457936000A003D6 /* RZWebService_NSURL.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -331,11 +331,11 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				CB588CDE1453C6730052A336 /* WebServiceManagerTests.m in Sources */,
-				CB588CED1453C6B40052A336 /* WebServiceManager.m in Sources */,
-				CB588CF01453C6B40052A336 /* WebServiceRequest.m in Sources */,
+				CB588CDE1453C6730052A336 /* RZWebServiceManagerTests.m in Sources */,
+				CB588CED1453C6B40052A336 /* RZWebServiceManager.m in Sources */,
+				CB588CF01453C6B40052A336 /* RZWebServiceRequest.m in Sources */,
 				CBFFEB3614565F1E00A003D6 /* JSONKit.m in Sources */,
-				CBFFEC1C1457936000A003D6 /* WebService_NSURL.m in Sources */,
+				CBFFEC1C1457936000A003D6 /* RZWebService_NSURL.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

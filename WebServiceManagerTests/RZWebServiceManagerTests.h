@@ -7,11 +7,11 @@
 //
 
 #import <SenTestingKit/SenTestingKit.h>
-#import "WebServiceManager.h"
+#import "RZWebServiceManager.h"
 
-@interface WebServiceManagerTests : SenTestCase 
+@interface RZWebServiceManagerTests : SenTestCase 
 
-@property (nonatomic, strong) WebServiceManager* webServiceManager;
+@property (nonatomic, strong) RZWebServiceManager* webServiceManager;
 @property (nonatomic, assign) BOOL apiCallCompleted;
 
 @end

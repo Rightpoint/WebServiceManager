@@ -16,9 +16,9 @@ extern NSString* const kSuccessHandlerKey;
 
 
 @protocol WebServiceRequestDelegate;
-@class WebServiceManager;
+@class RZWebServiceManager;
 
-@interface WebServiceRequest : NSObject <NSURLConnectionDelegate>
+@interface RZWebServiceRequest : NSObject <NSURLConnectionDelegate>
 
 -(id) initWithApiInfo:(NSDictionary*)apiInfo target:(id)target;
 -(id) initWithApiInfo:(NSDictionary *)apiInfo target:(id)target parameters:(NSDictionary*)parameters;
@@ -40,7 +40,7 @@ extern NSString* const kSuccessHandlerKey;
 
 @protocol WebServiceRequestDelegate <NSObject>
 
--(void) webServiceRequest:(WebServiceRequest*)request failedWithError:(NSError*)error;
--(void) webServiceRequest:(WebServiceRequest *)request completedWithData:(NSData*)data;
+-(void) webServiceRequest:(RZWebServiceRequest*)request failedWithError:(NSError*)error;
+-(void) webServiceRequest:(RZWebServiceRequest *)request completedWithData:(NSData*)data;
 
 @end
