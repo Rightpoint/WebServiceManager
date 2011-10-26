@@ -29,6 +29,9 @@
 		CBFFEB3614565F1E00A003D6 /* JSONKit.m in Sources */ = {isa = PBXBuildFile; fileRef = CBFFEB3114565F1E00A003D6 /* JSONKit.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
 		CBFFEB3714565F1E00A003D6 /* README.md in Resources */ = {isa = PBXBuildFile; fileRef = CBFFEB3214565F1E00A003D6 /* README.md */; };
 		CBFFEB391456662300A003D6 /* TestData.json in Resources */ = {isa = PBXBuildFile; fileRef = CBFFEB381456662300A003D6 /* TestData.json */; };
+		CBFFEC1A1457936000A003D6 /* WebService_NSURL.h in Headers */ = {isa = PBXBuildFile; fileRef = CBFFEC181457936000A003D6 /* WebService_NSURL.h */; };
+		CBFFEC1B1457936000A003D6 /* WebService_NSURL.m in Sources */ = {isa = PBXBuildFile; fileRef = CBFFEC191457936000A003D6 /* WebService_NSURL.m */; };
+		CBFFEC1C1457936000A003D6 /* WebService_NSURL.m in Sources */ = {isa = PBXBuildFile; fileRef = CBFFEC191457936000A003D6 /* WebService_NSURL.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -65,6 +68,8 @@
 		CBFFEB3214565F1E00A003D6 /* README.md */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = README.md; sourceTree = "<group>"; };
 		CBFFEB381456662300A003D6 /* TestData.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = TestData.json; sourceTree = "<group>"; };
 		CBFFEB3D14566BDD00A003D6 /* README.md */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = README.md; sourceTree = "<group>"; };
+		CBFFEC181457936000A003D6 /* WebService_NSURL.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WebService_NSURL.h; sourceTree = "<group>"; };
+		CBFFEC191457936000A003D6 /* WebService_NSURL.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WebService_NSURL.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -129,6 +134,8 @@
 				CB588CE91453C6B40052A336 /* WebServiceRequest.h */,
 				CB588CEA1453C6B40052A336 /* WebServiceRequest.m */,
 				CB588CC31453C6730052A336 /* Supporting Files */,
+				CBFFEC181457936000A003D6 /* WebService_NSURL.h */,
+				CBFFEC191457936000A003D6 /* WebService_NSURL.m */,
 			);
 			path = WebServiceManager;
 			sourceTree = "<group>";
@@ -193,6 +200,7 @@
 				CB588CEB1453C6B40052A336 /* WebServiceManager.h in Headers */,
 				CB588CEE1453C6B40052A336 /* WebServiceRequest.h in Headers */,
 				CBFFEB3414565F1E00A003D6 /* JSONKit.h in Headers */,
+				CBFFEC1A1457936000A003D6 /* WebService_NSURL.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -303,6 +311,7 @@
 				CB588CEC1453C6B40052A336 /* WebServiceManager.m in Sources */,
 				CB588CEF1453C6B40052A336 /* WebServiceRequest.m in Sources */,
 				CBFFEB3514565F1E00A003D6 /* JSONKit.m in Sources */,
+				CBFFEC1B1457936000A003D6 /* WebService_NSURL.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -314,6 +323,7 @@
 				CB588CED1453C6B40052A336 /* WebServiceManager.m in Sources */,
 				CB588CF01453C6B40052A336 /* WebServiceRequest.m in Sources */,
 				CBFFEB3614565F1E00A003D6 /* JSONKit.m in Sources */,
+				CBFFEC1C1457936000A003D6 /* WebService_NSURL.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

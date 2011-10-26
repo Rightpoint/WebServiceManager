@@ -7,6 +7,7 @@
 //
 
 #import "WebServiceRequest.h"
+#import "WebService_NSURL.h"
 
 NSString *const kURLkey = @"URL";
 NSString *const kHTTPMethodKey = @"Method";
@@ -31,6 +32,8 @@ NSString *const kSuccessHandlerKey = @"SuccessHandler";
 @synthesize delegate  = _delegate;
 @synthesize successHandler = _successHandler;
 @synthesize failureHandler = _failureHandler;
+@synthesize parameters = _parameters;
+@synthesize urlRequest = _urlRequest;
 
 -(id) initWithApiInfo:(NSDictionary *)apiInfo target:(id)target
 {
@@ -40,19 +43,36 @@ NSString *const kSuccessHandlerKey = @"SuccessHandler";
     _apiInfo = apiInfo;
 
     NSString* urlStr = [apiInfo objectForKey:kURLkey];
-    NSURL* url = [NSURL URLWithString:urlStr];
+    self.url = [NSURL URLWithString:urlStr];
     
     self.successHandler = NSSelectorFromString([apiInfo objectForKey:kSuccessHandlerKey]);
     self.failureHandler = NSSelectorFromString([apiInfo objectForKey:kFailureHandlerKey]);
     
-    self.connection = [[NSURLConnection alloc] initWithRequest:[NSURLRequest requestWithURL:url] delegate:self startImmediately:NO];
+    self.urlRequest = [[NSMutableURLRequest alloc] initWithURL:self.url];
+    
+    return self;
+}
+
+-(id) initWithApiInfo:(NSDictionary *)apiInfo target:(id)target parameters:(NSDictionary*)parameters
+{
+    self = [self initWithApiInfo:apiInfo target:target];
+
+    self.parameters = parameters;
     
     return self;
 }
 
 -(void) start
 {
-    [self.connection start];
+    NSString* httpMethod = [self.apiInfo valueForKey:kHTTPMethodKey];
+    
+    // if this is a get request and there are parameters, format them as part of the URL, and reset the URL on the request. 
+    if ([httpMethod isEqualToString:@"GET"] && self.parameters) {
+        self.urlRequest.URL = [self.url URLByAddingParameters:self.parameters];
+    }
+    
+    // create and start the connection.
+    self.connection = [[NSURLConnection alloc] initWithRequest:self.urlRequest delegate:self startImmediately:YES];
 }
 
 -(void) cancel {

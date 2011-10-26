@@ -17,6 +17,7 @@
 -(id) initWithCalls:(NSDictionary*)apiCalls;
 
 -(WebServiceRequest*) makeRequestWithKey:(NSString*)key andTarget:(id)target;
+-(WebServiceRequest*) makeRequestWithKey:(NSString*)key andTarget:(id)target andParameters:(NSDictionary*)parameters;
 
 -(void) cancelRequestsForTarget:(id)target;
 

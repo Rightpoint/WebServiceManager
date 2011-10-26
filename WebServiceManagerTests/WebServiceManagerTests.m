@@ -92,6 +92,19 @@
     }
 }
 
+-(void) test6RequestWithGetArguments
+{
+    NSDictionary* parameters = [NSDictionary dictionaryWithObjectsAndKeys:@"Hello, world!", @"hello", 
+                                [NSNumber numberWithInt:123456], @"integerKey",
+                                [NSNumber numberWithFloat:1234.567], @"floatKey", nil];
+    
+    [self.webServiceManager makeRequestWithKey:@"echoGET" andTarget:self andParameters:parameters];
+    
+    while (!self.apiCallCompleted) {
+        [[NSRunLoop currentRunLoop] runUntilDate:[NSDate dateWithTimeIntervalSinceNow:1]];
+    }
+}
+
 //
 // Image callbacks. 
 //
@@ -194,5 +207,20 @@
     if (self.concurrencyCallbackCount >= 4) {
         self.apiCallCompleted = YES;
     }
+}
+
+//
+// Echo GET callbacks
+//
+
+-(void) echoGetCompleted:(NSString*)results
+{
+    self.apiCallCompleted = YES;
+}
+
+-(void) echoGetFailed:(NSError*)error
+{
+    STAssertTrue(NO, @"echoGet failed with error: %@", error);
+    self.apiCallCompleted = YES;
 }
 @end

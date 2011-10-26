@@ -61,12 +61,17 @@
 
 -(WebServiceRequest*) makeRequestWithKey:(NSString*)key andTarget:(id)target
 {
-    NSDictionary* apiCall = [self.apiCalls objectForKey:key];
-        
-    WebServiceRequest* request = [[WebServiceRequest alloc] initWithApiInfo:apiCall target:target];
-                                  
-    [self enqueueRequest:request];
+    return [self makeRequestWithKey:key andTarget:target andParameters:nil];
+}
 
+-(WebServiceRequest*) makeRequestWithKey:(NSString*)key andTarget:(id)target andParameters:(NSDictionary*)parameters {
+
+    NSDictionary* apiCall = [self.apiCalls objectForKey:key];
+    
+    WebServiceRequest* request = [[WebServiceRequest alloc] initWithApiInfo:apiCall target:target parameters:parameters];
+    
+    [self enqueueRequest:request];
+    
     return request;
 }
 

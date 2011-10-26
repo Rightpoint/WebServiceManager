@@ -21,14 +21,18 @@ extern NSString* const kSuccessHandlerKey;
 @interface WebServiceRequest : NSObject <NSURLConnectionDelegate>
 
 -(id) initWithApiInfo:(NSDictionary*)apiInfo target:(id)target;
+-(id) initWithApiInfo:(NSDictionary *)apiInfo target:(id)target parameters:(NSDictionary*)parameters;
+
 -(void) start;
 -(void) cancel;
 
 @property (unsafe_unretained, nonatomic) id target;
 @property (assign, nonatomic) SEL successHandler;
 @property (assign, nonatomic) SEL failureHandler;
+@property (strong, nonatomic) NSMutableURLRequest* urlRequest;
 @property (strong, nonatomic) NSDictionary* apiInfo;
 @property (strong, nonatomic) NSURL* url;
+@property (strong, nonatomic) NSDictionary* parameters;
 @property (unsafe_unretained, nonatomic) id<WebServiceRequestDelegate> delegate;
 
 @end
