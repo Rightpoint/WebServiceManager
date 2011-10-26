@@ -10,12 +10,14 @@
 
 @interface WebServiceManagerTests()
 @property (nonatomic, assign) NSUInteger concurrencyCallbackCount;
+@property (nonatomic, strong) NSDictionary* echoGetResult;
 @end
 
 @implementation WebServiceManagerTests
 @synthesize apiCallCompleted = _apiCallCompleted;
 @synthesize webServiceManager = _webServiceManager;
 @synthesize concurrencyCallbackCount = _concurrencyCallbackCount;
+@synthesize echoGetResult = _echoGetResult;
 
 -(NSString*) bundlePath
 {
@@ -103,6 +105,11 @@
     while (!self.apiCallCompleted) {
         [[NSRunLoop currentRunLoop] runUntilDate:[NSDate dateWithTimeIntervalSinceNow:1]];
     }
+    
+    // loop through the keys and make sure the dictionaries have equal values. 
+    STAssertTrue(self.echoGetResult.count == parameters.count, @"Get Request parameter list was not echoed correctly. There may be a problem sending the URL parameters." );
+    
+
 }
 
 //
@@ -213,8 +220,9 @@
 // Echo GET callbacks
 //
 
--(void) echoGetCompleted:(NSString*)results
+-(void) echoGetCompleted:(NSDictionary*)results
 {
+    self.echoGetResult = results;
     self.apiCallCompleted = YES;
 }
 

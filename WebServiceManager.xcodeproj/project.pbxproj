@@ -32,6 +32,7 @@
 		CBFFEC1A1457936000A003D6 /* WebService_NSURL.h in Headers */ = {isa = PBXBuildFile; fileRef = CBFFEC181457936000A003D6 /* WebService_NSURL.h */; };
 		CBFFEC1B1457936000A003D6 /* WebService_NSURL.m in Sources */ = {isa = PBXBuildFile; fileRef = CBFFEC191457936000A003D6 /* WebService_NSURL.m */; };
 		CBFFEC1C1457936000A003D6 /* WebService_NSURL.m in Sources */ = {isa = PBXBuildFile; fileRef = CBFFEC191457936000A003D6 /* WebService_NSURL.m */; };
+		CBFFEC201457A2DD00A003D6 /* echoGet.php in Resources */ = {isa = PBXBuildFile; fileRef = CBFFEC1F1457A2DD00A003D6 /* echoGet.php */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -70,6 +71,7 @@
 		CBFFEB3D14566BDD00A003D6 /* README.md */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = README.md; sourceTree = "<group>"; };
 		CBFFEC181457936000A003D6 /* WebService_NSURL.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WebService_NSURL.h; sourceTree = "<group>"; };
 		CBFFEC191457936000A003D6 /* WebService_NSURL.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WebService_NSURL.m; sourceTree = "<group>"; };
+		CBFFEC1F1457A2DD00A003D6 /* echoGet.php */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.php; path = echoGet.php; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -151,6 +153,7 @@
 		CB588CD61453C6730052A336 /* WebServiceManagerTests */ = {
 			isa = PBXGroup;
 			children = (
+				CBFFEC1E1457A2A500A003D6 /* Test Web Scripts */,
 				CBFFEB28145656D500A003D6 /* Test Data */,
 				CB588CDC1453C6730052A336 /* WebServiceManagerTests.h */,
 				CB588CDD1453C6730052A336 /* WebServiceManagerTests.m */,
@@ -188,6 +191,14 @@
 				CBFFEB3214565F1E00A003D6 /* README.md */,
 			);
 			path = JSONKit;
+			sourceTree = "<group>";
+		};
+		CBFFEC1E1457A2A500A003D6 /* Test Web Scripts */ = {
+			isa = PBXGroup;
+			children = (
+				CBFFEC1F1457A2DD00A003D6 /* echoGet.php */,
+			);
+			name = "Test Web Scripts";
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -282,6 +293,7 @@
 				CBFFEB3314565F1E00A003D6 /* CHANGELOG.md in Resources */,
 				CBFFEB3714565F1E00A003D6 /* README.md in Resources */,
 				CBFFEB391456662300A003D6 /* TestData.json in Resources */,
+				CBFFEC201457A2DD00A003D6 /* echoGet.php in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

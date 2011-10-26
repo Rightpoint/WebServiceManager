@@ -61,7 +61,7 @@
 		<key>Method</key>
 		<string>GET</string>
 		<key>ExpectedResultType</key>
-		<string>Text</string>
+		<string>JSON</string>
 		<key>FailureHandler</key>
 		<string>echoGetFailed:</string>
 		<key>SuccessHandler</key>
