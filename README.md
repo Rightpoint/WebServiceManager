@@ -4,7 +4,7 @@
 
 The goal of this project is to provide a simple way to define an Objective-C wrapper for web services without writing much code. Instead of re-implementing web specific classes for every project, simply link in the WebServiceManager library, drop in a plist identifying your web API endpoints, and start implementing the delegates that will handle the data that comes back from your web service. 
 
-The initial version of this class is _extremely_ limited, and can only handle GET requests, with no URL parameters. This will of course change, hopefully in the near future, to support all the HTTP request methods. That means no file uploads, no queries, no parameters. At least for now. 
+The initial version of this class is _extremely_ limited, and can only handle GET requests with standard URL query strings. This will of course change, hopefully in the near future, to support all the HTTP request methods, as well as file uploads on the methods that support it. 
 
 This project is ARC only. I was tired of typing *autorelease*
 
@@ -31,7 +31,6 @@ I'm glad you asked. Check out the included WebServiceManagerTests project for a 
 These items are the short term features I would like to add to this project. 
 
 * Support for POST (and yeah, the other HTTP methods as well)
-* support for basic key/value specified parameters lists for supported HTTP methods. 
 * Support for mulitpart-form and file uploads
 * support for streaming from disk for file uploads. 
 * delegate callback for additional header and parameter injection to the mutable request before send.
