@@ -10,42 +10,53 @@
 
 @implementation NSURL (RZWebService_NSURL)
 
++(NSString*)URLQueryStringFromParameters:(NSDictionary*)parameters
+{
+    NSMutableString* queryString = [NSMutableString stringWithCapacity:100];
+    
+    NSArray* keys = [parameters allKeys];
+    for(int keyIdx = 0; keyIdx < keys.count; keyIdx++)
+    {
+        id key = [keys objectAtIndex:keyIdx];
+        
+        id value = [parameters objectForKey:key];
+        
+        if([value isKindOfClass:[NSString class]])
+        {
+            value = (__bridge_transfer NSString * )CFURLCreateStringByAddingPercentEscapes(kCFAllocatorDefault, 
+                                                                                                 (__bridge CFStringRef)[parameters valueForKey:key],
+                                                                                                 NULL, 
+                                                                                                 CFSTR(":/?#[]@!$&’()*+,;="),
+                                                                                                 kCFStringEncodingUTF8);
+        }
+     
+        [queryString appendFormat:@"%@=%@", key, value];
+        if (keyIdx < keys.count - 1) {
+            [queryString appendString:@"&"]; // add separator before next parameter
+        }
+        
+    }
+    
+    return queryString;
+
+}
+
 - (NSURL *)URLByAddingParameters:(NSDictionary *)parameters {
     
     NSMutableString *urlString = [NSMutableString stringWithString:[self absoluteString]];
     
-    // delimiter between each parameter
-    NSString* delimiter = @"&";
-    
-    // start the parameter list with this delimiter...
-    NSString* nextDelimiter = @"?";
-    
-    // unless there is already a query
+    // unless there is already a query add a parameter separator
     if ([self query].length > 0) {
-        nextDelimiter = delimiter;
+        [urlString appendString:@"&"];
+    }
+    else {
+        [urlString appendString:@"?"];
     }
         
-    for (id key in parameters)
-    {
-        
-        id value = [parameters valueForKey:key];
-        
-        // if the value is a string, it may contain characters that need to be escaped. 
-        if([value isKindOfClass:[NSString class]])
-        {
-            value = (__bridge NSString*)CFURLCreateStringByAddingPercentEscapes(kCFAllocatorDefault, 
-                                                                                (__bridge CFStringRef)[parameters valueForKey:key],
-                                                                                NULL, 
-                                                                                CFSTR(":/?#[]@!$&’()*+,;="),
-                                                                                kCFStringEncodingUTF8);
-        }
-        
-        [urlString appendFormat:@"%@%@=%@",nextDelimiter, key, value];
-        
-        nextDelimiter = delimiter;
-    }
+    [urlString appendString:[NSURL URLQueryStringFromParameters:parameters]];
     
     return [NSURL URLWithString:urlString];
     
 }
+
 @end
