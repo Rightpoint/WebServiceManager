@@ -11,6 +11,7 @@
 @interface RZWebServiceManagerTests()
 @property (nonatomic, assign) NSUInteger concurrencyCallbackCount;
 @property (nonatomic, strong) NSDictionary* echoGetResult;
+@property (nonatomic, strong) NSDictionary* echoPostResult;
 @end
 
 @implementation RZWebServiceManagerTests
@@ -18,6 +19,7 @@
 @synthesize webServiceManager = _webServiceManager;
 @synthesize concurrencyCallbackCount = _concurrencyCallbackCount;
 @synthesize echoGetResult = _echoGetResult;
+@synthesize echoPostResult = _echoPostResult;
 
 -(NSString*) bundlePath
 {
@@ -42,7 +44,7 @@
     
     [super tearDown];
 }
-- (void)test1GetLogo
+- (void)test01GetLogo
 {
     [self.webServiceManager makeRequestWithKey:@"getLogo" andTarget:self];
     
@@ -52,7 +54,7 @@
 
 }
 
--(void) test2GetContent
+-(void) test02GetContent
 {
     [self.webServiceManager makeRequestWithKey:@"getContent" andTarget:self];
     
@@ -61,7 +63,7 @@
     }
 }
 
--(void) test3GetPlist
+-(void) test03GetPlist
 {
     [self.webServiceManager makeRequestWithKey:@"getPList" andTarget:self];
     while (!self.apiCallCompleted) {
@@ -69,7 +71,7 @@
     }
 }
 
--(void) test4GetJSON
+-(void) test04GetJSON
 {
     [self.webServiceManager makeRequestWithKey:@"getJSON" andTarget:self];
     while (!self.apiCallCompleted) {
@@ -79,7 +81,7 @@
 
 // What happens when we make many calls at once? They should queue up, one at a time. This will 
 // test this feature, and override the callbacks specified in the plist so we can count the callbacks. 
--(void) test5Concurrency
+-(void) test05Concurrency
 {
     self.concurrencyCallbackCount = 0;
     SEL callback = @selector(concurrencyCallback:);
@@ -94,7 +96,7 @@
     }
 }
 
--(void) test6RequestWithGetArguments
+-(void) test06RequestWithGetArguments
 {
     NSDictionary* parameters = [NSDictionary dictionaryWithObjectsAndKeys:@"Hello, world!", @"hello", 
                                 [NSNumber numberWithInt:123456], @"integerKey",
@@ -111,8 +113,25 @@
     
 
 }
+-(void) test07RequestWithPOSTArguments
+{
+    NSDictionary* parameters = [NSDictionary dictionaryWithObjectsAndKeys:@"Hello, world!", @"hello", 
+                                [NSNumber numberWithInt:123456], @"integerKey",
+                                [NSNumber numberWithFloat:1234.567], @"floatKey", nil];
+    
+    [self.webServiceManager makeRequestWithKey:@"echoPOST" andTarget:self andParameters:parameters];
+    
+    while (!self.apiCallCompleted) {
+        [[NSRunLoop currentRunLoop] runUntilDate:[NSDate dateWithTimeIntervalSinceNow:1]];
+    }
+    
+    // loop through the keys and make sure the dictionaries have equal values. 
+    STAssertTrue(self.echoPostResult.count == parameters.count, @"Get Request parameter list was not echoed correctly. There may be a problem sending the URL parameters." );
+    
+    
+}
 
--(void) test7ManuallyAddARequest
+-(void) test08ManuallyAddARequest
 {
 
     // sometimes you want to add your own request, without relying on the PList. Create a request, and add it to the queue.
@@ -247,6 +266,22 @@
 -(void) echoGetFailed:(NSError*)error
 {
     STAssertTrue(NO, @"echoGet failed with error: %@", error);
+    self.apiCallCompleted = YES;
+}
+
+//
+// Echo POST callbacks
+//
+
+-(void) echoPostCompleted:(NSDictionary*)results
+{
+    self.echoPostResult = results;
+    self.apiCallCompleted = YES;
+}
+
+-(void) echoPostFailed:(NSError*)error
+{
+    STAssertTrue(NO, @"echoPost failed with error: %@", error);
     self.apiCallCompleted = YES;
 }
 @end

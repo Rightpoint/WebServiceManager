@@ -10,6 +10,10 @@
 
 @interface NSURL (RZWebService_NSURL)
 
+// generate the URL query string for a list or parameters.
++(NSString*)URLQueryStringFromParameters:(NSDictionary*)parameters;
+
+// return a full url with the parameters query added in.
 - (NSURL *)URLByAddingParameters:(NSDictionary *)parameters;
 
 @end

@@ -67,5 +67,18 @@
 		<key>SuccessHandler</key>
 		<string>echoGetCompleted:</string>
 	</dict>
+	<key>echoPOST</key>
+	<dict>
+		<key>URL</key>
+		<string>http://localhost:8888/test/echoPost.php</string>
+		<key>Method</key>
+		<string>POST</string>
+		<key>ExpectedResultType</key>
+		<string>JSON</string>
+		<key>FailureHandler</key>
+		<string>echoPostFailed:</string>
+		<key>SuccessHandler</key>
+		<string>echoPostCompleted:</string>
+	</dict>
 </dict>
 </plist>

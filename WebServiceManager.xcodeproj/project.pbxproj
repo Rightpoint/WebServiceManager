@@ -21,6 +21,7 @@
 		CB588CEF1453C6B40052A336 /* RZWebServiceRequest.m in Sources */ = {isa = PBXBuildFile; fileRef = CB588CEA1453C6B40052A336 /* RZWebServiceRequest.m */; };
 		CB588CF01453C6B40052A336 /* RZWebServiceRequest.m in Sources */ = {isa = PBXBuildFile; fileRef = CB588CEA1453C6B40052A336 /* RZWebServiceRequest.m */; };
 		CB588CF61453C9730052A336 /* WebServiceManagerCalls.plist in Resources */ = {isa = PBXBuildFile; fileRef = CB588CF51453C9730052A336 /* WebServiceManagerCalls.plist */; };
+		CB8B78E2145A484F00250394 /* echoPost.php in Resources */ = {isa = PBXBuildFile; fileRef = CB8B78E1145A484F00250394 /* echoPost.php */; };
 		CBFFEB2C1456589100A003D6 /* raizlabs-logo-sheetrock.png in Resources */ = {isa = PBXBuildFile; fileRef = CBFFEB2B1456589100A003D6 /* raizlabs-logo-sheetrock.png */; };
 		CBFFEB2D145658A900A003D6 /* TestData.plist in Resources */ = {isa = PBXBuildFile; fileRef = CBFFEB2A1456570000A003D6 /* TestData.plist */; };
 		CBFFEB3314565F1E00A003D6 /* CHANGELOG.md in Resources */ = {isa = PBXBuildFile; fileRef = CBFFEB2F14565F1E00A003D6 /* CHANGELOG.md */; };
@@ -54,13 +55,14 @@
 		CB588CD01453C6730052A336 /* UIKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UIKit.framework; path = Library/Frameworks/UIKit.framework; sourceTree = DEVELOPER_DIR; };
 		CB588CD81453C6730052A336 /* WebServiceManagerTests-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "WebServiceManagerTests-Info.plist"; sourceTree = "<group>"; };
 		CB588CDA1453C6730052A336 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/InfoPlist.strings; sourceTree = "<group>"; };
-		CB588CDC1453C6730052A336 /* RZWebServiceManagerTests.h */ = {isa = PBXFileReference; path = RZWebServiceManagerTests.h; sourceTree = "<group>"; };
+		CB588CDC1453C6730052A336 /* RZWebServiceManagerTests.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = RZWebServiceManagerTests.h; sourceTree = "<group>"; };
 		CB588CDD1453C6730052A336 /* RZWebServiceManagerTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = RZWebServiceManagerTests.m; sourceTree = "<group>"; };
 		CB588CE71453C6B40052A336 /* RZWebServiceManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RZWebServiceManager.h; sourceTree = "<group>"; };
 		CB588CE81453C6B40052A336 /* RZWebServiceManager.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RZWebServiceManager.m; sourceTree = "<group>"; };
 		CB588CE91453C6B40052A336 /* RZWebServiceRequest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RZWebServiceRequest.h; sourceTree = "<group>"; };
 		CB588CEA1453C6B40052A336 /* RZWebServiceRequest.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RZWebServiceRequest.m; sourceTree = "<group>"; };
 		CB588CF51453C9730052A336 /* WebServiceManagerCalls.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = WebServiceManagerCalls.plist; sourceTree = "<group>"; };
+		CB8B78E1145A484F00250394 /* echoPost.php */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.php; path = echoPost.php; sourceTree = "<group>"; };
 		CBFFEB2A1456570000A003D6 /* TestData.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = TestData.plist; sourceTree = "<group>"; };
 		CBFFEB2B1456589100A003D6 /* raizlabs-logo-sheetrock.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "raizlabs-logo-sheetrock.png"; sourceTree = "<group>"; };
 		CBFFEB2F14565F1E00A003D6 /* CHANGELOG.md */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = CHANGELOG.md; sourceTree = "<group>"; };
@@ -196,6 +198,7 @@
 		CBFFEC1E1457A2A500A003D6 /* Test Web Scripts */ = {
 			isa = PBXGroup;
 			children = (
+				CB8B78E1145A484F00250394 /* echoPost.php */,
 				CBFFEC1F1457A2DD00A003D6 /* echoGet.php */,
 			);
 			name = "Test Web Scripts";
@@ -294,6 +297,7 @@
 				CBFFEB3714565F1E00A003D6 /* README.md in Resources */,
 				CBFFEB391456662300A003D6 /* TestData.json in Resources */,
 				CBFFEC201457A2DD00A003D6 /* echoGet.php in Resources */,
+				CB8B78E2145A484F00250394 /* echoPost.php in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

@@ -88,10 +88,21 @@ expectedResultType:(NSString*)expectedResultType
 }
 
 -(void) start
-{    
+{
+    self.urlRequest.HTTPMethod = self.httpMethod;
+    
     // if this is a get request and there are parameters, format them as part of the URL, and reset the URL on the request. 
-    if ([self.httpMethod isEqualToString:@"GET"] && self.parameters) {
-        self.urlRequest.URL = [self.url URLByAddingParameters:self.parameters];
+    if(self.parameters && self.parameters.count > 0)
+    {
+        if ([self.httpMethod isEqualToString:@"GET"]) {
+            self.urlRequest.URL = [self.url URLByAddingParameters:self.parameters];
+        }
+        else if([self.httpMethod isEqualToString:@"POST"])
+        {
+            // set the post body to the formatted parameters. 
+            self.urlRequest.HTTPBody = [[NSURL URLQueryStringFromParameters:self.parameters] dataUsingEncoding:NSUTF8StringEncoding];
+        }
+        
     }
     
     // create and start the connection.
