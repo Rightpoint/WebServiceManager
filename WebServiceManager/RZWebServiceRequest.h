@@ -44,7 +44,7 @@ expectedResultType:(NSString*)expectedResultType
 @property (strong, nonatomic) NSString* expectedResultType;
 @property (strong, nonatomic) NSDictionary* parameters;
 @property (unsafe_unretained, nonatomic) id<WebServiceRequestDelegate> delegate;
-
+@property (strong, nonatomic) NSDictionary* responseHeaders;
 @end
 
 

@@ -12,6 +12,7 @@
 @property (nonatomic, assign) NSUInteger concurrencyCallbackCount;
 @property (nonatomic, strong) NSDictionary* echoGetResult;
 @property (nonatomic, strong) NSDictionary* echoPostResult;
+@property (nonatomic, strong) NSDictionary* responseHeaders;
 @end
 
 @implementation RZWebServiceManagerTests
@@ -20,6 +21,7 @@
 @synthesize concurrencyCallbackCount = _concurrencyCallbackCount;
 @synthesize echoGetResult = _echoGetResult;
 @synthesize echoPostResult = _echoPostResult;
+@synthesize responseHeaders = _responseHeaders;
 
 -(NSString*) bundlePath
 {
@@ -149,6 +151,24 @@
     }
     
 }
+
+-(void) test09ResponseHeaders
+{
+    
+    NSDictionary* parameters = [NSDictionary dictionaryWithObjectsAndKeys:@"Hello, world!", @"hello", 
+                                [NSNumber numberWithInt:123456], @"integerKey",
+                                [NSNumber numberWithFloat:1234.567], @"floatKey", nil];
+    
+    [self.webServiceManager makeRequestWithKey:@"echoPOSTExtended" andTarget:self andParameters:parameters];
+    
+    while (!self.apiCallCompleted) {
+        [[NSRunLoop currentRunLoop] runUntilDate:[NSDate dateWithTimeIntervalSinceNow:1]];
+    }
+    
+    // ensure the headers were made available. 
+    STAssertNotNil(self.responseHeaders, @"Reponse headers were not populated");
+    
+}
 //
 // Image callbacks. 
 //
@@ -276,6 +296,14 @@
 -(void) echoPostCompleted:(NSDictionary*)results
 {
     self.echoPostResult = results;
+    self.apiCallCompleted = YES;
+}
+
+-(void) echoPostCompleted:(NSDictionary*)results request:(RZWebServiceRequest*)request
+{
+    self.echoPostResult = results;
+    self.responseHeaders = request.responseHeaders;
+    
     self.apiCallCompleted = YES;
 }
 

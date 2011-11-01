@@ -170,6 +170,10 @@
             [invocation setTarget:request.target];
             [invocation setSelector:request.successHandler];
             [invocation setArgument:&convertedResult atIndex:2];
+
+            if (signature.numberOfArguments > 3) 
+                [invocation setArgument:&request atIndex:3];            
+    
             [invocation invoke];
             
         

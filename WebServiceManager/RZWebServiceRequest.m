@@ -35,6 +35,7 @@ NSString *const kSuccessHandlerKey = @"SuccessHandler";
 @synthesize parameters = _parameters;
 @synthesize urlRequest = _urlRequest;
 @synthesize expectedResultType = _expectedResultType;
+@synthesize responseHeaders = _responseHeaders;
 
 -(id) initWithApiInfo:(NSDictionary *)apiInfo target:(id)target
 {
@@ -133,6 +134,14 @@ expectedResultType:(NSString*)expectedResultType
 {    
     if ([self.delegate respondsToSelector:@selector(webServiceRequest:completedWithData:)]) {
         [self.delegate webServiceRequest:self completedWithData:self.receivedData];
+    }
+}
+
+- (void)connection:(NSURLConnection *)connection didReceiveResponse:(NSURLResponse *)response
+{
+    if ([response isKindOfClass:[NSHTTPURLResponse class]]) {
+        NSHTTPURLResponse* httpResponse = (NSHTTPURLResponse*)response;
+        self.responseHeaders = [httpResponse allHeaderFields];
     }
 }
 
