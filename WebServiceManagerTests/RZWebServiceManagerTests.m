@@ -169,6 +169,21 @@
     STAssertNotNil(self.responseHeaders, @"Reponse headers were not populated");
     
 }
+
+// test to see if this works on a GCD dispatched thread
+-(void) test10GCDGet
+{
+    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+         [self.webServiceManager makeRequestWithKey:@"getContent" andTarget:self];
+    });
+    
+    while (!self.apiCallCompleted) {
+        [[NSRunLoop currentRunLoop] runUntilDate:[NSDate dateWithTimeIntervalSinceNow:1]];
+    }
+    
+
+}
+
 //
 // Image callbacks. 
 //

@@ -15,17 +15,13 @@
 
 @interface RZWebServiceManager()
 
-@property (strong, nonatomic) NSMutableArray* requests; 
-@property (assign, nonatomic) BOOL requestInProcess;
-
--(void) startNextRequest;
+@property (strong, nonatomic) NSOperationQueue* requests; 
 
 @end
 
 
 @implementation RZWebServiceManager
 @synthesize requests = _requests;
-@synthesize requestInProcess = _requestInProcess;
 @synthesize apiCalls = _apiCalls;
 
 -(id) initWithCallsPath:(NSString*)callsPath
@@ -50,13 +46,14 @@
 -(void) enqueueRequest:(RZWebServiceRequest*)request
 {
     if (nil == self.requests) {
-        self.requests = [[NSMutableArray alloc] initWithCapacity:10];
+        self.requests = [[NSOperationQueue alloc] init];
+        [self.requests setName:@"RZWebServiceManagerQueue"];
+        [self.requests setMaxConcurrentOperationCount:1];
     }
     
     request.delegate = self;
-    [self.requests addObject:request];
+    [self.requests addOperation:request];
    
-    [self startNextRequest];
 }
 
 -(RZWebServiceRequest*) makeRequestWithKey:(NSString*)key andTarget:(id)target
@@ -77,12 +74,14 @@
 
 -(void) cancelRequestsForTarget:(id)target
 {
-    NSArray* matchingRequests = [self.requests filteredArrayUsingPredicate:[NSPredicate predicateWithFormat:@"target == %@", target]];     
+    NSArray* matchingRequests = [[self.requests operations] filteredArrayUsingPredicate:[NSPredicate predicateWithFormat:@"target == %@", target]];     
+    
     for (RZWebServiceRequest* request in matchingRequests) {
         [request cancel];
     }
 }
 
+/*
 -(void) startNextRequest
 {
     if(!self.requestInProcess) {
@@ -97,6 +96,7 @@
         }
     }
 }
+ */
                     
 #pragma mark - WebServiceRequestDelegate
 -(void) webServiceRequest:(RZWebServiceRequest*)request failedWithError:(NSError*)error
@@ -111,9 +111,6 @@
         [invocation invoke];            
     }
 
-    [self.requests removeObject:request];
-    self.requestInProcess = NO;
-    [self startNextRequest];
 }
 
 -(void) webServiceRequest:(RZWebServiceRequest *)request completedWithData:(NSData*)data
@@ -179,9 +176,6 @@
         
     }
     
-    [self.requests removeObject:request];    
-    self.requestInProcess = NO;
-    [self startNextRequest];
 }
 
 @end

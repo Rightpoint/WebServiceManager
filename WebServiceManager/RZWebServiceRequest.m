@@ -19,6 +19,11 @@ NSString *const kSuccessHandlerKey = @"SuccessHandler";
 
 @property (strong, nonatomic) NSMutableData* receivedData;
 @property (strong, nonatomic) NSURLConnection* connection;
+@property (assign, nonatomic) BOOL done;
+@property (assign, nonatomic) BOOL finished;
+@property (assign, nonatomic) BOOL executing;
+
+-(void) beginOperation;
 
 @end
 
@@ -36,6 +41,10 @@ NSString *const kSuccessHandlerKey = @"SuccessHandler";
 @synthesize urlRequest = _urlRequest;
 @synthesize expectedResultType = _expectedResultType;
 @synthesize responseHeaders = _responseHeaders;
+
+@synthesize done = _done;
+@synthesize finished = _finished;
+@synthesize executing = _executing;
 
 -(id) initWithApiInfo:(NSDictionary *)apiInfo target:(id)target
 {
@@ -90,35 +99,93 @@ expectedResultType:(NSString*)expectedResultType
 
 -(void) start
 {
-    self.urlRequest.HTTPMethod = self.httpMethod;
-    
-    // if this is a get request and there are parameters, format them as part of the URL, and reset the URL on the request. 
-    if(self.parameters && self.parameters.count > 0)
-    {
-        if ([self.httpMethod isEqualToString:@"GET"]) {
-            self.urlRequest.URL = [self.url URLByAddingParameters:self.parameters];
-        }
-        else if([self.httpMethod isEqualToString:@"POST"])
-        {
-            // set the post body to the formatted parameters. 
-            self.urlRequest.HTTPBody = [[NSURL URLQueryStringFromParameters:self.parameters] dataUsingEncoding:NSUTF8StringEncoding];
-        }
+    if (self.isCancelled) {
         
+        // If it's already been cancelled, mark the operation as finished.
+        [self willChangeValueForKey:@"isFinished"];
+        self.finished = YES;
+        [self didChangeValueForKey:@"isFinished"];
     }
     
-    // create and start the connection.
-    self.connection = [[NSURLConnection alloc] initWithRequest:self.urlRequest delegate:self startImmediately:YES];
+    [self willChangeValueForKey:@"isExecuting"];
+      
+    [NSThread detachNewThreadSelector:@selector(beginOperation) toTarget:self withObject:nil];
+
 }
 
--(void) cancel {
+-(void) beginOperation
+{
+    
+    @autoreleasepool {
+        
+        _executing = YES;
+        [self didChangeValueForKey:@"isExecuting"];    
+        
+        self.urlRequest.HTTPMethod = self.httpMethod;
+        
+        // if this is a get request and there are parameters, format them as part of the URL, and reset the URL on the request. 
+        if(self.parameters && self.parameters.count > 0)
+        {
+            if ([self.httpMethod isEqualToString:@"GET"]) {
+                self.urlRequest.URL = [self.url URLByAddingParameters:self.parameters];
+            }
+            else if([self.httpMethod isEqualToString:@"POST"])
+            {
+                // set the post body to the formatted parameters. 
+                self.urlRequest.HTTPBody = [[NSURL URLQueryStringFromParameters:self.parameters] dataUsingEncoding:NSUTF8StringEncoding];
+            }
+            
+        }
+        
+        // create and start the connection.
+        self.connection = [[NSURLConnection alloc] initWithRequest:self.urlRequest delegate:self startImmediately:YES];
+        [self didChangeValueForKey:@"isExecuting"];
+        
+        while (!self.done) {
+            [[NSRunLoop currentRunLoop] runMode:NSDefaultRunLoopMode beforeDate:[NSDate distantFuture]];
+        }
+        
+        [self willChangeValueForKey:@"isFinished"];
+        [self willChangeValueForKey:@"isExecuting"];
+        
+        _finished = YES;
+        _executing = NO;
+        
+        [self didChangeValueForKey:@"isExecuting"];
+        [self didChangeValueForKey:@"isFinished"];
+
+    }
+}
+
+- (BOOL)isConcurrent {
+    return YES;
+}
+
+- (BOOL)isExecuting {
+    return _executing;
+}
+
+- (BOOL)isFinished {
+    return _finished;
+}
+
+-(void) cancel
+{
+    [super cancel];
     [self.connection cancel];
 }
+
+
+
+
 
 #pragma mark - NSURLConnectionDelegate
 - (void)connection:(NSURLConnection *)connection didFailWithError:(NSError *)error
 {
     if([self.target respondsToSelector:@selector(webServiceRequest:failedWithError:)])
         [self.target webServiceRequest:self failedWithError:error];
+    
+    self.done = YES;
 }
 
 - (void)connection:(NSURLConnection *)connection didReceiveData:(NSData *)data
@@ -135,6 +202,8 @@ expectedResultType:(NSString*)expectedResultType
     if ([self.delegate respondsToSelector:@selector(webServiceRequest:completedWithData:)]) {
         [self.delegate webServiceRequest:self completedWithData:self.receivedData];
     }
+    
+    self.done = YES;
 }
 
 - (void)connection:(NSURLConnection *)connection didReceiveResponse:(NSURLResponse *)response
@@ -143,6 +212,7 @@ expectedResultType:(NSString*)expectedResultType
         NSHTTPURLResponse* httpResponse = (NSHTTPURLResponse*)response;
         self.responseHeaders = [httpResponse allHeaderFields];
     }
+ 
 }
 
 @end
