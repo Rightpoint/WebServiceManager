@@ -161,6 +161,10 @@
                     return;
                 }
             }
+            else
+            {
+                convertedResult = data;
+            }
             
             NSMethodSignature* signature = [request.target methodSignatureForSelector:request.successHandler];
             NSInvocation* invocation = [NSInvocation invocationWithMethodSignature:signature];
