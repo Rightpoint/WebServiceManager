@@ -103,7 +103,7 @@ expectedResultType:(NSString*)expectedResultType
     if(nil == value || nil == headerField)
         return;
     
-    if(nil == self.headers)
+    if(nil == _headers)
         _headers = [NSMutableDictionary dictionaryWithCapacity:1];
     
     [_headers setValue:value forKey:headerField];
@@ -116,6 +116,9 @@ expectedResultType:(NSString*)expectedResultType
 
 -(NSDictionary*) headers
 {
+    if(nil == _headers)
+        return nil;
+
     return  [NSDictionary dictionaryWithDictionary:_headers];
 }
 
