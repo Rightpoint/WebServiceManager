@@ -41,6 +41,7 @@ NSString *const kSuccessHandlerKey = @"SuccessHandler";
 @synthesize urlRequest = _urlRequest;
 @synthesize expectedResultType = _expectedResultType;
 @synthesize responseHeaders = _responseHeaders;
+@synthesize headers = _headers;
 
 @synthesize done = _done;
 @synthesize finished = _finished;
@@ -137,8 +138,19 @@ expectedResultType:(NSString*)expectedResultType
             
         }
         
+        // add the string/string pairs as headers.
+        for (id key in self.headers) {
+            id value = [self.headers objectForKey:key];
+            if ([key isKindOfClass:[NSString class]] && [value isKindOfClass:[NSString class]]) {
+                [self.urlRequest setValue:value forHTTPHeaderField:key];
+            }
+
+        }
+        
         // create and start the connection.
         self.connection = [[NSURLConnection alloc] initWithRequest:self.urlRequest delegate:self startImmediately:YES];
+
+        
         [self didChangeValueForKey:@"isExecuting"];
         
         while (!self.done) {

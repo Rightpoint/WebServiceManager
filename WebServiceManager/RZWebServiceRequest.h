@@ -41,6 +41,10 @@ expectedResultType:(NSString*)expectedResultType
 @property (strong, nonatomic) NSString* httpMethod;
 @property (strong, nonatomic) NSString* expectedResultType;
 @property (strong, nonatomic) NSDictionary* parameters;
+
+// request headers to be sent with the request. Only use dictionaries of string/string key value pairs
+@property (strong, nonatomic) NSDictionary* headers;
+
 @property (unsafe_unretained, nonatomic) id<WebServiceRequestDelegate> delegate;
 @property (strong, nonatomic) NSDictionary* responseHeaders;
 @end

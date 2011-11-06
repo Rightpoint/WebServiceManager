@@ -46,6 +46,7 @@
     
     [super tearDown];
 }
+
 - (void)test01GetLogo
 {
     [self.webServiceManager makeRequestWithKey:@"getLogo" andTarget:self];
@@ -182,6 +183,28 @@
     }
     
 
+}
+
+-(void) test11SendHeaders
+{
+    NSString* header1 = @"123456789";
+    NSString* header2 = @"This is a test header";
+    
+    RZWebServiceRequest* request = [self.webServiceManager makeRequestWithKey:@"echoHeaders" andTarget:self];
+    request.headers = [NSDictionary dictionaryWithObjectsAndKeys:header1,@"header1", 
+                      header2, @"header2", nil];
+    
+    while (!self.apiCallCompleted) {
+        [[NSRunLoop currentRunLoop] runUntilDate:[NSDate dateWithTimeIntervalSinceNow:1]];
+    }       
+    
+   ;
+    
+    
+    STAssertTrue([[self.echoGetResult objectForKey:@"header1"] isEqualToString:header1], @"Headers were not sent successfully");
+
+    STAssertTrue([[self.echoGetResult objectForKey:@"header2"] isEqualToString:header2], @"Headers were not sent successfully");
+    
 }
 
 //

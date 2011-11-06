@@ -67,6 +67,19 @@
 		<key>SuccessHandler</key>
 		<string>echoGetCompleted:</string>
 	</dict>
+	<key>echoHeaders</key>
+	<dict>
+		<key>URL</key>
+		<string>http://localhost:8888/test/echoHeaders.php</string>
+		<key>Method</key>
+		<string>GET</string>
+		<key>ExpectedResultType</key>
+		<string>JSON</string>
+		<key>FailureHandler</key>
+		<string>echoGetFailed:</string>
+		<key>SuccessHandler</key>
+		<string>echoGetCompleted:</string>
+	</dict>
 	<key>echoPOST</key>
 	<dict>
 		<key>URL</key>
