@@ -98,6 +98,27 @@ expectedResultType:(NSString*)expectedResultType
     return self;
 }
 
+-(void) setValue:(NSString*)value forHTTPHeaderField:(NSString*)headerField
+{
+    if(nil == value || nil == headerField)
+        return;
+    
+    if(nil == self.headers)
+        _headers = [NSMutableDictionary dictionaryWithCapacity:1];
+    
+    [_headers setValue:value forKey:headerField];
+}
+
+-(void) setHeaders:(NSDictionary *)headers
+{
+    _headers = [headers mutableCopy];
+}
+
+-(NSDictionary*) headers
+{
+    return  [NSDictionary dictionaryWithDictionary:_headers];
+}
+
 -(void) start
 {
     if (self.isCancelled) {

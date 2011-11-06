@@ -19,6 +19,10 @@ extern NSString* const kSuccessHandlerKey;
 @class RZWebServiceManager;
 
 @interface RZWebServiceRequest : NSOperation <NSURLConnectionDelegate>
+{
+@private
+    NSMutableDictionary* _headers;
+}
 
 -(id) initWithApiInfo:(NSDictionary*)apiInfo target:(id)target;
 -(id) initWithApiInfo:(NSDictionary *)apiInfo target:(id)target parameters:(NSDictionary*)parameters;
@@ -32,6 +36,8 @@ extern NSString* const kSuccessHandlerKey;
 expectedResultType:(NSString*)expectedResultType
     andParameters:(NSDictionary*)parameters;
 
+// set a request header on the outgoing request
+-(void) setValue:(NSString*)value forHTTPHeaderField:(NSString*)headerField;
 
 @property (unsafe_unretained, nonatomic) id target;
 @property (assign, nonatomic) SEL successHandler;

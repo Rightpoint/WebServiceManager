@@ -62,6 +62,7 @@
 		CB588CE91453C6B40052A336 /* RZWebServiceRequest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RZWebServiceRequest.h; sourceTree = "<group>"; };
 		CB588CEA1453C6B40052A336 /* RZWebServiceRequest.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RZWebServiceRequest.m; sourceTree = "<group>"; };
 		CB588CF51453C9730052A336 /* WebServiceManagerCalls.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = WebServiceManagerCalls.plist; sourceTree = "<group>"; };
+		CB83B8B41467461B007BD9AA /* echoHeaders.php */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.php; path = echoHeaders.php; sourceTree = "<group>"; };
 		CB8B78E1145A484F00250394 /* echoPost.php */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.php; path = echoPost.php; sourceTree = "<group>"; };
 		CBFFEB2A1456570000A003D6 /* TestData.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = TestData.plist; sourceTree = "<group>"; };
 		CBFFEB2B1456589100A003D6 /* raizlabs-logo-sheetrock.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "raizlabs-logo-sheetrock.png"; sourceTree = "<group>"; };
@@ -198,8 +199,9 @@
 		CBFFEC1E1457A2A500A003D6 /* Test Web Scripts */ = {
 			isa = PBXGroup;
 			children = (
-				CB8B78E1145A484F00250394 /* echoPost.php */,
+				CB83B8B41467461B007BD9AA /* echoHeaders.php */,
 				CBFFEC1F1457A2DD00A003D6 /* echoGet.php */,
+				CB8B78E1145A484F00250394 /* echoPost.php */,
 			);
 			name = "Test Web Scripts";
 			sourceTree = "<group>";

@@ -189,10 +189,12 @@
 {
     NSString* header1 = @"123456789";
     NSString* header2 = @"This is a test header";
+    NSString* header3 = @"This is another test header";
     
     RZWebServiceRequest* request = [self.webServiceManager makeRequestWithKey:@"echoHeaders" andTarget:self];
     request.headers = [NSDictionary dictionaryWithObjectsAndKeys:header1,@"header1", 
-                      header2, @"header2", nil];
+                      header2, @"header2",
+                      header3, @"header3", nil];
     
     while (!self.apiCallCompleted) {
         [[NSRunLoop currentRunLoop] runUntilDate:[NSDate dateWithTimeIntervalSinceNow:1]];
@@ -205,6 +207,7 @@
 
     STAssertTrue([[self.echoGetResult objectForKey:@"header2"] isEqualToString:header2], @"Headers were not sent successfully");
     
+    STAssertTrue([[self.echoGetResult objectForKey:@"header3"] isEqualToString:header3], @"Headers were not sent successfully");
 }
 
 //
