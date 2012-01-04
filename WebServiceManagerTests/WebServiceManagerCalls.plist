@@ -57,7 +57,7 @@
 	<key>echoGET</key>
 	<dict>
 		<key>URL</key>
-		<string>http://localhost:8888/test/echoGet.php</string>
+		<string>http://localhost:8888/echoGet.php</string>
 		<key>Method</key>
 		<string>GET</string>
 		<key>ExpectedResultType</key>
@@ -70,7 +70,7 @@
 	<key>echoHeaders</key>
 	<dict>
 		<key>URL</key>
-		<string>http://localhost:8888/test/echoHeaders.php</string>
+		<string>http://localhost:8888/echoHeaders.php</string>
 		<key>Method</key>
 		<string>GET</string>
 		<key>ExpectedResultType</key>
@@ -83,7 +83,7 @@
 	<key>echoPOST</key>
 	<dict>
 		<key>URL</key>
-		<string>http://localhost:8888/test/echoPost.php</string>
+		<string>http://localhost:8888/echoPost.php</string>
 		<key>Method</key>
 		<string>POST</string>
 		<key>ExpectedResultType</key>
@@ -96,7 +96,7 @@
 	<key>echoPOSTExtended</key>
 	<dict>
 		<key>URL</key>
-		<string>http://localhost:8888/test/echoPost.php</string>
+		<string>http://localhost:8888/echoPost.php</string>
 		<key>Method</key>
 		<string>POST</string>
 		<key>ExpectedResultType</key>

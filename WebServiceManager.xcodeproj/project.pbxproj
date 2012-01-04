@@ -21,7 +21,6 @@
 		CB588CEF1453C6B40052A336 /* RZWebServiceRequest.m in Sources */ = {isa = PBXBuildFile; fileRef = CB588CEA1453C6B40052A336 /* RZWebServiceRequest.m */; };
 		CB588CF01453C6B40052A336 /* RZWebServiceRequest.m in Sources */ = {isa = PBXBuildFile; fileRef = CB588CEA1453C6B40052A336 /* RZWebServiceRequest.m */; };
 		CB588CF61453C9730052A336 /* WebServiceManagerCalls.plist in Resources */ = {isa = PBXBuildFile; fileRef = CB588CF51453C9730052A336 /* WebServiceManagerCalls.plist */; };
-		CB8B78E2145A484F00250394 /* echoPost.php in Resources */ = {isa = PBXBuildFile; fileRef = CB8B78E1145A484F00250394 /* echoPost.php */; };
 		CBFFEB2C1456589100A003D6 /* raizlabs-logo-sheetrock.png in Resources */ = {isa = PBXBuildFile; fileRef = CBFFEB2B1456589100A003D6 /* raizlabs-logo-sheetrock.png */; };
 		CBFFEB2D145658A900A003D6 /* TestData.plist in Resources */ = {isa = PBXBuildFile; fileRef = CBFFEB2A1456570000A003D6 /* TestData.plist */; };
 		CBFFEB3314565F1E00A003D6 /* CHANGELOG.md in Resources */ = {isa = PBXBuildFile; fileRef = CBFFEB2F14565F1E00A003D6 /* CHANGELOG.md */; };
@@ -33,7 +32,6 @@
 		CBFFEC1A1457936000A003D6 /* RZWebService_NSURL.h in Headers */ = {isa = PBXBuildFile; fileRef = CBFFEC181457936000A003D6 /* RZWebService_NSURL.h */; };
 		CBFFEC1B1457936000A003D6 /* RZWebService_NSURL.m in Sources */ = {isa = PBXBuildFile; fileRef = CBFFEC191457936000A003D6 /* RZWebService_NSURL.m */; };
 		CBFFEC1C1457936000A003D6 /* RZWebService_NSURL.m in Sources */ = {isa = PBXBuildFile; fileRef = CBFFEC191457936000A003D6 /* RZWebService_NSURL.m */; };
-		CBFFEC201457A2DD00A003D6 /* echoGet.php in Resources */ = {isa = PBXBuildFile; fileRef = CBFFEC1F1457A2DD00A003D6 /* echoGet.php */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -62,8 +60,9 @@
 		CB588CE91453C6B40052A336 /* RZWebServiceRequest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RZWebServiceRequest.h; sourceTree = "<group>"; };
 		CB588CEA1453C6B40052A336 /* RZWebServiceRequest.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RZWebServiceRequest.m; sourceTree = "<group>"; };
 		CB588CF51453C9730052A336 /* WebServiceManagerCalls.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = WebServiceManagerCalls.plist; sourceTree = "<group>"; };
-		CB83B8B41467461B007BD9AA /* echoHeaders.php */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.php; path = echoHeaders.php; sourceTree = "<group>"; };
-		CB8B78E1145A484F00250394 /* echoPost.php */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.php; path = echoPost.php; sourceTree = "<group>"; };
+		CBA1FA8614B4E552005A61B0 /* echoGet.php */ = {isa = PBXFileReference; lastKnownFileType = text.script.php; path = echoGet.php; sourceTree = "<group>"; };
+		CBA1FA8714B4E552005A61B0 /* echoHeaders.php */ = {isa = PBXFileReference; lastKnownFileType = text.script.php; path = echoHeaders.php; sourceTree = "<group>"; };
+		CBA1FA8814B4E552005A61B0 /* echoPost.php */ = {isa = PBXFileReference; lastKnownFileType = text.script.php; path = echoPost.php; sourceTree = "<group>"; };
 		CBFFEB2A1456570000A003D6 /* TestData.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = TestData.plist; sourceTree = "<group>"; };
 		CBFFEB2B1456589100A003D6 /* raizlabs-logo-sheetrock.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "raizlabs-logo-sheetrock.png"; sourceTree = "<group>"; };
 		CBFFEB2F14565F1E00A003D6 /* CHANGELOG.md */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = CHANGELOG.md; sourceTree = "<group>"; };
@@ -74,7 +73,6 @@
 		CBFFEB3D14566BDD00A003D6 /* README.md */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = README.md; sourceTree = "<group>"; };
 		CBFFEC181457936000A003D6 /* RZWebService_NSURL.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RZWebService_NSURL.h; sourceTree = "<group>"; };
 		CBFFEC191457936000A003D6 /* RZWebService_NSURL.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RZWebService_NSURL.m; sourceTree = "<group>"; };
-		CBFFEC1F1457A2DD00A003D6 /* echoGet.php */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.php; path = echoGet.php; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -156,7 +154,6 @@
 		CB588CD61453C6730052A336 /* WebServiceManagerTests */ = {
 			isa = PBXGroup;
 			children = (
-				CBFFEC1E1457A2A500A003D6 /* Test Web Scripts */,
 				CBFFEB28145656D500A003D6 /* Test Data */,
 				CB588CDC1453C6730052A336 /* RZWebServiceManagerTests.h */,
 				CB588CDD1453C6730052A336 /* RZWebServiceManagerTests.m */,
@@ -175,9 +172,20 @@
 			name = "Supporting Files";
 			sourceTree = "<group>";
 		};
+		CBA1FA8514B4E552005A61B0 /* testScripts */ = {
+			isa = PBXGroup;
+			children = (
+				CBA1FA8614B4E552005A61B0 /* echoGet.php */,
+				CBA1FA8714B4E552005A61B0 /* echoHeaders.php */,
+				CBA1FA8814B4E552005A61B0 /* echoPost.php */,
+			);
+			path = testScripts;
+			sourceTree = "<group>";
+		};
 		CBFFEB28145656D500A003D6 /* Test Data */ = {
 			isa = PBXGroup;
 			children = (
+				CBA1FA8514B4E552005A61B0 /* testScripts */,
 				CBFFEB2B1456589100A003D6 /* raizlabs-logo-sheetrock.png */,
 				CBFFEB2A1456570000A003D6 /* TestData.plist */,
 				CBFFEB381456662300A003D6 /* TestData.json */,
@@ -194,16 +202,6 @@
 				CBFFEB3214565F1E00A003D6 /* README.md */,
 			);
 			path = JSONKit;
-			sourceTree = "<group>";
-		};
-		CBFFEC1E1457A2A500A003D6 /* Test Web Scripts */ = {
-			isa = PBXGroup;
-			children = (
-				CB83B8B41467461B007BD9AA /* echoHeaders.php */,
-				CBFFEC1F1457A2DD00A003D6 /* echoGet.php */,
-				CB8B78E1145A484F00250394 /* echoPost.php */,
-			);
-			name = "Test Web Scripts";
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -298,8 +296,6 @@
 				CBFFEB3314565F1E00A003D6 /* CHANGELOG.md in Resources */,
 				CBFFEB3714565F1E00A003D6 /* README.md in Resources */,
 				CBFFEB391456662300A003D6 /* TestData.json in Resources */,
-				CBFFEC201457A2DD00A003D6 /* echoGet.php in Resources */,
-				CB8B78E2145A484F00250394 /* echoPost.php in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

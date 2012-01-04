@@ -1,6 +1,6 @@
 //
 //  WebServiceRequest.h
-//  BloomingdalesNYC
+//  WebServiceManager
 //
 //  Created by Craig Spitzkoff on 10/21/11.
 //  Copyright (c) 2011 Raizlabs Corporation. All rights reserved.
@@ -46,7 +46,7 @@ expectedResultType:(NSString*)expectedResultType
 @property (strong, nonatomic) NSURL* url;
 @property (strong, nonatomic) NSString* httpMethod;
 @property (strong, nonatomic) NSString* expectedResultType;
-@property (strong, nonatomic) NSDictionary* parameters;
+@property (strong, nonatomic) NSMutableArray* parameters;
 
 // request headers to be sent with the request. Only use dictionaries of string/string key value pairs
 @property (strong, nonatomic) NSDictionary* headers;

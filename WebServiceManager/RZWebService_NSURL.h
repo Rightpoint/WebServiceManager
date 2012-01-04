@@ -8,12 +8,15 @@
 
 #import <Foundation/Foundation.h>
 
+extern NSString* const kRZURLParameterNameKey;
+extern NSString* const kRZURLParameterValueKey;
+
 @interface NSURL (RZWebService_NSURL)
 
 // generate the URL query string for a list or parameters.
-+(NSString*)URLQueryStringFromParameters:(NSDictionary*)parameters;
++(NSString*)URLQueryStringFromParameters:(NSArray*)parameters;
 
 // return a full url with the parameters query added in.
-- (NSURL *)URLByAddingParameters:(NSDictionary *)parameters;
+- (NSURL *)URLByAddingParameters:(NSArray *)parameters;
 
 @end

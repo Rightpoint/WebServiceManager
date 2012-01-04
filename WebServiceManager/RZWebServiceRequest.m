@@ -1,6 +1,6 @@
 //
 //  WebServiceRequest.m
-//  BloomingdalesNYC
+//  WebServiceManager
 //
 //  Created by Craig Spitzkoff on 10/21/11.
 //  Copyright (c) 2011 Raizlabs Corporation. All rights reserved.
@@ -90,8 +90,16 @@ expectedResultType:(NSString*)expectedResultType
         self.successHandler = successCallback;
         self.failureHandler = failureCallback;
         self.expectedResultType = expectedResultType;
-        self.parameters = parameters;
-        
+
+        // convert the parameters to a sorted array of parameter objects
+        NSArray* sortedKeys = [[parameters allKeys] sortedArrayUsingSelector:@selector(compare:)];
+        self.parameters = [NSMutableArray arrayWithCapacity:sortedKeys.count];
+
+        for (NSString* key in sortedKeys) {
+            NSDictionary* parameter = [NSDictionary dictionaryWithObjectsAndKeys:key, kRZURLParameterNameKey, [parameters objectForKey:key], kRZURLParameterValueKey, nil];
+            [self.parameters addObject:parameter];
+        }
+ 
         self.urlRequest = [[NSMutableURLRequest alloc] initWithURL:self.url];
     }
     
@@ -147,6 +155,7 @@ expectedResultType:(NSString*)expectedResultType
         [self didChangeValueForKey:@"isExecuting"];    
         
         self.urlRequest.HTTPMethod = self.httpMethod;
+        
         
         // if this is a get request and there are parameters, format them as part of the URL, and reset the URL on the request. 
         if(self.parameters && self.parameters.count > 0)

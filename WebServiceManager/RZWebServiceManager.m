@@ -1,6 +1,6 @@
 //
 //  WebServiceManager.m
-//  BloomingdalesNYC
+//  WebServiceManager
 //
 //  Created by Craig Spitzkoff on 10/21/11.
 //  Copyright (c) 2011 Raizlabs Corporation. All rights reserved.
@@ -10,8 +10,6 @@
 #if __IPHONE_OS_VERSION_MIN_REQUIRED < __IPHONE_5_0
 #import "JSONKit.h"
 #endif
-
-//static NSString* const kWebServiceRoot = @"http://bloomingdales.raizlabs.com/api";
 
 @interface RZWebServiceManager()
 
@@ -63,11 +61,22 @@
 
 -(RZWebServiceRequest*) makeRequestWithKey:(NSString*)key andTarget:(id)target andParameters:(NSDictionary*)parameters {
 
+    return [self makeRequestWithKey:key andTarget:target andParameters:parameters enqueue:YES];
+}
+
+-(RZWebServiceRequest*) makeRequestWithKey:(NSString*)key andTarget:(id)target enqueue:(BOOL)enqueue
+{
+    return [self makeRequestWithKey:key andTarget:target andParameters:nil enqueue:enqueue];
+}
+
+-(RZWebServiceRequest*) makeRequestWithKey:(NSString*)key andTarget:(id)target andParameters:(NSDictionary*)parameters enqueue:(BOOL)enqueue
+{
     NSDictionary* apiCall = [self.apiCalls objectForKey:key];
     
     RZWebServiceRequest* request = [[RZWebServiceRequest alloc] initWithApiInfo:apiCall target:target parameters:parameters];
     
-    [self enqueueRequest:request];
+    if (enqueue)
+        [self enqueueRequest:request];
     
     return request;
 }
