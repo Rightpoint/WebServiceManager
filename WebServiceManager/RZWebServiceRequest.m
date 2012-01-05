@@ -42,6 +42,7 @@ NSString *const kSuccessHandlerKey = @"SuccessHandler";
 @synthesize expectedResultType = _expectedResultType;
 @synthesize responseHeaders = _responseHeaders;
 @synthesize headers = _headers;
+@synthesize userInfo = _userInfo;
 
 @synthesize done = _done;
 @synthesize finished = _finished;
