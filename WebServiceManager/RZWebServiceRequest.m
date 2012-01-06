@@ -228,8 +228,8 @@ expectedResultType:(NSString*)expectedResultType
 #pragma mark - NSURLConnectionDelegate
 - (void)connection:(NSURLConnection *)connection didFailWithError:(NSError *)error
 {
-    if([self.target respondsToSelector:@selector(webServiceRequest:failedWithError:)])
-        [self.target webServiceRequest:self failedWithError:error];
+    if([self.delegate respondsToSelector:@selector(webServiceRequest:failedWithError:)])
+        [self.delegate webServiceRequest:self failedWithError:error];
     
     self.done = YES;
 }

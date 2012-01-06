@@ -106,5 +106,18 @@
 		<key>SuccessHandler</key>
 		<string>echoPostCompleted:request:</string>
 	</dict>
+	<key>expectError</key>
+	<dict>
+		<key>URL</key>
+		<string>http://localhost:8888/thisfiledoesnotexist</string>
+		<key>Method</key>
+		<string>GET</string>
+		<key>ExpectedResultType</key>
+		<string>JSON</string>
+		<key>FailureHandler</key>
+		<string>expectError:</string>
+		<key>SuccessHandler</key>
+		<string>expectErrorCompleted:</string>
+	</dict>
 </dict>
 </plist>

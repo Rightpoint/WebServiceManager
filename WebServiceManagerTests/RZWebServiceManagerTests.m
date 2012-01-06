@@ -13,6 +13,7 @@
 @property (nonatomic, strong) NSDictionary* echoGetResult;
 @property (nonatomic, strong) NSDictionary* echoPostResult;
 @property (nonatomic, strong) NSDictionary* responseHeaders;
+@property (nonatomic, strong) NSError* error;
 @end
 
 @implementation RZWebServiceManagerTests
@@ -22,6 +23,7 @@
 @synthesize echoGetResult = _echoGetResult;
 @synthesize echoPostResult = _echoPostResult;
 @synthesize responseHeaders = _responseHeaders;
+@synthesize error = _error;
 
 -(NSString*) bundlePath
 {
@@ -210,6 +212,17 @@
     STAssertTrue([[self.echoGetResult objectForKey:@"header3"] isEqualToString:header3], @"Headers were not sent successfully");
 }
 
+-(void) test12ExpectError
+{
+    [self.webServiceManager makeRequestWithKey:@"expectError" andTarget:self];
+    
+    while (!self.apiCallCompleted) {
+        [[NSRunLoop currentRunLoop] runUntilDate:[NSDate dateWithTimeIntervalSinceNow:1]];
+    }       
+    
+    STAssertNotNil(self.error, @"expectError did not return an error condition");
+}
+
 //
 // Image callbacks. 
 //
@@ -353,4 +366,19 @@
     STAssertTrue(NO, @"echoPost failed with error: %@", error);
     self.apiCallCompleted = YES;
 }
+
+//
+// expectError callbacks
+//
+-(void) expectError:(NSError*)error
+{
+    self.error = error;
+    self.apiCallCompleted = YES;
+}
+
+-(void) expectErrorCompleted:(NSDictionary*)data
+{
+    self.apiCallCompleted = YES;
+}
+  
 @end
