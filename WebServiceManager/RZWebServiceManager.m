@@ -157,6 +157,9 @@
                 
                 
                 if (jsonError) {
+                    NSString* str = [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding];
+                    NSLog(@"Result from server was not valid JSON: %@", str);
+                    
                     [self webServiceRequest:request failedWithError:jsonError];
                     return;
                 }

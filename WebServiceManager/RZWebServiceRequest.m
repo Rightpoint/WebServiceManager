@@ -181,6 +181,11 @@ expectedResultType:(NSString*)expectedResultType
 
         }
         
+        // if the expected type is JSON, we should add a header declaring we accept that type. 
+        if ([[self.expectedResultType uppercaseString] isEqualToString:@"JSON"]) {
+            [self.urlRequest setValue:@"application/json" forHTTPHeaderField:@"Accept"];
+        }
+        
         // create and start the connection.
         self.connection = [[NSURLConnection alloc] initWithRequest:self.urlRequest delegate:self startImmediately:YES];
 

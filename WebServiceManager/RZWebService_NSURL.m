@@ -15,16 +15,21 @@ NSString *const kRZURLParameterValueKey = @"Value";
 
 +(NSString*)URLQueryStringFromParameters:(NSArray*)parameters
 {
+    return [self URLQueryStringFromParameters:parameters encode:YES];
+}
+
++(NSString*)URLQueryStringFromParameters:(NSArray *)parameters encode:(BOOL)encode
+{
     NSMutableString* queryString = [NSMutableString stringWithCapacity:100];
     
     // sort the keys using default string comparison
     for (NSUInteger parameterIdx = 0; parameterIdx < parameters.count; parameterIdx++) {
-
+        
         NSDictionary* parameter = [parameters objectAtIndex:parameterIdx];
         id key = [parameter objectForKey:kRZURLParameterNameKey];
         id value = [parameter objectForKey:kRZURLParameterValueKey];
         
-        if([value isKindOfClass:[NSString class]])
+        if(encode && [value isKindOfClass:[NSString class]])
         {
             value = (__bridge_transfer NSString * )CFURLCreateStringByAddingPercentEscapes(kCFAllocatorDefault, 
                                                                                            (__bridge CFStringRef)[parameter objectForKey:kRZURLParameterValueKey],
@@ -37,11 +42,10 @@ NSString *const kRZURLParameterValueKey = @"Value";
         if (parameterIdx < parameters.count - 1) {
             [queryString appendString:@"&"]; // add separator before next parameter
         }
-    
+        
     }
     
     return queryString;
-
 }
 
 - (NSURL *)URLByAddingParameters:(NSArray *)parameters {
