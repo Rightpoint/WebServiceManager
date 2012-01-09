@@ -228,7 +228,10 @@ expectedResultType:(NSString*)expectedResultType
 
 
 
-
+-(NSData*) data
+{
+    return [[NSData alloc] initWithData:self.receivedData];
+}
 
 #pragma mark - NSURLConnectionDelegate
 - (void)connection:(NSURLConnection *)connection didFailWithError:(NSError *)error

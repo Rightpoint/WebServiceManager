@@ -49,6 +49,9 @@ expectedResultType:(NSString*)expectedResultType
 @property (strong, nonatomic) NSMutableArray* parameters;
 @property (strong, nonatomic) NSDictionary* userInfo;
 
+// data returned by the web service
+@property (strong, readonly) NSData* data;
+
 // request headers to be sent with the request. Only use dictionaries of string/string key value pairs
 @property (strong, nonatomic) NSDictionary* headers;
 
