@@ -117,6 +117,10 @@
         [invocation setTarget:request.target];
         [invocation setSelector:request.failureHandler];
         [invocation setArgument:&error atIndex:2];
+        
+        if (signature.numberOfArguments > 3) 
+            [invocation setArgument:&request atIndex:3];  
+        
         [invocation retainArguments];
         [invocation performSelectorOnMainThread:@selector(invoke) withObject:nil waitUntilDone:NO];
     }
