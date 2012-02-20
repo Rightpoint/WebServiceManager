@@ -45,6 +45,7 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		CB3005AD14C3B95A00B4A5E5 /* postFile.php */ = {isa = PBXFileReference; lastKnownFileType = text.script.php; path = postFile.php; sourceTree = "<group>"; };
 		CB588CBD1453C6730052A336 /* libWebServiceManager.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libWebServiceManager.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		CB588CC01453C6730052A336 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
 		CB588CC41453C6730052A336 /* WebServiceManager-Prefix.pch */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "WebServiceManager-Prefix.pch"; sourceTree = "<group>"; };
@@ -178,6 +179,7 @@
 				CBA1FA8614B4E552005A61B0 /* echoGet.php */,
 				CBA1FA8714B4E552005A61B0 /* echoHeaders.php */,
 				CBA1FA8814B4E552005A61B0 /* echoPost.php */,
+				CB3005AD14C3B95A00B4A5E5 /* postFile.php */,
 			);
 			path = testScripts;
 			sourceTree = "<group>";

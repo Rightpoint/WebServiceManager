@@ -134,7 +134,11 @@
             // try to convert the data to the expected type. 
             id convertedResult = nil;
             
-            if([request.expectedResultType isEqualToString:@"Image"])
+            if ([request.expectedResultType isEqualToString:@"File"]) {
+                NSString* path = [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding];
+                convertedResult = [NSURL fileURLWithPath:path];
+            }
+            else if([request.expectedResultType isEqualToString:@"Image"])
             {
                 convertedResult = [UIImage imageWithData:data];
             }

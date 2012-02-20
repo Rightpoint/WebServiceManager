@@ -49,6 +49,10 @@ expectedResultType:(NSString*)expectedResultType
 @property (strong, nonatomic) NSMutableArray* parameters;
 @property (strong, nonatomic) NSDictionary* userInfo;
 
+// if you'd like to stream to disk, set a target filename where the data
+// can be saved. This will prevent the data from being kept in memory.
+@property (strong, nonatomic) NSURL* targetFileURL;
+
 // data returned by the web service
 @property (strong, readonly) NSData* data;
 

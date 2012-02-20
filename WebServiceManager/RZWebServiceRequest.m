@@ -23,7 +23,13 @@ NSString *const kSuccessHandlerKey = @"SuccessHandler";
 @property (assign, nonatomic) BOOL finished;
 @property (assign, nonatomic) BOOL executing;
 
+// if the user has chosen to stream to a file, a targetFileHandle will be created
+@property (strong, nonatomic) NSFileHandle* targetFileHandle;
+
 -(void) beginOperation;
+
+// report an error to the delegate. 
+-(void) reportError:(NSError*)error;
 
 @end
 
@@ -43,6 +49,8 @@ NSString *const kSuccessHandlerKey = @"SuccessHandler";
 @synthesize responseHeaders = _responseHeaders;
 @synthesize headers = _headers;
 @synthesize userInfo = _userInfo;
+@synthesize targetFileURL = _targetFileURL;
+@synthesize targetFileHandle = _targetFileHandle;
 
 @synthesize done = _done;
 @synthesize finished = _finished;
@@ -226,35 +234,77 @@ expectedResultType:(NSString*)expectedResultType
     [self.connection cancel];
 }
 
-
-
 -(NSData*) data
 {
     return [[NSData alloc] initWithData:self.receivedData];
 }
 
+-(void) reportError:(NSError*)error
+{
+    if([self.delegate respondsToSelector:@selector(webServiceRequest:failedWithError:)])
+        [self.delegate webServiceRequest:self failedWithError:error];    
+}
+
 #pragma mark - NSURLConnectionDelegate
 - (void)connection:(NSURLConnection *)connection didFailWithError:(NSError *)error
 {
-    if([self.delegate respondsToSelector:@selector(webServiceRequest:failedWithError:)])
-        [self.delegate webServiceRequest:self failedWithError:error];
-    
+    [self reportError:error];
+        
     self.done = YES;
 }
 
 - (void)connection:(NSURLConnection *)connection didReceiveData:(NSData *)data
 {
-    if (nil == self.receivedData) {
-        self.receivedData = [[NSMutableData alloc] init];
+    @synchronized(self)
+    {
+        if (self.targetFileURL) {        
+            NSError* error = nil;
+
+            NSString* path = [self.targetFileURL path];
+            [[NSFileManager defaultManager] createFileAtPath:path contents:nil attributes:[NSDictionary dictionaryWithObject:NSFileTypeRegular forKey:NSFileType]];
+                        
+            self.targetFileHandle = [NSFileHandle fileHandleForWritingToURL:self.targetFileURL error:&error];
+            
+            if(nil == self.targetFileHandle)
+            {
+                NSLog(@"Error opening file for streaming: %@", error); 
+
+                [self reportError:error];
+                
+                self.done = YES;
+                [self cancel];
+            
+                return;
+            }
+       
+            [self.targetFileHandle writeData:data];
+        }
+        
+        else if (nil == self.receivedData) {
+            self.receivedData = [[NSMutableData alloc] init];
+        }
+        
+        [self.receivedData appendData:data];
     }
-    
-    [self.receivedData appendData:data];
 }
 
 - (void)connectionDidFinishLoading:(NSURLConnection *)connection
 {    
     if ([self.delegate respondsToSelector:@selector(webServiceRequest:completedWithData:)]) {
-        [self.delegate webServiceRequest:self completedWithData:self.receivedData];
+        
+        if(self.targetFileHandle)
+        {
+            [self.targetFileHandle closeFile];
+            
+            // ensure the expected file type is set to "File"
+            self.expectedResultType = @"File";
+            NSString* path = [self.targetFileURL path];
+            NSData* data = [path dataUsingEncoding:NSUTF8StringEncoding];
+            [self.delegate webServiceRequest:self completedWithData:data];
+        }
+        else {
+            [self.delegate webServiceRequest:self completedWithData:self.receivedData];            
+        }
     }
     
     self.done = YES;

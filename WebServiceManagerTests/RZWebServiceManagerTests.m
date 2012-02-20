@@ -223,15 +223,58 @@
     STAssertNotNil(self.error, @"expectError did not return an error condition");
 }
 
+-(void) test13FileStreamTest
+{
+    RZWebServiceRequest* request = [self.webServiceManager makeRequestWithKey:@"getLogo" andTarget:self enqueue:NO];
+
+    NSString* testFilename = @"testFile.dat";
+    
+    NSURL* documentsDir = [[[NSFileManager defaultManager] URLsForDirectory:NSDocumentDirectory inDomains:NSUserDomainMask] lastObject];
+    NSURL* fileURL = [documentsDir URLByAppendingPathComponent:testFilename];
+
+    // remove any previous file. 
+    [[NSFileManager defaultManager] removeItemAtURL:fileURL error:nil];
+    
+    // make sure the directory exists.
+    [[NSFileManager defaultManager] createDirectoryAtURL:documentsDir withIntermediateDirectories:YES attributes:nil error:nil];
+    
+    request.targetFileURL = fileURL;
+    
+    [self.webServiceManager enqueueRequest:request];
+    
+    while (!self.apiCallCompleted) {
+        [[NSRunLoop currentRunLoop] runUntilDate:[NSDate dateWithTimeIntervalSinceNow:1]];
+    }
+
+}
 //
 // Image callbacks. 
 //
--(void) logoCompleted:(UIImage*)photo
+-(void) logoCompleted:(NSObject*)photo
 {
-    NSLog(@"Recieved photo %lf wide by %lf high", photo.size.width, photo.size.height);
-    self.apiCallCompleted = YES;
-    
-    STAssertNotNil(photo, @"getLogo failed: no image returned");
+    if ([photo isKindOfClass:[UIImage class]]) {
+        
+        UIImage* image = (UIImage*)photo;
+        
+        NSLog(@"Recieved photo %lf wide by %lf high", image.size.width, image.size.height);
+        self.apiCallCompleted = YES;
+        
+        STAssertNotNil(image, @"getLogo failed: no image returned");
+    }
+    else if([photo isKindOfClass:[NSURL class]])
+    {
+        NSURL* url = (NSURL*)photo;
+        NSData* data = [NSData dataWithContentsOfURL:url];
+        UIImage* image = [[UIImage alloc] initWithData:data];
+        
+        // make sure we can optn the file provided by streaming to disk
+        
+        NSLog(@"Recieved photo %lf wide by %lf high", image.size.width, image.size.height);
+        self.apiCallCompleted = YES;
+        
+        STAssertNotNil(image, @"getLogo failed: no image returned");
+    }
+ 
 }
 
 -(void) logoFailed:(NSError*)error

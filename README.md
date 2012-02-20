@@ -24,6 +24,18 @@ I'm glad you asked. Check out the included WebServiceManagerTests project for a 
 4. Create a WebServiceManager object; you'll need to give it the path to the plist file containing your web service information.
 5. Call makeRequestWithKey:(NSString*)key andTarget:(id)target on the WebServiceManager object. "key" refers to the key of the API you defined in the PList. Target is the object that will handle the callbacks from the manager; this object should implement the success and failure cases defined in your plist for this api. 
 
+But I want to use it to download content for which I do not have the URL ahead of time!
+
+1. Create an RZWebServiceRequest object via the initWithURL... initializer. 
+2. Implement the callbacks you declared in the initializer in step 1.
+3. Add the request you created to a RZWebServiceManager by calling enqueueRequest
+
+What about streaming a file to disk? I'm downloading a large amount of data and do not want it all in memory.
+
+1. Create a non-enqueued RZWebServiceRequest object; you can do this with either of the two methods above.
+2. Set a target file path on the request object.
+3. When your success delegate gets called, the data object it is called with will be an NSURL path to the file. 
+
 ### Overrides
 * There aren't may things you can currently override, but as you can see in Test Case 5 (concurrent requests), you have the ability to override the success and failure cases of a request programatically. This of course defeats the purpose of using this framework, and should be avoided. 
 
