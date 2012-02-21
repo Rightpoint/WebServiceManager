@@ -19,6 +19,7 @@ NSString *const kSuccessHandlerKey = @"SuccessHandler";
 
 @property (strong, nonatomic) NSMutableData* receivedData;
 @property (strong, nonatomic) NSURLConnection* connection;
+@property (assign, nonatomic) float responseSize;
 @property (assign, nonatomic) BOOL done;
 @property (assign, nonatomic) BOOL finished;
 @property (assign, nonatomic) BOOL executing;
@@ -51,6 +52,7 @@ NSString *const kSuccessHandlerKey = @"SuccessHandler";
 @synthesize userInfo = _userInfo;
 @synthesize targetFileURL = _targetFileURL;
 @synthesize targetFileHandle = _targetFileHandle;
+@synthesize responseSize = _responseSize;
 
 @synthesize done = _done;
 @synthesize finished = _finished;
@@ -285,6 +287,14 @@ expectedResultType:(NSString*)expectedResultType
         }
         
         [self.receivedData appendData:data];
+        
+        float progress = self.receivedData.length / self.responseSize;
+        
+        if ([self.target respondsToSelector:@selector(setProgress:animated:)]) {
+            [self.target setProgress:progress animated:YES];
+        } else if ([self.target respondsToSelector:@selector(setProgress:)])  {
+            [self.target setProgress:progress];
+        }
     }
 }
 
@@ -315,6 +325,7 @@ expectedResultType:(NSString*)expectedResultType
     if ([response isKindOfClass:[NSHTTPURLResponse class]]) {
         NSHTTPURLResponse* httpResponse = (NSHTTPURLResponse*)response;
         self.responseHeaders = [httpResponse allHeaderFields];
+        self.responseSize = [httpResponse expectedContentLength];
     }
  
 }
