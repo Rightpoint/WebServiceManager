@@ -14,6 +14,9 @@ NSString *const kHTTPMethodKey = @"Method";
 NSString *const kExpectedResultTypeKey = @"ExpectedResultType";
 NSString *const kFailureHandlerKey = @"FailureHandler";
 NSString *const kSuccessHandlerKey = @"SuccessHandler";
+NSString *const kTimeoutKey = @"Timeout";
+
+NSTimeInterval const kDefaultTimeout = 60;
 
 @interface RZWebServiceRequest()
 
@@ -27,10 +30,19 @@ NSString *const kSuccessHandlerKey = @"SuccessHandler";
 // if the user has chosen to stream to a file, a targetFileHandle will be created
 @property (strong, nonatomic) NSFileHandle* targetFileHandle;
 
+// selector used to trigger timeouts. 
+@property (assign, nonatomic) SEL timeoutSelector;
+
 -(void) beginOperation;
 
 // report an error to the delegate. 
 -(void) reportError:(NSError*)error;
+
+// schedule the next timeout interval.
+-(void) scheduleTimeout;
+
+// cancel any scheduled timeout. 
+-(void) cancelTimeout;
 
 @end
 
@@ -53,6 +65,8 @@ NSString *const kSuccessHandlerKey = @"SuccessHandler";
 @synthesize targetFileURL = _targetFileURL;
 @synthesize targetFileHandle = _targetFileHandle;
 @synthesize responseSize = _responseSize;
+@synthesize timeoutInterval = _timeoutInterval;
+@synthesize timeoutSelector = _timeoutSelector;
 
 @synthesize done = _done;
 @synthesize finished = _finished;
@@ -72,6 +86,8 @@ NSString *const kSuccessHandlerKey = @"SuccessHandler";
     NSString* expectedResultType = [apiInfo objectForKey:kExpectedResultTypeKey];
     SEL successCallback = NSSelectorFromString([apiInfo objectForKey:kSuccessHandlerKey]);
     SEL failureCallback = NSSelectorFromString([apiInfo objectForKey:kFailureHandlerKey]);
+    
+    self.timeoutInterval = [[apiInfo objectForKey:kTimeoutKey] doubleValue];
     
     self = [self initWithURL:url
                   httpMethod:httpMethod
@@ -199,6 +215,10 @@ expectedResultType:(NSString*)expectedResultType
         // create and start the connection.
         self.connection = [[NSURLConnection alloc] initWithRequest:self.urlRequest delegate:self startImmediately:YES];
 
+        // setup our timeout callback. 
+        if(self.timeoutInterval <= 0)
+            self.timeoutInterval = kDefaultTimeout;
+        [self scheduleTimeout];
         
         [self didChangeValueForKey:@"isExecuting"];
         
@@ -236,6 +256,35 @@ expectedResultType:(NSString*)expectedResultType
     [self.connection cancel];
 }
 
+-(void) timeout
+{
+    // TODO: flesh out the userInfo dictionary passed to create the error. 
+    NSError* error = [NSError errorWithDomain:NSURLErrorDomain code:NSURLErrorTimedOut userInfo:nil];
+    
+    [self reportError:error];
+    
+    self.done = YES;
+    [self cancel];
+}
+
+
+-(void) cancelTimeout
+{
+    if(nil != self.timeoutSelector)
+        [NSObject cancelPreviousPerformRequestsWithTarget:self selector:self.timeoutSelector object:nil];    
+}
+
+-(void) scheduleTimeout
+{
+    [self cancelTimeout];
+    
+    if (nil == self.timeoutSelector) {
+        self.timeoutSelector =  @selector(timeout);
+    }
+
+    [self performSelector:self.timeoutSelector withObject:nil afterDelay:self.timeoutInterval];   
+}
+
 -(NSData*) data
 {
     return [[NSData alloc] initWithData:self.receivedData];
@@ -243,6 +292,8 @@ expectedResultType:(NSString*)expectedResultType
 
 -(void) reportError:(NSError*)error
 {
+    [self cancelTimeout];
+    
     if([self.delegate respondsToSelector:@selector(webServiceRequest:failedWithError:)])
         [self.delegate webServiceRequest:self failedWithError:error];    
 }
@@ -257,6 +308,9 @@ expectedResultType:(NSString*)expectedResultType
 
 - (void)connection:(NSURLConnection *)connection didReceiveData:(NSData *)data
 {
+    // we received data. reset the timeout. 
+    [self scheduleTimeout];
+    
     @synchronized(self)
     {
         if (self.targetFileURL) {        
@@ -296,10 +350,13 @@ expectedResultType:(NSString*)expectedResultType
             [self.target setProgress:progress];
         }
     }
+    
 }
 
 - (void)connectionDidFinishLoading:(NSURLConnection *)connection
 {    
+    [self cancelTimeout];
+    
     if ([self.delegate respondsToSelector:@selector(webServiceRequest:completedWithData:)]) {
         
         if(self.targetFileHandle)
@@ -322,6 +379,8 @@ expectedResultType:(NSString*)expectedResultType
 
 - (void)connection:(NSURLConnection *)connection didReceiveResponse:(NSURLResponse *)response
 {
+    [self scheduleTimeout];
+    
     if ([response isKindOfClass:[NSHTTPURLResponse class]]) {
         NSHTTPURLResponse* httpResponse = (NSHTTPURLResponse*)response;
         self.responseHeaders = [httpResponse allHeaderFields];

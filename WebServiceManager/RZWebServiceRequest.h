@@ -13,7 +13,9 @@ extern NSString* const kHTTPMethodKey;
 extern NSString* const kExpectedResultTypeKey;
 extern NSString* const kFailureHandlerKey;
 extern NSString* const kSuccessHandlerKey;
+extern NSString* const kTimeoutKey;
 
+extern NSTimeInterval const kDefaultTimeout; 
 
 @protocol WebServiceRequestDelegate;
 @class RZWebServiceManager;
@@ -48,6 +50,9 @@ expectedResultType:(NSString*)expectedResultType
 @property (strong, nonatomic) NSString* expectedResultType;
 @property (strong, nonatomic) NSMutableArray* parameters;
 @property (strong, nonatomic) NSDictionary* userInfo;
+
+// timeout interval
+@property (assign, nonatomic) NSTimeInterval timeoutInterval;
 
 // if you'd like to stream to disk, set a target filename where the data
 // can be saved. This will prevent the data from being kept in memory.
