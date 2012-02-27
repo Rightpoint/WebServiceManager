@@ -13,7 +13,7 @@
 		<key>FailureHandler</key>
 		<string>logoFailed:</string>
 		<key>SuccessHandler</key>
-		<string>logoCompleted:</string>
+		<string>logoCompleted:request:</string>
 	</dict>
 	<key>getContent</key>
 	<dict>

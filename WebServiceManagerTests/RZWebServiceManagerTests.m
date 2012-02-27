@@ -142,7 +142,7 @@
     // sometimes you want to add your own request, without relying on the PList. Create a request, and add it to the queue.
     RZWebServiceRequest* request = [[RZWebServiceRequest alloc] initWithURL:[NSURL URLWithString:@"http://www.raizlabs.com/cms/wp-content/uploads/2011/06/raizlabs-logo-sheetrock.png"]
                                                                                      httpMethod:@"GET"
-                                                                                      andTarget:self successCallback:@selector(logoCompleted:)
+                                                                                      andTarget:self successCallback:@selector(logoCompleted:request:)
                                                                                 failureCallback:@selector(logoFailed:)
                                                                              expectedResultType:@"Image"
                                                                                   andParameters:nil];
@@ -247,10 +247,25 @@
     }
 
 }
+
+-(void) test14HEADRequest
+{
+    RZWebServiceRequest* request = [self.webServiceManager makeRequestWithKey:@"getLogo" andTarget:self enqueue:NO];
+    request.httpMethod = @"HEAD";
+    
+    [self.webServiceManager enqueueRequest:request];
+    
+    while (!self.apiCallCompleted) {
+        [[NSRunLoop currentRunLoop] runUntilDate:[NSDate dateWithTimeIntervalSinceNow:1]];
+    }
+
+    
+}
+
 //
 // Image callbacks. 
 //
--(void) logoCompleted:(NSObject*)photo
+-(void) logoCompleted:(NSObject*)photo request:(RZWebServiceRequest*)request
 {
     if ([photo isKindOfClass:[UIImage class]]) {
         
@@ -273,6 +288,14 @@
         self.apiCallCompleted = YES;
         
         STAssertNotNil(image, @"getLogo failed: no image returned");
+    }
+    else if([request.httpMethod isEqualToString:@"HEAD"])
+    {
+        // only requested headers. Make sure data is empty and we have headers
+        STAssertTrue(request.data.length == 0, @"Content size should be zero since a HEAD request was performed.");
+        STAssertTrue(request.responseHeaders.count != 0, @"Should have received response headers for the HEAD request");
+        
+        self.apiCallCompleted = YES;
     }
  
 }
