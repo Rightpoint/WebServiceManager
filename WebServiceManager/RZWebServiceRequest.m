@@ -21,7 +21,7 @@ NSTimeInterval const kDefaultTimeout = 60;
 @interface RZWebServiceRequest()
 
 @property (strong, nonatomic) NSMutableData* receivedData;
-@property (assign, nonatomic) NSUInteger bytesReceived;
+@property (assign, readwrite) NSUInteger bytesReceived;
 @property (strong, nonatomic) NSURLConnection* connection;
 @property (assign, nonatomic) float responseSize;
 @property (assign, nonatomic) BOOL done;
