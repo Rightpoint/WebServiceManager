@@ -61,6 +61,9 @@ expectedResultType:(NSString*)expectedResultType
 // data returned by the web service
 @property (strong, readonly) NSData* data;
 
+// bytes returned by the web service
+@property (assign, readonly) NSUInteger bytesReceived;
+
 // request headers to be sent with the request. Only use dictionaries of string/string key value pairs
 @property (strong, nonatomic) NSDictionary* headers;
 

@@ -21,6 +21,7 @@ NSTimeInterval const kDefaultTimeout = 60;
 @interface RZWebServiceRequest()
 
 @property (strong, nonatomic) NSMutableData* receivedData;
+@property (assign, nonatomic) NSUInteger bytesReceived;
 @property (strong, nonatomic) NSURLConnection* connection;
 @property (assign, nonatomic) float responseSize;
 @property (assign, nonatomic) BOOL done;
@@ -51,6 +52,7 @@ NSTimeInterval const kDefaultTimeout = 60;
 @synthesize target = _target;
 @synthesize httpMethod = _httpMethod;
 @synthesize receivedData = _receivedData;
+@synthesize bytesReceived = _bytesReceived;
 @synthesize connection = _connection;
 @synthesize url = _url;
 @synthesize delegate  = _delegate;
@@ -177,6 +179,8 @@ expectedResultType:(NSString*)expectedResultType
 {
     
     @autoreleasepool {
+        
+        self.bytesReceived = 0;
         
         _executing = YES;
         [self didChangeValueForKey:@"isExecuting"];    
@@ -313,41 +317,55 @@ expectedResultType:(NSString*)expectedResultType
     
     @synchronized(self)
     {
+        self.bytesReceived += data.length;
+        
         if (self.targetFileURL) {        
             NSError* error = nil;
 
-            NSString* path = [self.targetFileURL path];
-            [[NSFileManager defaultManager] createFileAtPath:path contents:nil attributes:[NSDictionary dictionaryWithObject:NSFileTypeRegular forKey:NSFileType]];
-                        
-            self.targetFileHandle = [NSFileHandle fileHandleForWritingToURL:self.targetFileURL error:&error];
-            
             if(nil == self.targetFileHandle)
             {
-                NSLog(@"Error opening file for streaming: %@", error); 
-
-                [self reportError:error];
                 
-                self.done = YES;
-                [self cancel];
+                NSString* path = [self.targetFileURL path];
+                [[NSFileManager defaultManager] createFileAtPath:path contents:nil attributes:[NSDictionary dictionaryWithObject:NSFileTypeRegular forKey:NSFileType]];
+                
+                self.targetFileHandle = [NSFileHandle fileHandleForWritingToURL:self.targetFileURL error:&error];
+                
+                if(nil == self.targetFileHandle)
+                {
+
+                    NSLog(@"Error opening file for streaming: %@", error); 
+
+                    [self reportError:error];
+                
+                    self.done = YES;
+                    [self cancel];
             
-                return;
+                    return;
+                }
             }
-       
-            [self.targetFileHandle writeData:data];
+            
+           [self.targetFileHandle writeData:data];
         }
         
-        else if (nil == self.receivedData) {
-            self.receivedData = [[NSMutableData alloc] init];
+        else 
+        {
+            
+            if (nil == self.receivedData) 
+                self.receivedData = [[NSMutableData alloc] init];
+               
+            [self.receivedData appendData:data];
         }
         
-        [self.receivedData appendData:data];
-        
-        float progress = self.receivedData.length / self.responseSize;
-        
-        if ([self.target respondsToSelector:@selector(setProgress:animated:)]) {
-            [self.target setProgress:progress animated:YES];
-        } else if ([self.target respondsToSelector:@selector(setProgress:)])  {
-            [self.target setProgress:progress];
+
+        if(self.responseSize > 0)
+        {
+            float progress = self.bytesReceived / self.responseSize;
+            
+            if ([self.target respondsToSelector:@selector(setProgress:animated:)]) {
+                [self.target setProgress:progress animated:YES];
+            } else if ([self.target respondsToSelector:@selector(setProgress:)])  {
+                [self.target setProgress:progress];
+            }
         }
     }
     
