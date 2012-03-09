@@ -46,6 +46,11 @@ expectedResultType:(NSString*)expectedResultType
 @property (assign, nonatomic) SEL failureHandler;
 @property (strong, nonatomic) NSMutableURLRequest* urlRequest;
 @property (strong, nonatomic) NSURL* url;
+
+// this property is filled in if the request gets redirected. This allows
+// clients to determine the final redirected url
+@property (strong, nonatomic, readonly) NSURL* redirectedURL;
+
 @property (strong, nonatomic) NSString* httpMethod;
 @property (strong, nonatomic) NSString* expectedResultType;
 @property (strong, nonatomic) NSMutableArray* parameters;
