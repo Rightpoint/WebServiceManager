@@ -55,6 +55,7 @@ NSTimeInterval const kDefaultTimeout = 60;
 @synthesize bytesReceived = _bytesReceived;
 @synthesize connection = _connection;
 @synthesize url = _url;
+@synthesize redirectedURL = _redirectedURL;
 @synthesize delegate  = _delegate;
 @synthesize successHandler = _successHandler;
 @synthesize failureHandler = _failureHandler;
@@ -407,4 +408,19 @@ expectedResultType:(NSString*)expectedResultType
  
 }
 
+- (NSURLRequest *)connection: (NSURLConnection *)inConnection
+             willSendRequest: (NSURLRequest *)inRequest
+            redirectResponse: (NSURLResponse *)inRedirectResponse;
+{
+    if (inRedirectResponse) {
+        NSMutableURLRequest *r = [inRequest mutableCopy]; // original request
+        [r setURL: [inRequest URL]];
+        
+        _redirectedURL = [inRequest URL];
+        
+        return r;
+    } else {
+        return inRequest;
+    }
+}
 @end
