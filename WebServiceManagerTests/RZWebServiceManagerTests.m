@@ -245,7 +245,6 @@
     while (!self.apiCallCompleted) {
         [[NSRunLoop currentRunLoop] runUntilDate:[NSDate dateWithTimeIntervalSinceNow:1]];
     }
-
 }
 
 -(void) test14HEADRequest
@@ -259,6 +258,15 @@
         [[NSRunLoop currentRunLoop] runUntilDate:[NSDate dateWithTimeIntervalSinceNow:1]];
     }
 
+}
+    
+-(void) test15GetContentWithDynamicPath
+{
+    [self.webServiceManager makeRequestWithFormatKey:@"getContentWithDynamicPath" andTarget:self, @"TestData.json"];
+    
+    while (!self.apiCallCompleted) {
+        [[NSRunLoop currentRunLoop] runUntilDate:[NSDate dateWithTimeIntervalSinceNow:1]];
+    }
     
 }
 

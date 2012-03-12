@@ -81,6 +81,72 @@
     return request;
 }
 
+-(RZWebServiceRequest*) makeRequestWithFormatKey:(NSString*)key andTarget:(id)target, ...
+{
+    va_list args;
+    va_start(args, target);
+    
+    RZWebServiceRequest *request = [self makeRequestWithFormatKey:key andTarget:target andParameters:nil enqueue:YES arguments:args];
+    
+    va_end(args);
+    
+    return request;
+}
+
+-(RZWebServiceRequest*) makeRequestWithFormatKey:(NSString*)key andTarget:(id)target andParameters:(NSDictionary*)parameters, ...
+{
+    va_list args;
+    va_start(args, parameters);
+    
+    RZWebServiceRequest *request = [self makeRequestWithFormatKey:key andTarget:target andParameters:parameters enqueue:YES arguments:args];
+    
+    va_end(args);
+    
+    return request;
+}
+
+-(RZWebServiceRequest*) makeRequestWithFormatKey:(NSString*)key andTarget:(id)target enqueue:(BOOL)enqueue, ...
+{
+    va_list args;
+    va_start(args, enqueue);
+    
+    RZWebServiceRequest *request = [self makeRequestWithFormatKey:key andTarget:target andParameters:nil enqueue:enqueue arguments:args];
+    
+    va_end(args);
+    
+    return request;
+}
+
+-(RZWebServiceRequest*) makeRequestWithFormatKey:(NSString*)key andTarget:(id)target andParameters:(NSDictionary*)parameters enqueue:(BOOL)enqueue, ...
+{
+    va_list args;
+    va_start(args, enqueue);
+    
+    RZWebServiceRequest *request = [self makeRequestWithFormatKey:key andTarget:target andParameters:parameters enqueue:enqueue arguments:args];
+    
+    va_end(args);
+    
+    return request;
+}
+
+-(RZWebServiceRequest*) makeRequestWithFormatKey:(NSString*)key andTarget:(id)target andParameters:(NSDictionary*)parameters enqueue:(BOOL)enqueue arguments:(va_list)args
+{
+    NSDictionary *apiCall = [self.apiCalls objectForKey:key];
+    
+    // Replace URL Format String with completed URL string using passed in args
+    NSMutableDictionary *mutableApiCall = [NSMutableDictionary dictionaryWithDictionary:apiCall];
+    NSString *apiFormatString = [apiCall objectForKey:kURLkey];
+    NSString *apiString = [[NSString alloc] initWithFormat:apiFormatString arguments:args];
+    [mutableApiCall setObject:apiString forKey:kURLkey];
+    
+    RZWebServiceRequest* request = [[RZWebServiceRequest alloc] initWithApiInfo:mutableApiCall target:target parameters:parameters];
+    
+    if (enqueue)
+        [self enqueueRequest:request];
+    
+    return request;
+}
+
 -(void) cancelRequestsForTarget:(id)target
 {
     NSArray* matchingRequests = [[self.requests operations] filteredArrayUsingPredicate:[NSPredicate predicateWithFormat:@"target == %@", target]];     
