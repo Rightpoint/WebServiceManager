@@ -34,6 +34,9 @@ NSTimeInterval const kDefaultTimeout = 60;
 // selector used to trigger timeouts. 
 @property (assign, nonatomic) SEL timeoutSelector;
 
+// over-ride the read only redirectedURL property so we can write to it internally 
+@property (strong, nonatomic) NSURL* redirectedURL;
+
 -(void) beginOperation;
 
 // report an error to the delegate. 
@@ -416,10 +419,11 @@ expectedResultType:(NSString*)expectedResultType
         NSMutableURLRequest *r = [inRequest mutableCopy]; // original request
         [r setURL: [inRequest URL]];
         
-        _redirectedURL = [inRequest URL];
+        self.redirectedURL = [inRequest URL];
         
         return r;
-    } else {
+    } 
+    else {
         return inRequest;
     }
 }
