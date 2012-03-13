@@ -119,5 +119,18 @@
 		<key>SuccessHandler</key>
 		<string>expectErrorCompleted:</string>
 	</dict>
+	<key>getContentWithDynamicPath</key>
+	<dict>
+		<key>URL</key>
+		<string>https://raw.github.com/Raizlabs/WebServiceManager/master/WebServiceManagerTests/%@</string>
+		<key>Method</key>
+		<string>GET</string>
+		<key>ExpectedResultType</key>
+		<string>Text</string>
+		<key>FailureHandler</key>
+		<string>contentFailed:</string>
+		<key>SuccessHandler</key>
+		<string>contentCompleted:</string>
+	</dict>
 </dict>
 </plist>
