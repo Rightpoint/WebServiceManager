@@ -262,7 +262,7 @@
     
 -(void) test15GetContentWithDynamicPath
 {
-    [self.webServiceManager makeRequestWithFormatKey:@"getContentWithDynamicPath" andTarget:self, @"TestData.json"];
+    [self.webServiceManager makeRequestWithTarget:self andFormatKey:@"getContentWithDynamicPath", @"TestData.json"];
     
     while (!self.apiCallCompleted) {
         [[NSRunLoop currentRunLoop] runUntilDate:[NSDate dateWithTimeIntervalSinceNow:1]];

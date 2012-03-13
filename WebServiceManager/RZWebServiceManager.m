@@ -81,55 +81,55 @@
     return request;
 }
 
--(RZWebServiceRequest*) makeRequestWithFormatKey:(NSString*)key andTarget:(id)target, ...
+-(RZWebServiceRequest*) makeRequestWithTarget:(id)target andFormatKey:(NSString*)key, ...
 {
     va_list args;
-    va_start(args, target);
+    va_start(args, key);
     
-    RZWebServiceRequest *request = [self makeRequestWithFormatKey:key andTarget:target andParameters:nil enqueue:YES arguments:args];
+    RZWebServiceRequest *request = [self makeRequestWithTarget:target andParameters:nil enqueue:YES andFormatKey:key arguments:args];
     
     va_end(args);
     
     return request;
 }
 
--(RZWebServiceRequest*) makeRequestWithFormatKey:(NSString*)key andTarget:(id)target andParameters:(NSDictionary*)parameters, ...
+-(RZWebServiceRequest*) makeRequestWithTarget:(id)target andParameters:(NSDictionary*)parameters andFormatKey:(NSString*)key, ...
 {
     va_list args;
-    va_start(args, parameters);
+    va_start(args, key);
     
-    RZWebServiceRequest *request = [self makeRequestWithFormatKey:key andTarget:target andParameters:parameters enqueue:YES arguments:args];
+    RZWebServiceRequest *request = [self makeRequestWithTarget:target andParameters:parameters enqueue:YES andFormatKey:key arguments:args];
     
     va_end(args);
     
     return request;
 }
 
--(RZWebServiceRequest*) makeRequestWithFormatKey:(NSString*)key andTarget:(id)target enqueue:(BOOL)enqueue, ...
+-(RZWebServiceRequest*) makeRequestWithTarget:(id)target enqueue:(BOOL)enqueue andFormatKey:(NSString*)key, ...
 {
     va_list args;
-    va_start(args, enqueue);
+    va_start(args, key);
     
-    RZWebServiceRequest *request = [self makeRequestWithFormatKey:key andTarget:target andParameters:nil enqueue:enqueue arguments:args];
+    RZWebServiceRequest *request = [self makeRequestWithTarget:target andParameters:nil enqueue:enqueue andFormatKey:key arguments:args];
     
     va_end(args);
     
     return request;
 }
 
--(RZWebServiceRequest*) makeRequestWithFormatKey:(NSString*)key andTarget:(id)target andParameters:(NSDictionary*)parameters enqueue:(BOOL)enqueue, ...
+-(RZWebServiceRequest*) makeRequestWithTarget:(id)target andParameters:(NSDictionary*)parameters enqueue:(BOOL)enqueue andFormatKey:(NSString*)key, ...
 {
     va_list args;
-    va_start(args, enqueue);
+    va_start(args, key);
     
-    RZWebServiceRequest *request = [self makeRequestWithFormatKey:key andTarget:target andParameters:parameters enqueue:enqueue arguments:args];
+    RZWebServiceRequest *request = [self makeRequestWithTarget:target andParameters:parameters enqueue:enqueue andFormatKey:key arguments:args];
     
     va_end(args);
     
     return request;
 }
 
--(RZWebServiceRequest*) makeRequestWithFormatKey:(NSString*)key andTarget:(id)target andParameters:(NSDictionary*)parameters enqueue:(BOOL)enqueue arguments:(va_list)args
+-(RZWebServiceRequest*) makeRequestWithTarget:(id)target andParameters:(NSDictionary*)parameters enqueue:(BOOL)enqueue andFormatKey:(NSString*)key arguments:(va_list)args
 {
     NSDictionary *apiCall = [self.apiCalls objectForKey:key];
     
