@@ -21,6 +21,7 @@ NSTimeInterval const kDefaultTimeout = 60;
 @interface RZWebServiceRequest()
 
 @property (strong, nonatomic) NSMutableData* receivedData;
+@property (assign, readwrite) NSUInteger bytesReceived;
 @property (strong, nonatomic) NSURLConnection* connection;
 @property (assign, nonatomic) float responseSize;
 @property (assign, nonatomic) BOOL done;
@@ -32,6 +33,9 @@ NSTimeInterval const kDefaultTimeout = 60;
 
 // selector used to trigger timeouts. 
 @property (assign, nonatomic) SEL timeoutSelector;
+
+// over-ride the read only redirectedURL property so we can write to it internally 
+@property (strong, nonatomic) NSURL* redirectedURL;
 
 -(void) beginOperation;
 
@@ -51,8 +55,10 @@ NSTimeInterval const kDefaultTimeout = 60;
 @synthesize target = _target;
 @synthesize httpMethod = _httpMethod;
 @synthesize receivedData = _receivedData;
+@synthesize bytesReceived = _bytesReceived;
 @synthesize connection = _connection;
 @synthesize url = _url;
+@synthesize redirectedURL = _redirectedURL;
 @synthesize delegate  = _delegate;
 @synthesize successHandler = _successHandler;
 @synthesize failureHandler = _failureHandler;
@@ -177,6 +183,8 @@ expectedResultType:(NSString*)expectedResultType
 {
     
     @autoreleasepool {
+        
+        self.bytesReceived = 0;
         
         _executing = YES;
         [self didChangeValueForKey:@"isExecuting"];    
@@ -324,51 +332,60 @@ expectedResultType:(NSString*)expectedResultType
 
 - (void)connection:(NSURLConnection *)connection didReceiveData:(NSData *)data
 {
-    static float receivedDataLength = 0.0;
     // we received data. reset the timeout. 
     [self scheduleTimeout];
     
     @synchronized(self)
     {
+        self.bytesReceived += data.length;
+        
         if (self.targetFileURL) {        
             NSError* error = nil;
 
-            NSString* path = [self.targetFileURL path];
-            [[NSFileManager defaultManager] createFileAtPath:path contents:nil attributes:[NSDictionary dictionaryWithObject:NSFileTypeRegular forKey:NSFileType]];
-                        
-            self.targetFileHandle = [NSFileHandle fileHandleForWritingToURL:self.targetFileURL error:&error];
-            
             if(nil == self.targetFileHandle)
             {
-                NSLog(@"Error opening file for streaming: %@", error); 
-
-                [self reportError:error];
                 
-                self.done = YES;
-                [self cancel];
+                NSString* path = [self.targetFileURL path];
+                [[NSFileManager defaultManager] createFileAtPath:path contents:nil attributes:[NSDictionary dictionaryWithObject:NSFileTypeRegular forKey:NSFileType]];
+                
+                self.targetFileHandle = [NSFileHandle fileHandleForWritingToURL:self.targetFileURL error:&error];
+                
+                if(nil == self.targetFileHandle)
+                {
+
+                    NSLog(@"Error opening file for streaming: %@", error); 
+
+                    [self reportError:error];
+                
+                    self.done = YES;
+                    [self cancel];
             
-                return;
+                    return;
+                }
             }
-       
-            [self.targetFileHandle writeData:data];
+            
+           [self.targetFileHandle writeData:data];
         }
         
-        else {
-            if (nil == self.receivedData) {
-                self.receivedData = [[NSMutableData alloc] init];
-            }
+        else 
+        {
             
+            if (nil == self.receivedData) 
+                self.receivedData = [[NSMutableData alloc] init];
+               
             [self.receivedData appendData:data];
         }
         
-        receivedDataLength += data.length;
-        
-        float progress = receivedDataLength / self.responseSize;
-        
-        if ([self.target respondsToSelector:@selector(setProgress:animated:)]) {
-            [self.target setProgress:progress animated:YES];
-        } else if ([self.target respondsToSelector:@selector(setProgress:)])  {
-            [self.target setProgress:progress];
+
+        if(self.responseSize > 0)
+        {
+            float progress = self.bytesReceived / self.responseSize;
+            
+            if ([self.target respondsToSelector:@selector(setProgress:animated:)]) {
+                [self.target setProgress:progress animated:YES];
+            } else if ([self.target respondsToSelector:@selector(setProgress:)])  {
+                [self.target setProgress:progress];
+            }
         }
     }
     
@@ -410,4 +427,20 @@ expectedResultType:(NSString*)expectedResultType
  
 }
 
+- (NSURLRequest *)connection: (NSURLConnection *)inConnection
+             willSendRequest: (NSURLRequest *)inRequest
+            redirectResponse: (NSURLResponse *)inRedirectResponse;
+{
+    if (inRedirectResponse) {
+        NSMutableURLRequest *r = [inRequest mutableCopy]; // original request
+        [r setURL: [inRequest URL]];
+        
+        self.redirectedURL = [inRequest URL];
+        
+        return r;
+    } 
+    else {
+        return inRequest;
+    }
+}
 @end

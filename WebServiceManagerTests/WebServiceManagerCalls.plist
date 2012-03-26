@@ -13,7 +13,7 @@
 		<key>FailureHandler</key>
 		<string>logoFailed:</string>
 		<key>SuccessHandler</key>
-		<string>logoCompleted:</string>
+		<string>logoCompleted:request:</string>
 	</dict>
 	<key>getContent</key>
 	<dict>
@@ -118,6 +118,19 @@
 		<string>expectError:</string>
 		<key>SuccessHandler</key>
 		<string>expectErrorCompleted:</string>
+	</dict>
+	<key>getContentWithDynamicPath</key>
+	<dict>
+		<key>URL</key>
+		<string>https://raw.github.com/Raizlabs/WebServiceManager/master/WebServiceManagerTests/%@</string>
+		<key>Method</key>
+		<string>GET</string>
+		<key>ExpectedResultType</key>
+		<string>Text</string>
+		<key>FailureHandler</key>
+		<string>contentFailed:</string>
+		<key>SuccessHandler</key>
+		<string>contentCompleted:</string>
 	</dict>
 </dict>
 </plist>
