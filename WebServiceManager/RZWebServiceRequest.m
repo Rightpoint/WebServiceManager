@@ -254,6 +254,22 @@ expectedResultType:(NSString*)expectedResultType
 {
     [super cancel];
     [self.connection cancel];
+    if (self.targetFileURL && (self.executing || !self.done)) {
+        [self.targetFileHandle closeFile];
+        self.targetFileHandle = nil;
+        NSError* error = nil;
+        NSString* path = [self.targetFileURL path];
+        if ([[NSFileManager defaultManager] fileExistsAtPath:path]) {
+            [[NSFileManager defaultManager] removeItemAtPath:path error:&error];
+            
+            //TODO: Handle error.
+            if (error) {
+                NSLog(@"Error removing %@: %@", path, error);
+            }
+        }
+
+    }
+    
 }
 
 -(void) timeout
@@ -308,6 +324,7 @@ expectedResultType:(NSString*)expectedResultType
 
 - (void)connection:(NSURLConnection *)connection didReceiveData:(NSData *)data
 {
+    static float receivedDataLength = 0.0;
     // we received data. reset the timeout. 
     [self scheduleTimeout];
     
@@ -336,13 +353,17 @@ expectedResultType:(NSString*)expectedResultType
             [self.targetFileHandle writeData:data];
         }
         
-        else if (nil == self.receivedData) {
-            self.receivedData = [[NSMutableData alloc] init];
+        else {
+            if (nil == self.receivedData) {
+                self.receivedData = [[NSMutableData alloc] init];
+            }
+            
+            [self.receivedData appendData:data];
         }
         
-        [self.receivedData appendData:data];
+        receivedDataLength += data.length;
         
-        float progress = self.receivedData.length / self.responseSize;
+        float progress = receivedDataLength / self.responseSize;
         
         if ([self.target respondsToSelector:@selector(setProgress:animated:)]) {
             [self.target setProgress:progress animated:YES];
