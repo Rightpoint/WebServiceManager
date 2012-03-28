@@ -269,8 +269,6 @@ expectedResultType:(NSString*)expectedResultType
         NSString* path = [self.targetFileURL path];
         if ([[NSFileManager defaultManager] fileExistsAtPath:path]) {
             [[NSFileManager defaultManager] removeItemAtPath:path error:&error];
-            NSLog(@"DELETED %@", path);
-            //TODO: Handle error.
             if (error) {
                 NSLog(@"Error removing %@: %@", path, error);
             }

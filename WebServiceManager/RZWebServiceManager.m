@@ -54,6 +54,11 @@
    
 }
 
+-(void) setMaximumConcurrentRequests:(NSInteger)maxRequests
+{
+    self.requests.maxConcurrentOperationCount = maxRequests;
+}
+
 -(RZWebServiceRequest*) makeRequestWithKey:(NSString*)key andTarget:(id)target
 {
     return [self makeRequestWithKey:key andTarget:target andParameters:nil];

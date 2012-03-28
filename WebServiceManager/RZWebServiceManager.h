@@ -40,4 +40,7 @@
 
 -(void) cancelRequestsForTarget:(id)target;
 
+// Allow for multiple requests to execute concurrently.
+-(void) setMaximumConcurrentRequests:(NSInteger)maxRequests;
+
 @end
