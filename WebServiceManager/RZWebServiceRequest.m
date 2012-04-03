@@ -267,7 +267,13 @@ expectedResultType:(NSString*)expectedResultType
         self.targetFileHandle = nil;
         NSError* error = nil;
         NSString* path = [self.targetFileURL path];
-        if ([[NSFileManager defaultManager] fileExistsAtPath:path]) {
+        BOOL isDirectory = YES;
+        
+        NSFileManager* fileManager = [NSFileManager defaultManager];
+        
+        // delete the file, but only if it is not a naming conflict with a directory. Do not 
+        // delete any matching directories.
+        if ([fileManager fileExistsAtPath:path isDirectory:&isDirectory] && !isDirectory) {
             [[NSFileManager defaultManager] removeItemAtPath:path error:&error];
             if (error) {
                 NSLog(@"Error removing %@: %@", path, error);
