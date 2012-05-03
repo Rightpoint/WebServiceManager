@@ -430,8 +430,7 @@ expectedResultType:(NSString*)expectedResultType
         
         if (httpResponse.statusCode >= 400)
         {
-            [self cancelTimeout];
-            [connection cancel];  // stop connecting; no more delegate messages
+            [self cancel];
             
             NSDictionary *errorInfo = [NSDictionary dictionaryWithObject:
                                        [NSString stringWithFormat: NSLocalizedString(@"Server returned status code %d", @""), httpResponse.statusCode]
