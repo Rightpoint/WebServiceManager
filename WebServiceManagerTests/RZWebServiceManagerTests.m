@@ -48,7 +48,7 @@
     
     [super tearDown];
 }
-/*
+
 - (void)test01GetLogo
 {
     [self.webServiceManager makeRequestWithKey:@"getLogo" andTarget:self];
@@ -246,7 +246,6 @@
         [[NSRunLoop currentRunLoop] runUntilDate:[NSDate dateWithTimeIntervalSinceNow:1]];
     }
 }
-*/
 
 -(void) test14FileStreamFailTest
 {
@@ -277,7 +276,6 @@
     STAssertFalse(fileAvailable, @"Failed web request has not been removed from disk");
 }
 
-/*
 -(void) test15HEADRequest
 {
     RZWebServiceRequest* request = [self.webServiceManager makeRequestWithKey:@"getLogo" andTarget:self enqueue:NO];
@@ -300,7 +298,7 @@
     }
     
 }
-*/
+
 //
 // Image callbacks. 
 //
