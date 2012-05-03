@@ -23,11 +23,9 @@
 		CB588CF61453C9730052A336 /* WebServiceManagerCalls.plist in Resources */ = {isa = PBXBuildFile; fileRef = CB588CF51453C9730052A336 /* WebServiceManagerCalls.plist */; };
 		CBFFEB2C1456589100A003D6 /* raizlabs-logo-sheetrock.png in Resources */ = {isa = PBXBuildFile; fileRef = CBFFEB2B1456589100A003D6 /* raizlabs-logo-sheetrock.png */; };
 		CBFFEB2D145658A900A003D6 /* TestData.plist in Resources */ = {isa = PBXBuildFile; fileRef = CBFFEB2A1456570000A003D6 /* TestData.plist */; };
-		CBFFEB3314565F1E00A003D6 /* CHANGELOG.md in Resources */ = {isa = PBXBuildFile; fileRef = CBFFEB2F14565F1E00A003D6 /* CHANGELOG.md */; };
 		CBFFEB3414565F1E00A003D6 /* JSONKit.h in Headers */ = {isa = PBXBuildFile; fileRef = CBFFEB3014565F1E00A003D6 /* JSONKit.h */; };
 		CBFFEB3514565F1E00A003D6 /* JSONKit.m in Sources */ = {isa = PBXBuildFile; fileRef = CBFFEB3114565F1E00A003D6 /* JSONKit.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
 		CBFFEB3614565F1E00A003D6 /* JSONKit.m in Sources */ = {isa = PBXBuildFile; fileRef = CBFFEB3114565F1E00A003D6 /* JSONKit.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
-		CBFFEB3714565F1E00A003D6 /* README.md in Resources */ = {isa = PBXBuildFile; fileRef = CBFFEB3214565F1E00A003D6 /* README.md */; };
 		CBFFEB391456662300A003D6 /* TestData.json in Resources */ = {isa = PBXBuildFile; fileRef = CBFFEB381456662300A003D6 /* TestData.json */; };
 		CBFFEC1A1457936000A003D6 /* RZWebService_NSURL.h in Headers */ = {isa = PBXBuildFile; fileRef = CBFFEC181457936000A003D6 /* RZWebService_NSURL.h */; };
 		CBFFEC1B1457936000A003D6 /* RZWebService_NSURL.m in Sources */ = {isa = PBXBuildFile; fileRef = CBFFEC191457936000A003D6 /* RZWebService_NSURL.m */; };
@@ -66,10 +64,8 @@
 		CBA1FA8814B4E552005A61B0 /* echoPost.php */ = {isa = PBXFileReference; lastKnownFileType = text.script.php; path = echoPost.php; sourceTree = "<group>"; };
 		CBFFEB2A1456570000A003D6 /* TestData.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = TestData.plist; sourceTree = "<group>"; };
 		CBFFEB2B1456589100A003D6 /* raizlabs-logo-sheetrock.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "raizlabs-logo-sheetrock.png"; sourceTree = "<group>"; };
-		CBFFEB2F14565F1E00A003D6 /* CHANGELOG.md */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = CHANGELOG.md; sourceTree = "<group>"; };
 		CBFFEB3014565F1E00A003D6 /* JSONKit.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = JSONKit.h; sourceTree = "<group>"; };
 		CBFFEB3114565F1E00A003D6 /* JSONKit.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = JSONKit.m; sourceTree = "<group>"; };
-		CBFFEB3214565F1E00A003D6 /* README.md */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = README.md; sourceTree = "<group>"; };
 		CBFFEB381456662300A003D6 /* TestData.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = TestData.json; sourceTree = "<group>"; };
 		CBFFEB3D14566BDD00A003D6 /* README.md */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = README.md; sourceTree = "<group>"; };
 		CBFFEC181457936000A003D6 /* RZWebService_NSURL.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RZWebService_NSURL.h; sourceTree = "<group>"; };
@@ -198,10 +194,8 @@
 		CBFFEB2E14565F1E00A003D6 /* JSONKit */ = {
 			isa = PBXGroup;
 			children = (
-				CBFFEB2F14565F1E00A003D6 /* CHANGELOG.md */,
 				CBFFEB3014565F1E00A003D6 /* JSONKit.h */,
 				CBFFEB3114565F1E00A003D6 /* JSONKit.m */,
-				CBFFEB3214565F1E00A003D6 /* README.md */,
 			);
 			path = JSONKit;
 			sourceTree = "<group>";
@@ -295,8 +289,6 @@
 				CB588CDB1453C6730052A336 /* InfoPlist.strings in Resources */,
 				CB588CF61453C9730052A336 /* WebServiceManagerCalls.plist in Resources */,
 				CBFFEB2C1456589100A003D6 /* raizlabs-logo-sheetrock.png in Resources */,
-				CBFFEB3314565F1E00A003D6 /* CHANGELOG.md in Resources */,
-				CBFFEB3714565F1E00A003D6 /* README.md in Resources */,
 				CBFFEB391456662300A003D6 /* TestData.json in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
