@@ -247,7 +247,36 @@
     }
 }
 
--(void) test14HEADRequest
+-(void) test14FileStreamFailTest
+{
+    RZWebServiceRequest* request = [self.webServiceManager makeRequestWithKey:@"expectError" andTarget:self enqueue:NO];
+    
+    NSString* testFilename = @"testFile.dat";
+    
+    NSURL* documentsDir = [[[NSFileManager defaultManager] URLsForDirectory:NSDocumentDirectory inDomains:NSUserDomainMask] lastObject];
+    NSURL* fileURL = [documentsDir URLByAppendingPathComponent:testFilename];
+    
+    // remove any previous file. 
+    [[NSFileManager defaultManager] removeItemAtURL:fileURL error:nil];
+    
+    // make sure the directory exists.
+    [[NSFileManager defaultManager] createDirectoryAtURL:documentsDir withIntermediateDirectories:YES attributes:nil error:nil];
+    
+    request.targetFileURL = fileURL;
+    
+    [self.webServiceManager enqueueRequest:request];
+    
+    while (!self.apiCallCompleted) {
+        [[NSRunLoop currentRunLoop] runUntilDate:[NSDate dateWithTimeIntervalSinceNow:1]];
+    }
+    
+    // make sure there is no test file
+    NSError* error = nil;
+    BOOL fileAvailable = [fileURL checkResourceIsReachableAndReturnError:&error];
+    STAssertFalse(fileAvailable, @"Failed web request has not been removed from disk");
+}
+
+-(void) test15HEADRequest
 {
     RZWebServiceRequest* request = [self.webServiceManager makeRequestWithKey:@"getLogo" andTarget:self enqueue:NO];
     request.httpMethod = @"HEAD";
@@ -260,7 +289,7 @@
 
 }
     
--(void) test15GetContentWithDynamicPath
+-(void) test16GetContentWithDynamicPath
 {
     [self.webServiceManager makeRequestWithTarget:self andFormatKey:@"getContentWithDynamicPath", @"TestData.json"];
     

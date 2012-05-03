@@ -261,6 +261,7 @@ expectedResultType:(NSString*)expectedResultType
 -(void) cancel
 {
     [super cancel];
+    [self cancelTimeout];
     [self.connection cancel];
     if (self.targetFileURL && (self.executing || !self.done)) {
         [self.targetFileHandle closeFile];
@@ -427,6 +428,21 @@ expectedResultType:(NSString*)expectedResultType
         NSHTTPURLResponse* httpResponse = (NSHTTPURLResponse*)response;
         self.responseHeaders = [httpResponse allHeaderFields];
         self.responseSize = [httpResponse expectedContentLength];
+        
+        if (httpResponse.statusCode >= 400)
+        {
+            [self cancel];
+            
+            NSDictionary *errorInfo = [NSDictionary dictionaryWithObject:
+                                       [NSString stringWithFormat: NSLocalizedString(@"Server returned status code %d", @""), httpResponse.statusCode]
+                                                                  forKey:NSLocalizedDescriptionKey];
+            NSError *statusError = [NSError errorWithDomain:@"Error"
+                                                       code:httpResponse.statusCode   
+                                                   userInfo:errorInfo];
+            
+            [self connection:connection didFailWithError:statusError];
+        }
+
     }
  
 }
