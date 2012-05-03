@@ -430,6 +430,7 @@ expectedResultType:(NSString*)expectedResultType
         
         if (httpResponse.statusCode >= 400)
         {
+            [self cancelTimeout];
             [self cancel];
             
             NSDictionary *errorInfo = [NSDictionary dictionaryWithObject:
