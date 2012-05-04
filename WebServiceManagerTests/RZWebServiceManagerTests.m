@@ -299,6 +299,37 @@
     
 }
 
+-(void) test17getContentWithDynamicPathAndHost
+{
+    NSString* apiKey = @"getContentWithDynamicPathAndHost";
+    
+    [self.webServiceManager setHost:@"https://raw.github.com" forApiKey:apiKey];
+
+    [self.webServiceManager makeRequestWithTarget:self andFormatKey:apiKey, @"TestData.json"];
+    
+    while (!self.apiCallCompleted) {
+        [[NSRunLoop currentRunLoop] runUntilDate:[NSDate dateWithTimeIntervalSinceNow:1]];
+    }
+    
+}
+
+-(void) test18getContentWithDynamicPathAndHost2
+{
+    NSString* apiKey = @"getContentWithDynamicPathAndHost";
+    
+    [self.webServiceManager setHost:nil forApiKey:apiKey];
+    [self.webServiceManager setDefaultHost:@"https://raw.github.com"];
+    
+    [self.webServiceManager makeRequestWithTarget:self andFormatKey:apiKey, @"TestData.json"];
+    
+    while (!self.apiCallCompleted) {
+        [[NSRunLoop currentRunLoop] runUntilDate:[NSDate dateWithTimeIntervalSinceNow:1]];
+    }
+    
+}
+
+
+
 //
 // Image callbacks. 
 //

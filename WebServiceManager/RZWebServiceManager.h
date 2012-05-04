@@ -12,9 +12,13 @@
 @interface RZWebServiceManager : NSObject <WebServiceRequestDelegate>
 
 @property (strong, nonatomic) NSDictionary* apiCalls;
+@property (strong, nonatomic) NSString* defaultHost;
 
 -(id) initWithCallsPath:(NSString*)callsPath;
 -(id) initWithCalls:(NSDictionary*)apiCalls;
+
+-(void) setHost:(NSString*)host forApiKeys:(NSArray*)keys;
+-(void) setHost:(NSString*)host forApiKey:(NSString *)key;
 
 // create and automatically enqueue requests
 -(RZWebServiceRequest*) makeRequestWithKey:(NSString*)key andTarget:(id)target;
