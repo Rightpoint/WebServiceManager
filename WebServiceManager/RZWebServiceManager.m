@@ -14,6 +14,9 @@
 @interface RZWebServiceManager()
 
 @property (strong, nonatomic) NSOperationQueue* requests; 
+@property (strong, nonatomic) NSMutableDictionary* apiSpecificHosts;
+
+-(RZWebServiceRequest*) makeRequestWithApi:(NSDictionary*)apiInfo forKey:(NSString*)apiKey andTarget:(id)target andParameters:(NSDictionary*)parameters enqueue:(BOOL)enqueue;
 
 @end
 
@@ -21,6 +24,8 @@
 @implementation RZWebServiceManager
 @synthesize requests = _requests;
 @synthesize apiCalls = _apiCalls;
+@synthesize defaultHost = _defaultHost;
+@synthesize apiSpecificHosts = _apiSpecificHosts;
 
 -(id) initWithCallsPath:(NSString*)callsPath
 {    
@@ -36,6 +41,7 @@
     self = [super init];
     if (self) {
         self.apiCalls = apiCalls;
+        self.apiSpecificHosts = [NSMutableDictionary dictionary];
     }
     
     return self;
@@ -59,6 +65,25 @@
     self.requests.maxConcurrentOperationCount = maxRequests;
 }
 
+-(void) setHost:(NSString*)host forApiKeys:(NSArray*)keys
+{
+    for (NSString* key in keys) {
+        [self setHost:host forApiKey:key];
+    }
+}
+
+-(void) setHost:(NSString*)host forApiKey:(NSString *)key
+{
+    if(nil == host) {
+        [self.apiSpecificHosts removeObjectForKey:key];
+    }
+    else {
+        [self.apiSpecificHosts setValue:host forKey:key];
+    }
+}
+
+
+
 -(RZWebServiceRequest*) makeRequestWithKey:(NSString*)key andTarget:(id)target
 {
     return [self makeRequestWithKey:key andTarget:target andParameters:nil];
@@ -78,12 +103,7 @@
 {
     NSDictionary* apiCall = [self.apiCalls objectForKey:key];
     
-    RZWebServiceRequest* request = [[RZWebServiceRequest alloc] initWithApiInfo:apiCall target:target parameters:parameters];
-    
-    if (enqueue)
-        [self enqueueRequest:request];
-    
-    return request;
+    return [self makeRequestWithApi:apiCall forKey:key andTarget:target andParameters:parameters enqueue:enqueue];
 }
 
 -(RZWebServiceRequest*) makeRequestWithTarget:(id)target andFormatKey:(NSString*)key, ...
@@ -142,15 +162,43 @@
     NSMutableDictionary *mutableApiCall = [NSMutableDictionary dictionaryWithDictionary:apiCall];
     NSString *apiFormatString = [apiCall objectForKey:kURLkey];
     NSString *apiString = [[NSString alloc] initWithFormat:apiFormatString arguments:args];
+    
     [mutableApiCall setObject:apiString forKey:kURLkey];
     
-    RZWebServiceRequest* request = [[RZWebServiceRequest alloc] initWithApiInfo:mutableApiCall target:target parameters:parameters];
+    return [self makeRequestWithApi:mutableApiCall forKey:key andTarget:target andParameters:parameters enqueue:enqueue];
+}
+
+-(RZWebServiceRequest*) makeRequestWithApi:(NSDictionary*)apiInfo forKey:(NSString*)apiKey andTarget:(id)target andParameters:(NSDictionary*)parameters enqueue:(BOOL)enqueue
+{
+    
+    // if there is a default host or a host specific for this API call, and the host has not been specified
+    // we may need to mutate the URL, which should otherwise be fully formed at this point 
+    NSString* apiSpecificHost = [self.apiSpecificHosts valueForKey:apiKey];
+    if(apiSpecificHost || self.defaultHost)
+    {
+        NSString* host = apiSpecificHost ? apiSpecificHost : self.defaultHost;
+        
+        NSString* urlString = [apiInfo objectForKey:kURLkey];
+        NSURL* url = [NSURL URLWithString:urlString];
+        
+        if([url host] == nil)
+        {
+            urlString = [host stringByAppendingString:urlString];
+            NSMutableDictionary* mutableApiInfo = [NSMutableDictionary dictionaryWithDictionary:apiInfo];
+            [mutableApiInfo setValue:urlString forKey:kURLkey];
+            apiInfo = mutableApiInfo;
+        }
+    }
+    
+    RZWebServiceRequest* request = [[RZWebServiceRequest alloc] initWithApiInfo:apiInfo target:target parameters:parameters];
     
     if (enqueue)
         [self enqueueRequest:request];
     
     return request;
+
 }
+
 
 -(void) cancelRequestsForTarget:(id)target
 {
