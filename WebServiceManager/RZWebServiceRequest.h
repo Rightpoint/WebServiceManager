@@ -74,6 +74,9 @@ expectedResultType:(NSString*)expectedResultType
 
 @property (unsafe_unretained, nonatomic) id<WebServiceRequestDelegate> delegate;
 @property (strong, nonatomic) NSDictionary* responseHeaders;
+
+@property (assign, nonatomic) BOOL ignoreCertificateValidity;
+
 @end
 
 

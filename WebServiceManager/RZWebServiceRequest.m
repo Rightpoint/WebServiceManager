@@ -77,6 +77,7 @@ NSTimeInterval const kDefaultTimeout = 60;
 @synthesize done = _done;
 @synthesize finished = _finished;
 @synthesize executing = _executing;
+@synthesize ignoreCertificateValidity = _ignoreCertificateValidity;
 
 -(id) initWithApiInfo:(NSDictionary *)apiInfo target:(id)target
 {
@@ -461,6 +462,59 @@ expectedResultType:(NSString*)expectedResultType
     } 
     else {
         return inRequest;
+    }
+}
+
+- (BOOL)connection:(NSURLConnection *)connection canAuthenticateAgainstProtectionSpace:(NSURLProtectionSpace *)protectionSpace {
+    return [protectionSpace.authenticationMethod isEqualToString:NSURLAuthenticationMethodServerTrust];
+}
+
+- (void)connection:(NSURLConnection *)connection didReceiveAuthenticationChallenge:(NSURLAuthenticationChallenge *)challenge {
+    
+    if(self.ignoreCertificateValidity &&
+       [challenge.protectionSpace.authenticationMethod isEqualToString:NSURLAuthenticationMethodServerTrust])
+    {
+        [challenge.sender useCredential:[NSURLCredential credentialForTrust:challenge.protectionSpace.serverTrust] forAuthenticationChallenge:challenge];
+        
+        [challenge.sender continueWithoutCredentialForAuthenticationChallenge:challenge];
+    }
+    else {
+        
+        /////////////////////////////////////////////////////////////////////////////////////////////////////
+        //
+        // Our default implementation as per the doc's description:
+        //
+        // If the delegate does not implement this method the default implementation is used. 
+        // If a valid credential for the request is provided as part of the URL, or is available
+        // from the NSURLCredentialStorage the [challenge sender] is sent a 
+        // useCredential:forAuthenticationChallenge: with the credential. If the challenge has no credential
+        // or the credentials fail to authorize access, then continueWithoutCredentialForAuthenticationChallenge: 
+        // is sent to [challenge sender] instead.
+        /////////////////////////////////////////////////////////////////////////////////////////////////////
+        
+        NSURLCredential* credential = nil;
+        
+        NSURL* url = connection.currentRequest.URL;
+        NSString* user = [url user];
+        NSString* password = [url password];
+        
+        if(nil != user && nil != password)
+        {
+            credential = [[NSURLCredential alloc] initWithUser:user password:password persistence:NSURLCredentialPersistenceNone];
+        }
+        else {
+            credential = [[NSURLCredentialStorage sharedCredentialStorage] defaultCredentialForProtectionSpace:challenge.protectionSpace];
+        }
+        
+        // if there is now a valid credential use it for authentication. Otherwise, continue without authentication
+        if(nil != credential)
+        {
+            [[challenge sender] useCredential:credential forAuthenticationChallenge:challenge];
+        }
+        else {
+            [challenge.sender continueWithoutCredentialForAuthenticationChallenge:challenge];
+        }
+               
     }
 }
 @end
