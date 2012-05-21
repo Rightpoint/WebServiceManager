@@ -66,6 +66,7 @@ NSTimeInterval const kDefaultTimeout = 60;
 @synthesize urlRequest = _urlRequest;
 @synthesize expectedResultType = _expectedResultType;
 @synthesize responseHeaders = _responseHeaders;
+@synthesize statusCode = _statusCode;
 @synthesize headers = _headers;
 @synthesize userInfo = _userInfo;
 @synthesize targetFileURL = _targetFileURL;
@@ -429,6 +430,7 @@ expectedResultType:(NSString*)expectedResultType
         NSHTTPURLResponse* httpResponse = (NSHTTPURLResponse*)response;
         self.responseHeaders = [httpResponse allHeaderFields];
         self.responseSize = [httpResponse expectedContentLength];
+        self.statusCode = [NSNumber numberWithInt:[httpResponse statusCode]];
         
         if (httpResponse.statusCode >= 400)
         {
