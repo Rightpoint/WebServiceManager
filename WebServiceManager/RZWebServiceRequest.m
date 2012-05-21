@@ -430,7 +430,7 @@ expectedResultType:(NSString*)expectedResultType
         NSHTTPURLResponse* httpResponse = (NSHTTPURLResponse*)response;
         self.responseHeaders = [httpResponse allHeaderFields];
         self.responseSize = [httpResponse expectedContentLength];
-        self.statusCode = [NSNumber numberWithInt:[httpResponse statusCode]];
+        self.statusCode = [httpResponse statusCode];
         
         if (httpResponse.statusCode >= 400)
         {
