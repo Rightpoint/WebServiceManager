@@ -169,10 +169,11 @@ expectedResultType:(NSString*)expectedResultType
 {
     if (self.isCancelled) {
         
-        // If it's already been cancelled, mark the operation as finished.
+        // If it's already been cancelled, mark the operation as finished and don't start the connection.
         [self willChangeValueForKey:@"isFinished"];
         self.finished = YES;
         [self didChangeValueForKey:@"isFinished"];
+        return;
     }
     
     [self willChangeValueForKey:@"isExecuting"];
@@ -232,7 +233,7 @@ expectedResultType:(NSString*)expectedResultType
         
         [self didChangeValueForKey:@"isExecuting"];
         
-        while (!self.done) {
+        while (!self.done && !self.isCancelled) {
             [[NSRunLoop currentRunLoop] runMode:NSDefaultRunLoopMode beforeDate:[NSDate distantFuture]];
         }
         
@@ -284,7 +285,6 @@ expectedResultType:(NSString*)expectedResultType
         }
 
     }
-    
 }
 
 -(void) timeout
