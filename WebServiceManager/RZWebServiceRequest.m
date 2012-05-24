@@ -21,6 +21,7 @@ NSTimeInterval const kDefaultTimeout = 60;
 @interface RZWebServiceRequest()
 
 @property (strong, nonatomic) NSMutableData* receivedData;
+@property (strong, nonatomic) NSTimer* timeoutTimer;
 @property (assign, readwrite) NSUInteger bytesReceived;
 @property (strong, nonatomic) NSURLConnection* connection;
 @property (assign, nonatomic) float responseSize;
@@ -55,6 +56,7 @@ NSTimeInterval const kDefaultTimeout = 60;
 @synthesize target = _target;
 @synthesize httpMethod = _httpMethod;
 @synthesize receivedData = _receivedData;
+@synthesize timeoutTimer = _timeoutTimer;
 @synthesize bytesReceived = _bytesReceived;
 @synthesize connection = _connection;
 @synthesize url = _url;
@@ -285,6 +287,7 @@ expectedResultType:(NSString*)expectedResultType
         }
 
     }
+    self.done = YES;
 }
 
 -(void) timeout
@@ -301,8 +304,10 @@ expectedResultType:(NSString*)expectedResultType
 
 -(void) cancelTimeout
 {
-    if(nil != self.timeoutSelector)
-        [NSObject cancelPreviousPerformRequestsWithTarget:self selector:self.timeoutSelector object:nil];    
+    if(nil != self.timeoutSelector || self.timeoutTimer != nil) {
+        [self.timeoutTimer invalidate];
+        self.timeoutTimer = nil;
+    } 
 }
 
 -(void) scheduleTimeout
@@ -313,7 +318,7 @@ expectedResultType:(NSString*)expectedResultType
         self.timeoutSelector =  @selector(timeout);
     }
 
-    [self performSelector:self.timeoutSelector withObject:nil afterDelay:self.timeoutInterval];   
+    self.timeoutTimer = [NSTimer scheduledTimerWithTimeInterval:self.timeoutInterval target:self selector:self.timeoutSelector userInfo:nil repeats:NO];
 }
 
 -(NSData*) data
