@@ -27,6 +27,15 @@
 @synthesize defaultHost = _defaultHost;
 @synthesize apiSpecificHosts = _apiSpecificHosts;
 
+-(id)init{
+    if (self = [super init]){
+        self.requests = [[NSOperationQueue alloc] init];
+        [self.requests setName:@"RZWebServiceManagerQueue"];
+        [self.requests setMaxConcurrentOperationCount:1];
+    }
+    return self;
+}
+
 -(id) initWithCallsPath:(NSString*)callsPath
 {    
     NSDictionary* calls = [NSDictionary dictionaryWithContentsOfFile:callsPath];
@@ -42,6 +51,10 @@
     if (self) {
         self.apiCalls = apiCalls;
         self.apiSpecificHosts = [NSMutableDictionary dictionary];
+        
+        self.requests = [[NSOperationQueue alloc] init];
+        [self.requests setName:@"RZWebServiceManagerQueue"];
+        [self.requests setMaxConcurrentOperationCount:1];
     }
     
     return self;

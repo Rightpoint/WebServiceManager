@@ -21,9 +21,9 @@ NSTimeInterval const kDefaultTimeout = 60;
 @interface RZWebServiceRequest()
 
 @property (strong, nonatomic) NSMutableData* receivedData;
-@property (strong, nonatomic) NSTimer* timeoutTimer;
 @property (assign, readwrite) NSUInteger bytesReceived;
 @property (strong, nonatomic) NSURLConnection* connection;
+@property (strong, nonatomic) NSThread *connectionThread;
 @property (assign, nonatomic) float responseSize;
 @property (assign, nonatomic) BOOL done;
 @property (assign, nonatomic) BOOL finished;
@@ -48,6 +48,7 @@ NSTimeInterval const kDefaultTimeout = 60;
 
 // cancel any scheduled timeout. 
 -(void) cancelTimeout;
+-(void) cancelTimeoutSelector;
 
 @end
 
@@ -56,9 +57,9 @@ NSTimeInterval const kDefaultTimeout = 60;
 @synthesize target = _target;
 @synthesize httpMethod = _httpMethod;
 @synthesize receivedData = _receivedData;
-@synthesize timeoutTimer = _timeoutTimer;
 @synthesize bytesReceived = _bytesReceived;
 @synthesize connection = _connection;
+@synthesize connectionThread = _connectionThread;
 @synthesize url = _url;
 @synthesize redirectedURL = _redirectedURL;
 @synthesize delegate  = _delegate;
@@ -189,6 +190,9 @@ expectedResultType:(NSString*)expectedResultType
     
     @autoreleasepool {
         
+        // keep track of the current thread
+        self.connectionThread = [NSThread currentThread];
+        
         self.bytesReceived = 0;
         
         _executing = YES;
@@ -269,6 +273,7 @@ expectedResultType:(NSString*)expectedResultType
     [self cancelTimeout];
     [self.connection cancel];
     if (self.targetFileURL && (self.executing || !self.done)) {
+        
         [self.targetFileHandle closeFile];
         self.targetFileHandle = nil;
         NSError* error = nil;
@@ -304,10 +309,14 @@ expectedResultType:(NSString*)expectedResultType
 
 -(void) cancelTimeout
 {
-    if(nil != self.timeoutSelector || self.timeoutTimer != nil) {
-        [self.timeoutTimer invalidate];
-        self.timeoutTimer = nil;
-    } 
+    // if we never assigned the connection thread property, we never will have scheduled a timeout
+    if (self.connectionThread){
+        [self performSelector:@selector(cancelTimeoutSelector) onThread:self.connectionThread withObject:nil waitUntilDone:NO];
+    }
+}
+
+-(void) cancelTimeoutSelector{
+    [NSObject cancelPreviousPerformRequestsWithTarget:self];
 }
 
 -(void) scheduleTimeout
@@ -317,8 +326,8 @@ expectedResultType:(NSString*)expectedResultType
     if (nil == self.timeoutSelector) {
         self.timeoutSelector =  @selector(timeout);
     }
-
-    self.timeoutTimer = [NSTimer scheduledTimerWithTimeInterval:self.timeoutInterval target:self selector:self.timeoutSelector userInfo:nil repeats:NO];
+    
+    [self performSelector:self.timeoutSelector withObject:nil afterDelay:self.timeoutInterval];
 }
 
 -(NSData*) data
