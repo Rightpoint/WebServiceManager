@@ -310,8 +310,10 @@ expectedResultType:(NSString*)expectedResultType
 -(void) cancelTimeout
 {
     // if we never assigned the connection thread property, we never will have scheduled a timeout
-    if (self.connectionThread){
-        [self performSelector:@selector(cancelTimeoutSelector) onThread:self.connectionThread withObject:nil waitUntilDone:NO];
+    @synchronized(self){
+        if (self.connectionThread){
+            [self performSelector:@selector(cancelTimeoutSelector) onThread:self.connectionThread withObject:nil waitUntilDone:NO];
+        }
     }
 }
 
@@ -323,11 +325,13 @@ expectedResultType:(NSString*)expectedResultType
 {
     [self cancelTimeout];
     
-    if (nil == self.timeoutSelector) {
-        self.timeoutSelector =  @selector(timeout);
+    @synchronized(self){
+        if (nil == self.timeoutSelector) {
+            self.timeoutSelector =  @selector(timeout);
+        }
+        
+        [self performSelector:self.timeoutSelector withObject:nil afterDelay:self.timeoutInterval];
     }
-    
-    [self performSelector:self.timeoutSelector withObject:nil afterDelay:self.timeoutInterval];
 }
 
 -(NSData*) data
