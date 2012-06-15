@@ -360,6 +360,8 @@ expectedResultType:(NSString*)expectedResultType
     // we received data. reset the timeout. 
     [self scheduleTimeout];
     
+    if (!data) return;
+    
     @synchronized(self)
     {
         self.bytesReceived += data.length;
@@ -389,7 +391,7 @@ expectedResultType:(NSString*)expectedResultType
                 }
             }
             
-           [self.targetFileHandle writeData:data];
+            [self.targetFileHandle writeData:data];
         }
         
         else 
@@ -419,7 +421,7 @@ expectedResultType:(NSString*)expectedResultType
 - (void)connectionDidFinishLoading:(NSURLConnection *)connection
 {    
     [self cancelTimeout];
-    
+
     if ([self.delegate respondsToSelector:@selector(webServiceRequest:completedWithData:)]) {
         
         if(self.targetFileHandle)
