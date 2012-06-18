@@ -30,6 +30,8 @@
 		CBFFEC1A1457936000A003D6 /* RZWebService_NSURL.h in Headers */ = {isa = PBXBuildFile; fileRef = CBFFEC181457936000A003D6 /* RZWebService_NSURL.h */; };
 		CBFFEC1B1457936000A003D6 /* RZWebService_NSURL.m in Sources */ = {isa = PBXBuildFile; fileRef = CBFFEC191457936000A003D6 /* RZWebService_NSURL.m */; };
 		CBFFEC1C1457936000A003D6 /* RZWebService_NSURL.m in Sources */ = {isa = PBXBuildFile; fileRef = CBFFEC191457936000A003D6 /* RZWebService_NSURL.m */; };
+		FEC9669D158F723B00E90A65 /* RZFileManager.h in Headers */ = {isa = PBXBuildFile; fileRef = FEC9669B158F723B00E90A65 /* RZFileManager.h */; };
+		FEC9669E158F723B00E90A65 /* RZFileManager.m in Sources */ = {isa = PBXBuildFile; fileRef = FEC9669C158F723B00E90A65 /* RZFileManager.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -70,6 +72,8 @@
 		CBFFEB3D14566BDD00A003D6 /* README.md */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = README.md; sourceTree = "<group>"; };
 		CBFFEC181457936000A003D6 /* RZWebService_NSURL.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RZWebService_NSURL.h; sourceTree = "<group>"; };
 		CBFFEC191457936000A003D6 /* RZWebService_NSURL.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RZWebService_NSURL.m; sourceTree = "<group>"; };
+		FEC9669B158F723B00E90A65 /* RZFileManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RZFileManager.h; sourceTree = "<group>"; };
+		FEC9669C158F723B00E90A65 /* RZFileManager.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RZFileManager.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -136,6 +140,8 @@
 				CB588CC31453C6730052A336 /* Supporting Files */,
 				CBFFEC181457936000A003D6 /* RZWebService_NSURL.h */,
 				CBFFEC191457936000A003D6 /* RZWebService_NSURL.m */,
+				FEC9669B158F723B00E90A65 /* RZFileManager.h */,
+				FEC9669C158F723B00E90A65 /* RZFileManager.m */,
 			);
 			path = WebServiceManager;
 			sourceTree = "<group>";
@@ -211,6 +217,7 @@
 				CB588CEE1453C6B40052A336 /* RZWebServiceRequest.h in Headers */,
 				CBFFEB3414565F1E00A003D6 /* JSONKit.h in Headers */,
 				CBFFEC1A1457936000A003D6 /* RZWebService_NSURL.h in Headers */,
+				FEC9669D158F723B00E90A65 /* RZFileManager.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -320,6 +327,7 @@
 				CB588CEF1453C6B40052A336 /* RZWebServiceRequest.m in Sources */,
 				CBFFEB3514565F1E00A003D6 /* JSONKit.m in Sources */,
 				CBFFEC1B1457936000A003D6 /* RZWebService_NSURL.m in Sources */,
+				FEC9669E158F723B00E90A65 /* RZFileManager.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
