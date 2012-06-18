@@ -9,6 +9,7 @@
 #import <Foundation/Foundation.h>
 
 @class RZWebServiceRequest;
+@class RZWebServiceManager;
 
 typedef void (^RZFileManagerDownloadCompletionBlock)(BOOL success, NSURL* downloadedFile, RZWebServiceRequest *request);
 typedef void (^RZFileManagerUploadCompletionBlock)(BOOL success, NSURL* uploadedFile, RZWebServiceRequest *request);
@@ -24,6 +25,9 @@ typedef void (^RZFileManagerUploadCompletionBlock)(BOOL success, NSURL* uploaded
 // Cache Dir URL - Directory will be created if it does not exist and set to not sync/backup
 @property (strong, nonatomic) NSURL *downloadCacheDirectory;
 @property (assign, nonatomic) BOOL shouldCacheDownloads;                        // Turns download caching on/off - Defaults to YES
+
+@property (nonatomic, weak) RZWebServiceManager* webManager;
+
 
 // Shared Instance Method
 + (RZFileManager*)defaultManager;

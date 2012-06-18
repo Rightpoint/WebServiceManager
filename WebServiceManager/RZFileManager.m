@@ -22,9 +22,14 @@
 
 @end
 
+
+NSString * const kCompletionBlockKey = @"completionBlockKey";
+NSString * const kProgressDelegateKey = @"progressDelegateKey";
+
 @implementation RZFileManager
 @synthesize downloadCacheDirectory = _downloadCacheDirectory;
 @synthesize shouldCacheDownloads = _shouldCacheDownloads;
+@synthesize webManager = _webManager;
 
 @synthesize downloadRequests = _downloadRequests;
 @synthesize uploadRequests = _uploadRequests;
@@ -53,12 +58,26 @@
 
 - (RZWebServiceRequest*)downloadFileFromURL:(NSURL*)remoteURL withProgressDelegate:(id<RZFileProgressDelegate>)progressDelegate completion:(RZFileManagerDownloadCompletionBlock)completionBlock
 {
-    [self downloadFileFromURL:remoteURL withProgressDelegate:progressDelegate enqueue:YES completion:completionBlock];
+    return [self downloadFileFromURL:remoteURL withProgressDelegate:progressDelegate enqueue:YES completion:completionBlock];
 }
 
 - (RZWebServiceRequest*)downloadFileFromURL:(NSURL*)remoteURL withProgressDelegate:(id<RZFileProgressDelegate>)progressDelegate enqueue:(BOOL)enqueue completion:(RZFileManagerDownloadCompletionBlock)completionBlock
 {
-    
+    NSURL* filePath = [NSURL URLWithString:(NSString*)[remoteURL.pathComponents lastObject] relativeToURL:[self defaultDownloadCacheURL]];
+    NSLog(@"filePath:%@",filePath);
+    BOOL fileExists = [[NSFileManager defaultManager] fileExistsAtPath:[filePath absoluteString]];
+    if (fileExists) {
+        completionBlock(YES,filePath,nil);
+        return nil;
+    }
+
+    RZWebServiceRequest * request = [self.webManager makeRequestWithURL:remoteURL target:self successCallback:@selector(downloadRequestComplete:request:) failureCallback:@selector(downloadRequestFailed:request:) parameters:nil enqueue:NO];
+    [self putObject:completionBlock inRequest:request atKey:kCompletionBlockKey];
+    request.targetFileURL = filePath;
+    if (enqueue) {
+        [self.webManager enqueueRequest:request];
+    }
+    return request;
 }
 
 - (RZWebServiceRequest*)uploadFile:(NSURL*)localFile toURL:(NSURL*)remoteURL withProgressDelegate:(id<RZFileProgressDelegate>)progressDelegate completion:(RZFileManagerUploadCompletionBlock)completionBlock
@@ -70,6 +89,7 @@
 {
     
 }
+
 
 // Cancel File Transfer Requests
 - (void)cancelDownloadFromURL:(NSURL*)remoteURL
@@ -104,6 +124,15 @@
     return _uploadRequests;
 }
 
+#pragma mark - Download Completion Methods
+
+- (void)downloadRequestComplete:(NSData *)data request:(RZWebServiceRequest *)request {
+    NSLog(@"Request:%@",request);
+}
+- (void)downloadRequestFailed:(NSData *)data request:(RZWebServiceRequest *)request {
+    NSLog(@"Request:%@",request);
+}
+
 #pragma mark - Private Methods
 
 - (NSURL*)defaultDownloadCacheURL
@@ -133,6 +162,23 @@
     NSSet *filteredRequests = [self.uploadRequests filteredSetUsingPredicate:[NSPredicate predicateWithFormat:@"url == %@", uploadURL]];
     
     return [filteredRequests anyObject];
+}
+
+- (void)putObject:(id)obj inRequest:(RZWebServiceRequest*)request atKey:(id)key
+{
+    if(nil != obj && nil != key)
+    {
+        NSMutableDictionary* requestDictionary = nil;
+        if (nil != request.userInfo) {
+            requestDictionary = [NSMutableDictionary dictionaryWithDictionary:request.userInfo];
+        }
+        
+        if(!requestDictionary)
+            requestDictionary = [[NSMutableDictionary alloc] initWithCapacity:1];
+        
+        [requestDictionary setObject:obj forKey:key];
+        request.userInfo = requestDictionary;
+    }
 }
 
 @end
