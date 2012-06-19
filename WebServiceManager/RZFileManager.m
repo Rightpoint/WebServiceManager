@@ -63,22 +63,30 @@ NSString * const kProgressDelegateKey = @"progressDelegateKey";
 
 - (RZWebServiceRequest*)downloadFileFromURL:(NSURL*)remoteURL withProgressDelegate:(id<RZFileProgressDelegate>)progressDelegate enqueue:(BOOL)enqueue completion:(RZFileManagerDownloadCompletionBlock)completionBlock
 {
-    NSURL* filePath = [NSURL URLWithString:(NSString*)[remoteURL.pathComponents lastObject] relativeToURL:[self defaultDownloadCacheURL]];
-    NSLog(@"filePath:%@",filePath);
-    BOOL fileExists = [[NSFileManager defaultManager] fileExistsAtPath:[filePath absoluteString]];
+    NSSet* progressDelegateSet = [[NSSet alloc] initWithObjects:progressDelegate, nil];
+    return [self downloadFileFromURL:remoteURL withProgressDelegateSet:progressDelegateSet enqueue:enqueue completion:completionBlock];
+}
+
+- (RZWebServiceRequest*)downloadFileFromURL:(NSURL*)remoteURL withProgressDelegateSet:(NSSet *)progressDelegate enqueue:(BOOL)enqueue completion:(RZFileManagerDownloadCompletionBlock)completionBlock {
+    
+    [self deleteFileFromCacheWithURL:remoteURL];
+    NSURL* filePath = [NSURL URLWithString:[NSString stringWithFormat:@"%@%@",[self defaultDownloadCacheURL],(NSString*)[remoteURL.pathComponents lastObject]]];
+    BOOL fileExists = [[NSFileManager defaultManager] fileExistsAtPath:[filePath path]];
     if (fileExists) {
         completionBlock(YES,filePath,nil);
         return nil;
     }
-
     RZWebServiceRequest * request = [self.webManager makeRequestWithURL:remoteURL target:self successCallback:@selector(downloadRequestComplete:request:) failureCallback:@selector(downloadRequestFailed:request:) parameters:nil enqueue:NO];
+    [self putObject:progressDelegate inRequest:request atKey:kProgressDelegateKey];
     [self putObject:completionBlock inRequest:request atKey:kCompletionBlockKey];
     request.targetFileURL = filePath;
     if (enqueue) {
         [self.webManager enqueueRequest:request];
     }
     return request;
+
 }
+
 
 - (RZWebServiceRequest*)uploadFile:(NSURL*)localFile toURL:(NSURL*)remoteURL withProgressDelegate:(id<RZFileProgressDelegate>)progressDelegate completion:(RZFileManagerUploadCompletionBlock)completionBlock
 {
@@ -101,6 +109,21 @@ NSString * const kProgressDelegateKey = @"progressDelegateKey";
 {
     
 }
+
+- (void)deleteFileFromCacheWithURL:(NSURL *)remoteURL 
+{
+    NSURL* filePath = [NSURL URLWithString:[NSString stringWithFormat:@"%@%@",[self defaultDownloadCacheURL],(NSString*)[remoteURL.pathComponents lastObject]]];
+    BOOL fileExists = [[NSFileManager defaultManager] fileExistsAtPath:[filePath path]];
+    if (fileExists) {
+        NSError* error = nil;
+        [[NSFileManager defaultManager] removeItemAtPath:[filePath path] error:&error];
+        if (error != nil) {
+            NSLog(@"Error removing file:%@ with error:%@",remoteURL, error);
+        }
+    }
+
+}
+
 
 #pragma mark - Accessor Overrides
 
@@ -127,24 +150,50 @@ NSString * const kProgressDelegateKey = @"progressDelegateKey";
 #pragma mark - Download Completion Methods
 
 - (void)downloadRequestComplete:(NSData *)data request:(RZWebServiceRequest *)request {
-    NSLog(@"Request:%@",request);
+    NSLog(@"\n\nRequest:%@\n TargetFile:%@\n ",request.url, request.targetFileURL);
+    RZFileManagerDownloadCompletionBlock compBlock = [request.userInfo objectForKey:kCompletionBlockKey];
+    compBlock(YES,request.targetFileURL,request);
 }
-- (void)downloadRequestFailed:(NSData *)data request:(RZWebServiceRequest *)request {
-    NSLog(@"Request:%@",request);
+- (void)downloadRequestFailed:(NSError *)error request:(RZWebServiceRequest *)request {
+    NSLog(@"RequestFAILED:%@\n WithError:%@",request.url, error);
+    RZFileManagerDownloadCompletionBlock compBlock = [request.userInfo objectForKey:kCompletionBlockKey];
+    compBlock(NO,request.targetFileURL,request);
+}
+
+- (void)setProgress:(float)progress withRequest:(RZWebServiceRequest *)request {
+    id delegateSet = [request.userInfo objectForKey:kProgressDelegateKey];
+    if ([delegateSet isKindOfClass:[NSSet class]]) {
+        NSSet* delegates = (NSSet *)delegateSet;
+        [delegates enumerateObjectsUsingBlock:^(id obj, BOOL *stop) {
+            id<RZFileProgressDelegate> delegate = (id<RZFileProgressDelegate>)obj;
+            [delegate setProgress:progress];
+        }];
+    }
 }
 
 #pragma mark - Private Methods
 
 - (NSURL*)defaultDownloadCacheURL
 {
-    NSArray* cachePathsArray = NSSearchPathForDirectoriesInDomains(NSCachesDirectory, NSUserDomainMask, YES);
+    NSArray* cachePathsArray = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES);
     NSString* cachePath = [cachePathsArray lastObject];
     
     NSURL *cacheURL = nil;
     
     if (cachePath)
     {
-        cacheURL = [NSURL fileURLWithPath:[cachePath stringByAppendingPathComponent:@"DownloadCache"] isDirectory:YES];
+        NSError* error = nil;
+        cacheURL = [NSURL fileURLWithPath:cachePath isDirectory:YES];
+        NSString* fullPath = [cachePath stringByAppendingPathComponent:@"DownloadCache"];
+        if (![[NSFileManager defaultManager] fileExistsAtPath:fullPath])
+        {
+            [[NSFileManager defaultManager] createDirectoryAtPath:fullPath
+                                      withIntermediateDirectories:NO
+                                                       attributes:nil
+                                                            error:&error];
+            if (error != nil)
+                NSLog(@"Error:%@:",error);
+        }
     }
     
     return cacheURL;

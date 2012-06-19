@@ -214,7 +214,7 @@
 
 -(RZWebServiceRequest*) makeRequestWithURL:(NSURL *)url target:(id)target successCallback:(SEL)success failureCallback:(SEL)failure parameters:(NSDictionary*)parameters enqueue:(BOOL)enqueue 
 {
-    RZWebServiceRequest* request = [[RZWebServiceRequest alloc] initWithURL:url httpMethod:@"GET" andTarget:target successCallback:success failureCallback:failure expectedResultType:@"File" andParameters:parameters];
+    RZWebServiceRequest* request = [[RZWebServiceRequest alloc] initWithURL:url httpMethod:@"GET" andTarget:target successCallback:success failureCallback:failure expectedResultType:@"NONE" andParameters:parameters];
     if (enqueue)
         [self enqueueRequest:request];
     
