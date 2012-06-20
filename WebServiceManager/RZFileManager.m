@@ -68,14 +68,14 @@ NSString * const kProgressDelegateKey = @"progressDelegateKey";
 }
 
 - (RZWebServiceRequest*)downloadFileFromURL:(NSURL*)remoteURL withProgressDelegateSet:(NSSet *)progressDelegate enqueue:(BOOL)enqueue completion:(RZFileManagerDownloadCompletionBlock)completionBlock {
-    
-    [self deleteFileFromCacheWithURL:remoteURL];
-    NSURL* filePath = [NSURL URLWithString:[NSString stringWithFormat:@"%@%@",[self defaultDownloadCacheURL],(NSString*)[remoteURL.pathComponents lastObject]]];
+    //[self deleteFileFromCacheWithURL:remoteURL];
+    NSURL* filePath = [NSURL URLWithString:[NSString stringWithFormat:@"%@%@",[self downloadCacheDirectory],(NSString*)[remoteURL.pathComponents lastObject]]];
     BOOL fileExists = [[NSFileManager defaultManager] fileExistsAtPath:[filePath path]];
     if (fileExists) {
         completionBlock(YES,filePath,nil);
         return nil;
     }
+
     RZWebServiceRequest * request = [self.webManager makeRequestWithURL:remoteURL target:self successCallback:@selector(downloadRequestComplete:request:) failureCallback:@selector(downloadRequestFailed:request:) parameters:nil enqueue:NO];
     [self putObject:progressDelegate inRequest:request atKey:kProgressDelegateKey];
     [self putObject:completionBlock inRequest:request atKey:kCompletionBlockKey];
@@ -83,14 +83,14 @@ NSString * const kProgressDelegateKey = @"progressDelegateKey";
     if (enqueue) {
         [self.webManager enqueueRequest:request];
     }
+    [self.downloadRequests addObject:request];    
     return request;
-
 }
 
 
 - (RZWebServiceRequest*)uploadFile:(NSURL*)localFile toURL:(NSURL*)remoteURL withProgressDelegate:(id<RZFileProgressDelegate>)progressDelegate completion:(RZFileManagerUploadCompletionBlock)completionBlock
 {
-    [self uploadFile:localFile toURL:remoteURL withProgressDelegate:progressDelegate enqueue:YES completion:completionBlock];
+    return [self uploadFile:localFile toURL:remoteURL withProgressDelegate:progressDelegate enqueue:YES completion:completionBlock];
 }
 
 - (RZWebServiceRequest*)uploadFile:(NSURL*)localFile toURL:(NSURL*)remoteURL withProgressDelegate:(id<RZFileProgressDelegate>)progressDelegate enqueue:(BOOL)enqueue completion:(RZFileManagerUploadCompletionBlock)completionBlock
@@ -99,10 +99,25 @@ NSString * const kProgressDelegateKey = @"progressDelegateKey";
 }
 
 
+- (void)removeProgressDelegate:(id<RZFileProgressDelegate>)delegate fromURL:(NSURL *)remoteURL 
+{
+    [self removeObject:delegate fromRequest:[self requestWithDownloadURL:remoteURL] atKey:kProgressDelegateKey];
+}
+
+- (void)removeAllProgressDelegatesFromURL:(NSURL *)remoteURL
+{
+    [self removeKey:kProgressDelegateKey fromRequest:[self requestWithDownloadURL:remoteURL]];
+}
+
+- (void)addProgressDelegate:(id<RZFileProgressDelegate>)delegate toURL:(NSURL *)remoteURL 
+{
+    [self addObject:delegate toRequest:[self requestWithDownloadURL:remoteURL] atKey:kProgressDelegateKey];
+}
+
 // Cancel File Transfer Requests
 - (void)cancelDownloadFromURL:(NSURL*)remoteURL
 {
-    
+    [[self requestWithDownloadURL:remoteURL] cancel];
 }
 
 - (void)cancelUploadToURL:(NSURL*)remoteURL
@@ -112,7 +127,7 @@ NSString * const kProgressDelegateKey = @"progressDelegateKey";
 
 - (void)deleteFileFromCacheWithURL:(NSURL *)remoteURL 
 {
-    NSURL* filePath = [NSURL URLWithString:[NSString stringWithFormat:@"%@%@",[self defaultDownloadCacheURL],(NSString*)[remoteURL.pathComponents lastObject]]];
+    NSURL* filePath = [NSURL URLWithString:[NSString stringWithFormat:@"%@%@",[self downloadCacheDirectory],(NSString*)[remoteURL.pathComponents lastObject]]];
     BOOL fileExists = [[NSFileManager defaultManager] fileExistsAtPath:[filePath path]];
     if (fileExists) {
         NSError* error = nil;
@@ -150,13 +165,13 @@ NSString * const kProgressDelegateKey = @"progressDelegateKey";
 #pragma mark - Download Completion Methods
 
 - (void)downloadRequestComplete:(NSData *)data request:(RZWebServiceRequest *)request {
-    NSLog(@"\n\nRequest:%@\n TargetFile:%@\n ",request.url, request.targetFileURL);
     RZFileManagerDownloadCompletionBlock compBlock = [request.userInfo objectForKey:kCompletionBlockKey];
+    [[self downloadRequests] removeObject:request];
     compBlock(YES,request.targetFileURL,request);
 }
 - (void)downloadRequestFailed:(NSError *)error request:(RZWebServiceRequest *)request {
-    NSLog(@"RequestFAILED:%@\n WithError:%@",request.url, error);
     RZFileManagerDownloadCompletionBlock compBlock = [request.userInfo objectForKey:kCompletionBlockKey];
+    [[self downloadRequests] removeObject:request];
     compBlock(NO,request.targetFileURL,request);
 }
 
@@ -175,7 +190,7 @@ NSString * const kProgressDelegateKey = @"progressDelegateKey";
 
 - (NSURL*)defaultDownloadCacheURL
 {
-    NSArray* cachePathsArray = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES);
+    NSArray* cachePathsArray = NSSearchPathForDirectoriesInDomains(NSCachesDirectory, NSUserDomainMask, YES);
     NSString* cachePath = [cachePathsArray lastObject];
     
     NSURL *cacheURL = nil;
@@ -198,6 +213,31 @@ NSString * const kProgressDelegateKey = @"progressDelegateKey";
     
     return cacheURL;
 }
+- (void)changeDefaultCacheDirectoryToDownloads {
+    NSArray* cachePathsArray = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES);
+    NSString* cachePath = [cachePathsArray lastObject];
+    
+    NSURL *cacheURL = nil;
+    
+    if (cachePath)
+    {
+        NSError* error = nil;
+        cacheURL = [NSURL fileURLWithPath:cachePath isDirectory:YES];
+        NSString* fullPath = [cachePath stringByAppendingPathComponent:@"DownloadCache"];
+        if (![[NSFileManager defaultManager] fileExistsAtPath:fullPath])
+        {
+            [[NSFileManager defaultManager] createDirectoryAtPath:fullPath
+                                      withIntermediateDirectories:NO
+                                                       attributes:nil
+                                                            error:&error];
+            if (error != nil)
+                NSLog(@"Error:%@:",error);
+        }
+    }
+    
+    self.downloadCacheDirectory =  cacheURL;
+
+}
 
 - (RZWebServiceRequest*)requestWithDownloadURL:(NSURL*)downloadURL
 {
@@ -213,6 +253,7 @@ NSString * const kProgressDelegateKey = @"progressDelegateKey";
     return [filteredRequests anyObject];
 }
 
+#pragma mark - Request Modification Helper functions
 - (void)putObject:(id)obj inRequest:(RZWebServiceRequest*)request atKey:(id)key
 {
     if(nil != obj && nil != key)
@@ -226,6 +267,70 @@ NSString * const kProgressDelegateKey = @"progressDelegateKey";
             requestDictionary = [[NSMutableDictionary alloc] initWithCapacity:1];
         
         [requestDictionary setObject:obj forKey:key];
+        request.userInfo = requestDictionary;
+    }
+}
+
+- (void)addObject:(id)obj toRequest:(RZWebServiceRequest *)request atKey:(id)key
+{
+    if(nil != obj && nil != key)
+    {
+        NSMutableDictionary* requestDictionary = nil;
+        if (nil != request.userInfo) {
+            requestDictionary = [NSMutableDictionary dictionaryWithDictionary:request.userInfo];
+        }
+        
+        if(!requestDictionary)
+            requestDictionary = [[NSMutableDictionary alloc] initWithCapacity:1];
+        
+        NSMutableSet* userInfoSet = nil;
+        if (nil != [requestDictionary objectForKey:key]) {
+            userInfoSet = [NSMutableSet setWithSet:[requestDictionary objectForKey:key]];
+        }
+        
+        if (!userInfoSet)
+            userInfoSet = [[NSMutableSet alloc] initWithCapacity:1];
+        
+        [userInfoSet addObject:obj];
+        
+        [requestDictionary setObject:userInfoSet forKey:key];
+
+        request.userInfo = requestDictionary;
+    }
+
+}
+
+- (void)removeObject:(id)obj fromRequest:(RZWebServiceRequest*)request atKey:(id)key
+{
+    if(nil != obj && nil != key)
+    {
+        NSMutableDictionary* requestDictionary = nil;
+        if (nil != request.userInfo) {
+            requestDictionary = [NSMutableDictionary dictionaryWithDictionary:request.userInfo];
+        }
+        
+        if(!requestDictionary)
+            return;
+        
+        NSMutableSet * userInfoSet = [NSMutableSet setWithSet:(NSSet *)[requestDictionary objectForKey:key]];
+        [userInfoSet removeObject:obj];
+        [requestDictionary setObject:userInfoSet forKey:key];
+        request.userInfo = requestDictionary;
+    }
+}
+- (void)removeKey:(id)key fromRequest:(RZWebServiceRequest*)request
+{
+    if(nil != key)
+    {
+        NSMutableDictionary* requestDictionary = nil;
+        if (nil != request.userInfo) {
+            requestDictionary = [NSMutableDictionary dictionaryWithDictionary:request.userInfo];
+        }
+        
+        if(!requestDictionary)
+            return;
+        
+        [requestDictionary removeObjectForKey:key];
         request.userInfo = requestDictionary;
     }
 }

@@ -39,10 +39,17 @@ typedef void (^RZFileManagerUploadCompletionBlock)(BOOL success, NSURL* uploaded
 - (RZWebServiceRequest*)uploadFile:(NSURL*)localFile toURL:(NSURL*)remoteURL withProgressDelegate:(id<RZFileProgressDelegate>)progressDelegate completion:(RZFileManagerUploadCompletionBlock)completionBlock;
 - (RZWebServiceRequest*)uploadFile:(NSURL*)localFile toURL:(NSURL*)remoteURL withProgressDelegate:(id<RZFileProgressDelegate>)progressDelegate enqueue:(BOOL)enqueue completion:(RZFileManagerUploadCompletionBlock)completionBlock;
 
+//ProgressDelegateMethods
+- (void)removeProgressDelegate:(id<RZFileProgressDelegate>)delegate fromURL:(NSURL *)remoteURL;
+- (void)removeAllProgressDelegatesFromURL:(NSURL *)remoteURL;
+
+- (void)addProgressDelegate:(id<RZFileProgressDelegate>)delegate toURL:(NSURL *)remoteURL;
+
+
 // Cancel File Transfer Requests
 - (void)cancelDownloadFromURL:(NSURL*)remoteURL;
 - (void)cancelUploadToURL:(NSURL*)remoteURL;
 
 - (void)setProgress:(float)progress withRequest:(RZWebServiceRequest *)request;
-
+- (void)changeDefaultCacheDirectoryToDownloads;
 @end
