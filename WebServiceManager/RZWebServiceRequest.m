@@ -204,7 +204,7 @@ expectedResultType:(NSString*)expectedResultType
         // if this is a get request and there are parameters, format them as part of the URL, and reset the URL on the request. 
         if(self.parameters && self.parameters.count > 0)
         {
-            if ([self.httpMethod isEqualToString:@"GET"]) {
+            if ([self.httpMethod isEqualToString:@"GET"] || [self.httpMethod isEqualToString:@"PUT"]) {
                 self.urlRequest.URL = [self.url URLByAddingParameters:self.parameters];
             }
             else if([self.httpMethod isEqualToString:@"POST"])
