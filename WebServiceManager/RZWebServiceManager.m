@@ -282,6 +282,12 @@
             {
                 NSError* jsonError = nil;
                 
+                //If data is nil we cant parse it as JSON or we get a crash
+                if (data == nil) {
+                    NSError* requestError = [NSError errorWithDomain:@"No data returned from server" code:0 userInfo:[NSDictionary dictionaryWithObject:request forKey:@"Request"]];
+                    [self webServiceRequest:request failedWithError:requestError];
+                    return;
+                }
                 
                 //
                 // if we're supporting anything earlier than 5.0, use JSONKit. 
