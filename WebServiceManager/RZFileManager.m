@@ -67,26 +67,44 @@ NSString * const kProgressDelegateKey = @"progressDelegateKey";
     return [self downloadFileFromURL:remoteURL withProgressDelegateSet:progressDelegateSet enqueue:enqueue completion:completionBlock];
 }
 
+- (RZWebServiceRequest*)downloadFileFromURL:(NSURL*)remoteURL withProgressDelegate:(id<RZFileProgressDelegate>)progressDelegate cacheName:(NSString *)name enqueue:(BOOL)enqueue completion:(RZFileManagerDownloadCompletionBlock)completionBlock 
+{
+    NSSet* progressDelegateSet = [[NSSet alloc] initWithObjects:progressDelegate, nil];
+    return [self downloadFileFromURL:remoteURL withProgressDelegateSet:progressDelegateSet cacheName:name enqueue:enqueue completion:completionBlock];
+}
+
 - (RZWebServiceRequest*)downloadFileFromURL:(NSURL*)remoteURL withProgressDelegateSet:(NSSet *)progressDelegate enqueue:(BOOL)enqueue completion:(RZFileManagerDownloadCompletionBlock)completionBlock {
-    //[self deleteFileFromCacheWithURL:remoteURL];
-    NSURL* filePath = [NSURL URLWithString:[NSString stringWithFormat:@"%@%@",[self downloadCacheDirectory],(NSString*)[remoteURL.pathComponents lastObject]]];
-    BOOL fileExists = [[NSFileManager defaultManager] fileExistsAtPath:[filePath path]];
+    return [self downloadFileFromURL:remoteURL withProgressDelegateSet:progressDelegate cacheName:nil enqueue:enqueue completion:completionBlock];
+}
+
+- (RZWebServiceRequest*)downloadFileFromURL:(NSURL*)remoteURL withProgressDelegateSet:(NSSet *)progressDelegate cacheName:(NSString *)name enqueue:(BOOL)enqueue completion:(RZFileManagerDownloadCompletionBlock)completionBlock
+{
+    NSString* cacheName = (NSString*)[remoteURL.pathComponents lastObject];
+    if (name != nil) {
+        NSString* fileFormat = [[(NSString *)[remoteURL.pathComponents lastObject] componentsSeparatedByString:@"."] lastObject];
+        if ([name rangeOfString:[NSString stringWithFormat:@".%@",fileFormat]].location == NSNotFound) {
+            cacheName = [NSString stringWithFormat:@"%@.%@",name,fileFormat];
+        } else {
+            cacheName = name;
+        }
+    }
+    NSURL* cachePath = [NSURL URLWithString:[NSString stringWithFormat:@"%@%@",[self downloadCacheDirectory],cacheName]];
+    BOOL fileExists = [[NSFileManager defaultManager] fileExistsAtPath:[cachePath path]];
     if (fileExists) {
-        completionBlock(YES,filePath,nil);
+        completionBlock(YES,cachePath,nil);
         return nil;
     }
-
+    
     RZWebServiceRequest * request = [self.webManager makeRequestWithURL:remoteURL target:self successCallback:@selector(downloadRequestComplete:request:) failureCallback:@selector(downloadRequestFailed:request:) parameters:nil enqueue:NO];
     [self putObject:progressDelegate inRequest:request atKey:kProgressDelegateKey];
     [self putObject:completionBlock inRequest:request atKey:kCompletionBlockKey];
-    request.targetFileURL = filePath;
+    request.targetFileURL = cachePath;
     if (enqueue) {
         [self.webManager enqueueRequest:request];
     }
     [self.downloadRequests addObject:request];    
     return request;
 }
-
 
 - (RZWebServiceRequest*)uploadFile:(NSURL*)localFile toURL:(NSURL*)remoteURL withProgressDelegate:(id<RZFileProgressDelegate>)progressDelegate completion:(RZFileManagerUploadCompletionBlock)completionBlock
 {
@@ -125,6 +143,19 @@ NSString * const kProgressDelegateKey = @"progressDelegateKey";
     
 }
 
+
+
+- (void)deleteFileFromCacheWithName:(NSString *)name ofType:(NSString *)extension 
+{
+    [self deleteFileFromCacheWithName:[NSString stringWithFormat:@"%@.%@",name,extension]];
+}
+
+- (void)deleteFileFromCacheWithName:(NSString *)name 
+{
+    NSURL* filePath = [NSURL URLWithString:[NSString stringWithFormat:@"%@%@",[self downloadCacheDirectory],name]];
+    [self deleteFileFromCacheWithURL:filePath];
+}
+
 - (void)deleteFileFromCacheWithURL:(NSURL *)remoteURL 
 {
     NSURL* filePath = [NSURL URLWithString:[NSString stringWithFormat:@"%@%@",[self downloadCacheDirectory],(NSString*)[remoteURL.pathComponents lastObject]]];
@@ -136,9 +167,8 @@ NSString * const kProgressDelegateKey = @"progressDelegateKey";
             NSLog(@"Error removing file:%@ with error:%@",remoteURL, error);
         }
     }
-
+    
 }
-
 
 #pragma mark - Accessor Overrides
 
@@ -230,8 +260,9 @@ NSString * const kProgressDelegateKey = @"progressDelegateKey";
                                       withIntermediateDirectories:NO
                                                        attributes:nil
                                                             error:&error];
-            if (error != nil)
+            if (error != nil) {
                 NSLog(@"Error:%@:",error);
+            }
         }
     }
     
@@ -254,6 +285,7 @@ NSString * const kProgressDelegateKey = @"progressDelegateKey";
 }
 
 #pragma mark - Request Modification Helper functions
+
 - (void)putObject:(id)obj inRequest:(RZWebServiceRequest*)request atKey:(id)key
 {
     if(nil != obj && nil != key)

@@ -34,7 +34,9 @@ typedef void (^RZFileManagerUploadCompletionBlock)(BOOL success, NSURL* uploaded
 
 - (RZWebServiceRequest*)downloadFileFromURL:(NSURL*)remoteURL withProgressDelegate:(id<RZFileProgressDelegate>)progressDelegate completion:(RZFileManagerDownloadCompletionBlock)completionBlock;
 - (RZWebServiceRequest*)downloadFileFromURL:(NSURL*)remoteURL withProgressDelegate:(id<RZFileProgressDelegate>)progressDelegate enqueue:(BOOL)enqueue completion:(RZFileManagerDownloadCompletionBlock)completionBlock;
+- (RZWebServiceRequest*)downloadFileFromURL:(NSURL*)remoteURL withProgressDelegate:(id<RZFileProgressDelegate>)progressDelegate cacheName:(NSString *)name enqueue:(BOOL)enqueue completion:(RZFileManagerDownloadCompletionBlock)completionBlock;
 - (RZWebServiceRequest*)downloadFileFromURL:(NSURL*)remoteURL withProgressDelegateSet:(NSSet *)progressDelegate enqueue:(BOOL)enqueue completion:(RZFileManagerDownloadCompletionBlock)completionBlock;
+- (RZWebServiceRequest*)downloadFileFromURL:(NSURL*)remoteURL withProgressDelegateSet:(NSSet *)progressDelegate cacheName:(NSString *)name enqueue:(BOOL)enqueue completion:(RZFileManagerDownloadCompletionBlock)completionBlock;
 
 - (RZWebServiceRequest*)uploadFile:(NSURL*)localFile toURL:(NSURL*)remoteURL withProgressDelegate:(id<RZFileProgressDelegate>)progressDelegate completion:(RZFileManagerUploadCompletionBlock)completionBlock;
 - (RZWebServiceRequest*)uploadFile:(NSURL*)localFile toURL:(NSURL*)remoteURL withProgressDelegate:(id<RZFileProgressDelegate>)progressDelegate enqueue:(BOOL)enqueue completion:(RZFileManagerUploadCompletionBlock)completionBlock;
@@ -49,6 +51,9 @@ typedef void (^RZFileManagerUploadCompletionBlock)(BOOL success, NSURL* uploaded
 // Cancel File Transfer Requests
 - (void)cancelDownloadFromURL:(NSURL*)remoteURL;
 - (void)cancelUploadToURL:(NSURL*)remoteURL;
+
+- (void)deleteFileFromCacheWithName:(NSString *)name ofType:(NSString *)extension;
+- (void)deleteFileFromCacheWithURL:(NSURL *)remoteURL;
 
 - (void)setProgress:(float)progress withRequest:(RZWebServiceRequest *)request;
 - (void)changeDefaultCacheDirectoryToDownloads;
