@@ -80,6 +80,28 @@
     }
 }
 
+-(void) test04multipleRequests {
+    __block BOOL firstReqComp = NO;
+    __block BOOL secondReqComp = NO;
+    [[RZFileManager defaultManager] downloadFileFromURL:[NSURL URLWithString:@"http://www.gnu.org/prep/standards/standards.pdf"] withProgressDelegate:self enqueue:YES completion:^(BOOL success, NSURL *downloadedFile, RZWebServiceRequest *request) {
+        NSLog(@"FirstRequestComplete");
+        firstReqComp = YES;
+        if (firstReqComp && secondReqComp)
+            self.apiCallCompleted = YES;
+        [[RZFileManager defaultManager] deleteFileFromCacheWithURL:downloadedFile];
+    }];
+    [[RZFileManager defaultManager] downloadFileFromURL:[NSURL URLWithString:@"http://java.sun.com/docs/codeconv/CodeConventions.pdf"] withProgressDelegate:self enqueue:YES completion:^(BOOL success, NSURL *downloadedFile, RZWebServiceRequest *request) {
+        NSLog(@"SecondRequestComplete");
+        secondReqComp = YES;
+        if (firstReqComp && secondReqComp)
+            self.apiCallCompleted = YES;        
+        [[RZFileManager defaultManager] deleteFileFromCacheWithURL:downloadedFile];
+    }];
+
+    while (!self.apiCallCompleted) {
+        [[NSRunLoop currentRunLoop] runUntilDate:[NSDate dateWithTimeIntervalSinceNow:1]];
+    }
+}
 
 - (void)setProgress:(float)progress {
     if (progress == 1.0) {
