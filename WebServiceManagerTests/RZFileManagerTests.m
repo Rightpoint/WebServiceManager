@@ -12,7 +12,6 @@
 @synthesize webServiceManager = _webServiceManager;
 @synthesize apiCallCompleted = _apiCallCompleted;
 
-
 -(NSString*) bundlePath
 {
     return [[NSBundle bundleForClass:[RZFileManagerTests class]] bundlePath];
@@ -67,6 +66,25 @@
         [[NSRunLoop currentRunLoop] runUntilDate:[NSDate dateWithTimeIntervalSinceNow:1]];
     }
 }
+-(void) test03workingWithProgressDelegate
+{
+    RZWebServiceRequest* request = [[RZFileManager defaultManager] downloadFileFromURL:[NSURL URLWithString:@"http://www.gnu.org/prep/standards/standards.pdf"] withProgressDelegate:self enqueue:NO completion:^(BOOL success, NSURL *downloadedFile, RZWebServiceRequest *request) {
+        STAssertTrue(([[request.userInfo objectForKey:@"progressDelegateKey"] count] == 1),@"ProgressDelegate Not added Correctly.");
+        [[RZFileManager defaultManager] deleteFileFromCacheWithURL:downloadedFile];
+    }];
+    
+    [self.webServiceManager enqueueRequest:request];
+    
+    while (!self.apiCallCompleted) {
+        [[NSRunLoop currentRunLoop] runUntilDate:[NSDate dateWithTimeIntervalSinceNow:1]];
+    }
+}
 
+
+- (void)setProgress:(float)progress {
+    if (progress == 1.0) {
+        self.apiCallCompleted = YES;
+    }
+}
 
 @end

@@ -10,7 +10,7 @@
 #import "RZWebServiceManager.h"
 #import "RZFileManager.h"
 
-@interface RZFileManagerTests : SenTestCase
+@interface RZFileManagerTests : SenTestCase <RZFileProgressDelegate>
 
 @property (nonatomic, strong) RZWebServiceManager* webServiceManager;
 @property (nonatomic, assign) BOOL apiCallCompleted;
