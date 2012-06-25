@@ -269,30 +269,33 @@ expectedResultType:(NSString*)expectedResultType
 
 -(void) cancel
 {
-    [super cancel];
     [self cancelTimeout];
-    [self.connection cancel];
-    if (self.targetFileURL && (self.executing || !self.done)) {
-        
-        [self.targetFileHandle closeFile];
-        self.targetFileHandle = nil;
-        NSError* error = nil;
-        NSString* path = [self.targetFileURL path];
-        BOOL isDirectory = YES;
-        
-        NSFileManager* fileManager = [NSFileManager defaultManager];
-        
-        // delete the file, but only if it is not a naming conflict with a directory. Do not 
-        // delete any matching directories.
-        if ([fileManager fileExistsAtPath:path isDirectory:&isDirectory] && !isDirectory) {
-            [[NSFileManager defaultManager] removeItemAtPath:path error:&error];
-            if (error) {
-                NSLog(@"Error removing %@: %@", path, error);
+    [super cancel];
+    
+    @synchronized(self){
+        [self.connection cancel];
+        if (self.targetFileURL && (self.executing || !self.done)) {
+            
+            [self.targetFileHandle closeFile];
+            self.targetFileHandle = nil;
+            NSError* error = nil;
+            NSString* path = [self.targetFileURL path];
+            BOOL isDirectory = YES;
+            
+            NSFileManager* fileManager = [NSFileManager defaultManager];
+            
+            // delete the file, but only if it is not a naming conflict with a directory. Do not 
+            // delete any matching directories.
+            if ([fileManager fileExistsAtPath:path isDirectory:&isDirectory] && !isDirectory) {
+                [[NSFileManager defaultManager] removeItemAtPath:path error:&error];
+                if (error) {
+                    NSLog(@"Error removing %@: %@", path, error);
+                }
             }
-        }
 
+        }
+        self.done = YES;
     }
-    self.done = YES;
 }
 
 -(void) timeout
