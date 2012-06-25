@@ -326,6 +326,8 @@ expectedResultType:(NSString*)expectedResultType
 
 -(void) scheduleTimeout
 {
+    if (self.isCancelled) return;
+    
     [self cancelTimeout];
     
     @synchronized(self){
@@ -353,9 +355,10 @@ expectedResultType:(NSString*)expectedResultType
 #pragma mark - NSURLConnectionDelegate
 - (void)connection:(NSURLConnection *)connection didFailWithError:(NSError *)error
 {
-    [self reportError:error];
-        
-    self.done = YES;
+    @synchronized(self){
+        [self reportError:error];
+        self.done = YES;
+    }
 }
 
 - (void)connection:(NSURLConnection *)connection didReceiveData:(NSData *)data
@@ -425,68 +428,73 @@ expectedResultType:(NSString*)expectedResultType
 {    
     [self cancelTimeout];
 
-    if ([self.delegate respondsToSelector:@selector(webServiceRequest:completedWithData:)]) {
-        
-        if(self.targetFileHandle)
-        {
-            [self.targetFileHandle closeFile];
+    @synchronized(self){
+        if ([self.delegate respondsToSelector:@selector(webServiceRequest:completedWithData:)]) {
             
-            // ensure the expected file type is set to "File"
-            self.expectedResultType = @"File";
-            NSString* path = [self.targetFileURL path];
-            NSData* data = [path dataUsingEncoding:NSUTF8StringEncoding];
-            [self.delegate webServiceRequest:self completedWithData:data];
+            if(self.targetFileHandle)
+            {
+                [self.targetFileHandle closeFile];
+                
+                // ensure the expected file type is set to "File"
+                self.expectedResultType = @"File";
+                NSString* path = [self.targetFileURL path];
+                NSData* data = [path dataUsingEncoding:NSUTF8StringEncoding];
+                [self.delegate webServiceRequest:self completedWithData:data];
+            }
+            else {
+                [self.delegate webServiceRequest:self completedWithData:self.receivedData];            
+            }
         }
-        else {
-            [self.delegate webServiceRequest:self completedWithData:self.receivedData];            
-        }
+        
+        self.done = YES;
     }
-    
-    self.done = YES;
 }
 
 - (void)connection:(NSURLConnection *)connection didReceiveResponse:(NSURLResponse *)response
 {
     [self scheduleTimeout];
     
-    if ([response isKindOfClass:[NSHTTPURLResponse class]]) {
-        NSHTTPURLResponse* httpResponse = (NSHTTPURLResponse*)response;
-        self.responseHeaders = [httpResponse allHeaderFields];
-        self.responseSize = [httpResponse expectedContentLength];
-        self.statusCode = [httpResponse statusCode];
-        
-        if (httpResponse.statusCode >= 400)
-        {
-            [self cancel];
+    @synchronized(self){
+        if ([response isKindOfClass:[NSHTTPURLResponse class]]) {
+            NSHTTPURLResponse* httpResponse = (NSHTTPURLResponse*)response;
+            self.responseHeaders = [httpResponse allHeaderFields];
+            self.responseSize = [httpResponse expectedContentLength];
+            self.statusCode = [httpResponse statusCode];
             
-            NSDictionary *errorInfo = [NSDictionary dictionaryWithObject:
-                                       [NSString stringWithFormat: NSLocalizedString(@"Server returned status code %d", @""), httpResponse.statusCode]
-                                                                  forKey:NSLocalizedDescriptionKey];
-            NSError *statusError = [NSError errorWithDomain:@"Error"
-                                                       code:httpResponse.statusCode   
-                                                   userInfo:errorInfo];
-            
-            [self connection:connection didFailWithError:statusError];
-        }
+            if (httpResponse.statusCode >= 400)
+            {
+                [self cancel];
+                
+                NSDictionary *errorInfo = [NSDictionary dictionaryWithObject:
+                                           [NSString stringWithFormat: NSLocalizedString(@"Server returned status code %d", @""), httpResponse.statusCode]
+                                                                      forKey:NSLocalizedDescriptionKey];
+                NSError *statusError = [NSError errorWithDomain:@"Error"
+                                                           code:httpResponse.statusCode   
+                                                       userInfo:errorInfo];
+                
+                [self connection:connection didFailWithError:statusError];
+            }
 
+        }
     }
- 
 }
 
 - (NSURLRequest *)connection: (NSURLConnection *)inConnection
              willSendRequest: (NSURLRequest *)inRequest
             redirectResponse: (NSURLResponse *)inRedirectResponse;
 {
-    if (inRedirectResponse) {
-        NSMutableURLRequest *r = [inRequest mutableCopy]; // original request
-        [r setURL: [inRequest URL]];
-        
-        self.redirectedURL = [inRequest URL];
-        
-        return r;
-    } 
-    else {
-        return inRequest;
+    @synchronized(self){
+        if (inRedirectResponse) {
+            NSMutableURLRequest *r = [inRequest mutableCopy]; // original request
+            [r setURL: [inRequest URL]];
+            
+            self.redirectedURL = [inRequest URL];
+            
+            return r;
+        } 
+        else {
+            return inRequest;
+        }
     }
 }
 /*
@@ -544,14 +552,18 @@ expectedResultType:(NSString*)expectedResultType
     }
 }*/
 - (BOOL)connection:(NSURLConnection *)connection canAuthenticateAgainstProtectionSpace:(NSURLProtectionSpace *)protectionSpace {
-    return [protectionSpace.authenticationMethod isEqualToString:NSURLAuthenticationMethodServerTrust];
+    @synchronized(self){
+        return [protectionSpace.authenticationMethod isEqualToString:NSURLAuthenticationMethodServerTrust];
+    }
 }
 
 - (void)connection:(NSURLConnection *)connection didReceiveAuthenticationChallenge:(NSURLAuthenticationChallenge *)challenge {
-    if ([challenge.protectionSpace.authenticationMethod isEqualToString:NSURLAuthenticationMethodServerTrust])
+    @synchronized(self){
+        if ([challenge.protectionSpace.authenticationMethod isEqualToString:NSURLAuthenticationMethodServerTrust])
 
-        [challenge.sender useCredential:[NSURLCredential credentialForTrust:challenge.protectionSpace.serverTrust] forAuthenticationChallenge:challenge];
-    
-    [challenge.sender continueWithoutCredentialForAuthenticationChallenge:challenge];
+            [challenge.sender useCredential:[NSURLCredential credentialForTrust:challenge.protectionSpace.serverTrust] forAuthenticationChallenge:challenge];
+        
+        [challenge.sender continueWithoutCredentialForAuthenticationChallenge:challenge];
+    }
 }
 @end
