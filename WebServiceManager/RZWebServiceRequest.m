@@ -8,6 +8,7 @@
 
 #import "RZWebServiceRequest.h"
 #import "RZWebService_NSURL.h"
+#import "RZFileManager.h"
 
 NSString *const kURLkey = @"URL";
 NSString *const kHTTPMethodKey = @"Method";
@@ -379,8 +380,7 @@ expectedResultType:(NSString*)expectedResultType
             {
                 
                 NSString* path = [self.targetFileURL path];
-                [[NSFileManager defaultManager] createFileAtPath:path contents:nil attributes:[NSDictionary dictionaryWithObject:NSFileTypeRegular forKey:NSFileType]];
-                
+                [[NSFileManager defaultManager] createFileAtPath:path contents:nil attributes:nil];
                 self.targetFileHandle = [NSFileHandle fileHandleForWritingToURL:self.targetFileURL error:&error];
                 
                 if(nil == self.targetFileHandle)
@@ -416,9 +416,13 @@ expectedResultType:(NSString*)expectedResultType
             
             if ([self.target respondsToSelector:@selector(setProgress:animated:)]) {
                 [self.target setProgress:progress animated:YES];
+            } else if ([self.target respondsToSelector:@selector(setProgress:withRequest:)]) {
+                [self.target setProgress:progress withRequest:self];
             } else if ([self.target respondsToSelector:@selector(setProgress:)])  {
                 [self.target setProgress:progress];
-            }
+            } 
+
+            
         }
     }
     
