@@ -375,7 +375,6 @@ expectedResultType:(NSString*)expectedResultType
                 
                 NSString* path = [self.targetFileURL path];
                 [[NSFileManager defaultManager] createFileAtPath:path contents:nil attributes:nil];
-                NSLog(@"Error was code: %d - message: %s", errno, strerror(errno));
                 self.targetFileHandle = [NSFileHandle fileHandleForWritingToURL:self.targetFileURL error:&error];
                 
                 if(nil == self.targetFileHandle)
