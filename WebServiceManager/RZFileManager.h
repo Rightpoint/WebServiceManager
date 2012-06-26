@@ -56,5 +56,5 @@ typedef void (^RZFileManagerUploadCompletionBlock)(BOOL success, NSURL* uploaded
 - (void)deleteFileFromCacheWithURL:(NSURL *)remoteURL;
 
 - (void)setProgress:(float)progress withRequest:(RZWebServiceRequest *)request;
-- (void)changeDefaultCacheDirectoryToDownloads;
+- (NSURL *)defaultDocumentsDirectoryURL; 
 @end

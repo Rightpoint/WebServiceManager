@@ -411,11 +411,11 @@ expectedResultType:(NSString*)expectedResultType
             
             if ([self.target respondsToSelector:@selector(setProgress:animated:)]) {
                 [self.target setProgress:progress animated:YES];
-            } else if ([self.target respondsToSelector:@selector(setProgress:)])  {
-                [self.target setProgress:progress];
             } else if ([self.target respondsToSelector:@selector(setProgress:withRequest:)]) {
                 [self.target setProgress:progress withRequest:self];
-            }
+            } else if ([self.target respondsToSelector:@selector(setProgress:)])  {
+                [self.target setProgress:progress];
+            } 
 
             
         }

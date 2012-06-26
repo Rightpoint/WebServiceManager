@@ -88,7 +88,8 @@ NSString * const kProgressDelegateKey = @"progressDelegateKey";
             cacheName = name;
         }
     }
-    NSURL* cachePath = [NSURL URLWithString:[NSString stringWithFormat:@"%@%@",[self downloadCacheDirectory],cacheName]];
+    NSURL* cachePath = [[self downloadCacheDirectory] URLByAppendingPathComponent:cacheName];
+    
     BOOL fileExists = [[NSFileManager defaultManager] fileExistsAtPath:[cachePath path]];
     if (fileExists) {
         completionBlock(YES,cachePath,nil);
@@ -147,18 +148,19 @@ NSString * const kProgressDelegateKey = @"progressDelegateKey";
 
 - (void)deleteFileFromCacheWithName:(NSString *)name ofType:(NSString *)extension 
 {
-    [self deleteFileFromCacheWithName:[NSString stringWithFormat:@"%@.%@",name,extension]];
+    [self deleteFileFromCacheWithName:[name stringByAppendingPathExtension:extension]];
 }
 
 - (void)deleteFileFromCacheWithName:(NSString *)name 
 {
-    NSURL* filePath = [NSURL URLWithString:[NSString stringWithFormat:@"%@%@",[self downloadCacheDirectory],name]];
+    NSURL* filePath = [[self downloadCacheDirectory] URLByAppendingPathComponent:name];
     [self deleteFileFromCacheWithURL:filePath];
 }
 
 - (void)deleteFileFromCacheWithURL:(NSURL *)remoteURL 
 {
-    NSURL* filePath = [NSURL URLWithString:[NSString stringWithFormat:@"%@%@",[self downloadCacheDirectory],(NSString*)[remoteURL.pathComponents lastObject]]];
+    NSURL* filePath = [[self downloadCacheDirectory] URLByAppendingPathComponent:(NSString*)[remoteURL.pathComponents lastObject]];
+
     BOOL fileExists = [[NSFileManager defaultManager] fileExistsAtPath:[filePath path]];
     if (fileExists) {
         NSError* error = nil;
@@ -239,11 +241,12 @@ NSString * const kProgressDelegateKey = @"progressDelegateKey";
             if (error != nil)
                 NSLog(@"Error:%@:",error);
         }
+        cacheURL = [NSURL fileURLWithPath:fullPath];
     }
     
     return cacheURL;
 }
-- (void)changeDefaultCacheDirectoryToDownloads {
+- (NSURL *)defaultDocumentsDirectoryURL {
     NSArray* cachePathsArray = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES);
     NSString* cachePath = [cachePathsArray lastObject];
     
@@ -264,11 +267,14 @@ NSString * const kProgressDelegateKey = @"progressDelegateKey";
                 NSLog(@"Error:%@:",error);
             }
         }
+        cacheURL = [NSURL fileURLWithPath:fullPath];
     }
     
-    self.downloadCacheDirectory =  cacheURL;
+    return cacheURL;
 
 }
+
+
 
 - (RZWebServiceRequest*)requestWithDownloadURL:(NSURL*)downloadURL
 {
@@ -295,8 +301,9 @@ NSString * const kProgressDelegateKey = @"progressDelegateKey";
             requestDictionary = [NSMutableDictionary dictionaryWithDictionary:request.userInfo];
         }
         
-        if(!requestDictionary)
+        if(!requestDictionary) {
             requestDictionary = [[NSMutableDictionary alloc] initWithCapacity:1];
+        }
         
         [requestDictionary setObject:obj forKey:key];
         request.userInfo = requestDictionary;
@@ -312,16 +319,18 @@ NSString * const kProgressDelegateKey = @"progressDelegateKey";
             requestDictionary = [NSMutableDictionary dictionaryWithDictionary:request.userInfo];
         }
         
-        if(!requestDictionary)
+        if(!requestDictionary) {
             requestDictionary = [[NSMutableDictionary alloc] initWithCapacity:1];
+        }
         
         NSMutableSet* userInfoSet = nil;
         if (nil != [requestDictionary objectForKey:key]) {
             userInfoSet = [NSMutableSet setWithSet:[requestDictionary objectForKey:key]];
         }
         
-        if (!userInfoSet)
+        if (!userInfoSet) {
             userInfoSet = [[NSMutableSet alloc] initWithCapacity:1];
+        }
         
         [userInfoSet addObject:obj];
         
@@ -341,8 +350,9 @@ NSString * const kProgressDelegateKey = @"progressDelegateKey";
             requestDictionary = [NSMutableDictionary dictionaryWithDictionary:request.userInfo];
         }
         
-        if(!requestDictionary)
+        if(!requestDictionary) {
             return;
+        }
         
         NSMutableSet * userInfoSet = [NSMutableSet setWithSet:(NSSet *)[requestDictionary objectForKey:key]];
         [userInfoSet removeObject:obj];
@@ -359,8 +369,9 @@ NSString * const kProgressDelegateKey = @"progressDelegateKey";
             requestDictionary = [NSMutableDictionary dictionaryWithDictionary:request.userInfo];
         }
         
-        if(!requestDictionary)
+        if(!requestDictionary) {
             return;
+        }
         
         [requestDictionary removeObjectForKey:key];
         request.userInfo = requestDictionary;
