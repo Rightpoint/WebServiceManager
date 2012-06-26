@@ -212,6 +212,15 @@
 
 }
 
+-(RZWebServiceRequest*) makeRequestWithURL:(NSURL *)url target:(id)target successCallback:(SEL)success failureCallback:(SEL)failure parameters:(NSDictionary*)parameters enqueue:(BOOL)enqueue 
+{
+    RZWebServiceRequest* request = [[RZWebServiceRequest alloc] initWithURL:url httpMethod:@"GET" andTarget:target successCallback:success failureCallback:failure expectedResultType:@"NONE" andParameters:parameters];
+    if (enqueue)
+        [self enqueueRequest:request];
+    
+    return request;
+}
+
 
 -(void) cancelRequestsForTarget:(id)target
 {
@@ -262,7 +271,7 @@
 -(void) webServiceRequest:(RZWebServiceRequest *)request completedWithData:(NSData*)data
 {
     if (nil != request.successHandler && [request.target respondsToSelector:request.successHandler]) {
-            
+        
             // try to convert the data to the expected type. 
             id convertedResult = nil;
             
