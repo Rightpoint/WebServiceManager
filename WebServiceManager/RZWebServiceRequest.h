@@ -88,3 +88,25 @@ expectedResultType:(NSString*)expectedResultType
 -(void) webServiceRequest:(RZWebServiceRequest *)request completedWithData:(NSData*)data;
 
 @end
+
+
+// Parameter Type Enum
+typedef enum {
+    RZWebServiceRequestParamterTypeQueryString,
+    RZWebServiceRequestParamterTypeFile,
+    RZWebServiceRequestParamterTypeBinaryData
+} RZWebServiceRequestParameterType;
+
+
+// Parameter object for WebService Requests
+@interface RZWebServiceRequestParamter : NSObject
+
+@property (strong, nonatomic) NSString *parameterName;
+@property (strong, nonatomic) id parameterValue;
+@property (assign, nonatomic) RZWebServiceRequestParameterType parameterType;
+
++ (id)parameterWithName:(NSString*)name value:(id)value type:(RZWebServiceRequestParameterType)type;
+
+- (id)initWithName:(NSString*)name value:(id)value type:(RZWebServiceRequestParameterType)type;
+
+@end

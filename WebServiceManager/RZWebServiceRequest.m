@@ -135,7 +135,12 @@ expectedResultType:(NSString*)expectedResultType
         self.parameters = [NSMutableArray arrayWithCapacity:sortedKeys.count];
 
         for (NSString* key in sortedKeys) {
-            NSDictionary* parameter = [NSDictionary dictionaryWithObjectsAndKeys:key, kRZURLParameterNameKey, [parameters objectForKey:key], kRZURLParameterValueKey, nil];
+            id value = [parameters objectForKey:key];
+            RZWebServiceRequestParameterType type = RZWebServiceRequestParamterTypeQueryString;
+            
+            // TODO: Check value's class and change parameter type accordingly
+            
+            RZWebServiceRequestParamter* parameter = [RZWebServiceRequestParamter parameterWithName:key value:value type:type];
             [self.parameters addObject:parameter];
         }
  
@@ -582,4 +587,30 @@ expectedResultType:(NSString*)expectedResultType
         [challenge.sender continueWithoutCredentialForAuthenticationChallenge:challenge];
     }
 }
+@end
+
+
+@implementation RZWebServiceRequestParamter
+
+@synthesize parameterName = _parameterName;
+@synthesize parameterValue = _parameterValue;
+@synthesize parameterType = _parameterType;
+
++ (id)parameterWithName:(NSString*)name value:(id)value type:(RZWebServiceRequestParameterType)type
+{
+    return [[RZWebServiceRequestParamter alloc] initWithName:name value:value type:type];
+}
+
+- (id)initWithName:(NSString*)name value:(id)value type:(RZWebServiceRequestParameterType)type
+{
+    if ((self = [super init]))
+    {
+        self.parameterName = name;
+        self.parameterValue = value;
+        self.parameterType = type;
+    }
+    
+    return self;
+}
+
 @end
