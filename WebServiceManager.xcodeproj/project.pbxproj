@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		985B2CB81594A2C000FADCCA /* RZFileManagerTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 985B2CB71594A2C000FADCCA /* RZFileManagerTests.m */; };
 		CB588CC11453C6730052A336 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = CB588CC01453C6730052A336 /* Foundation.framework */; };
 		CB588CCF1453C6730052A336 /* SenTestingKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = CB588CCE1453C6730052A336 /* SenTestingKit.framework */; };
 		CB588CD11453C6730052A336 /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = CB588CD01453C6730052A336 /* UIKit.framework */; };
@@ -45,6 +46,8 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		985B2CB61594A2C000FADCCA /* RZFileManagerTests.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RZFileManagerTests.h; sourceTree = "<group>"; };
+		985B2CB71594A2C000FADCCA /* RZFileManagerTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RZFileManagerTests.m; sourceTree = "<group>"; };
 		CB3005AD14C3B95A00B4A5E5 /* postFile.php */ = {isa = PBXFileReference; lastKnownFileType = text.script.php; path = postFile.php; sourceTree = "<group>"; };
 		CB588CBD1453C6730052A336 /* libWebServiceManager.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libWebServiceManager.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		CB588CC01453C6730052A336 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
@@ -162,6 +165,8 @@
 				CB588CDD1453C6730052A336 /* RZWebServiceManagerTests.m */,
 				CB588CD71453C6730052A336 /* Supporting Files */,
 				CB588CF51453C9730052A336 /* WebServiceManagerCalls.plist */,
+				985B2CB61594A2C000FADCCA /* RZFileManagerTests.h */,
+				985B2CB71594A2C000FADCCA /* RZFileManagerTests.m */,
 			);
 			path = WebServiceManagerTests;
 			sourceTree = "<group>";
@@ -340,6 +345,7 @@
 				CB588CF01453C6B40052A336 /* RZWebServiceRequest.m in Sources */,
 				CBFFEB3614565F1E00A003D6 /* JSONKit.m in Sources */,
 				CBFFEC1C1457936000A003D6 /* RZWebService_NSURL.m in Sources */,
+				985B2CB81594A2C000FADCCA /* RZFileManagerTests.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
