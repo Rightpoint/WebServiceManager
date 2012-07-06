@@ -63,6 +63,11 @@ expectedResultType:(NSString*)expectedResultType
 // can be saved. This will prevent the data from being kept in memory.
 @property (strong, nonatomic) NSURL* targetFileURL;
 
+// if you'd like use a file on disk as the request body, set the upload file 
+// URL that we can stream the body data from. This will override the parameters 
+// in a POST request's body.
+@property (strong, nonatomic) NSURL *uploadFileURL;
+
 // data returned by the web service
 @property (strong, readonly) NSData* data;
 

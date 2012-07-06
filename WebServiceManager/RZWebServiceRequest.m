@@ -74,6 +74,7 @@ NSTimeInterval const kDefaultTimeout = 60;
 @synthesize headers = _headers;
 @synthesize userInfo = _userInfo;
 @synthesize targetFileURL = _targetFileURL;
+@synthesize uploadFileURL = _uploadFileURL;
 @synthesize targetFileHandle = _targetFileHandle;
 @synthesize responseSize = _responseSize;
 @synthesize timeoutInterval = _timeoutInterval;
@@ -219,6 +220,12 @@ expectedResultType:(NSString*)expectedResultType
                 self.urlRequest.HTTPBody = [[NSURL URLQueryStringFromParameters:self.parameters] dataUsingEncoding:NSUTF8StringEncoding];
             }
             
+        }
+        
+        if (self.uploadFileURL && [self.uploadFileURL isFileURL])
+        {
+            NSInputStream *fileStream = [NSInputStream inputStreamWithURL:self.uploadFileURL];
+            self.urlRequest.HTTPBodyStream = fileStream;
         }
         
         // add the string/string pairs as headers.
