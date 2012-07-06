@@ -49,7 +49,6 @@ NSTimeInterval const kDefaultTimeout = 60;
 
 // cancel any scheduled timeout. 
 -(void) cancelTimeout;
--(void) cancelTimeoutSelector;
 
 @end
 
