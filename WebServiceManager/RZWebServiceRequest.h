@@ -20,7 +20,7 @@ extern NSTimeInterval const kDefaultTimeout;
 @protocol WebServiceRequestDelegate;
 @class RZWebServiceManager;
 
-@interface RZWebServiceRequest : NSOperation <NSURLConnectionDelegate>
+@interface RZWebServiceRequest : NSOperation <NSURLConnectionDataDelegate>
 {
 @private
     NSMutableDictionary* _headers;

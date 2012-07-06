@@ -26,6 +26,7 @@ NSTimeInterval const kDefaultTimeout = 60;
 @property (strong, nonatomic) NSURLConnection* connection;
 @property (strong, nonatomic) NSThread *connectionThread;
 @property (assign, nonatomic) float responseSize;
+@property (assign, nonatomic) long long contentLength;
 @property (assign, nonatomic) BOOL done;
 @property (assign, nonatomic) BOOL finished;
 @property (assign, nonatomic) BOOL executing;
@@ -80,6 +81,7 @@ NSTimeInterval const kDefaultTimeout = 60;
 @synthesize timeoutInterval = _timeoutInterval;
 @synthesize timeoutSelector = _timeoutSelector;
 
+@synthesize contentLength = _contentLength;
 @synthesize done = _done;
 @synthesize finished = _finished;
 @synthesize executing = _executing;
@@ -173,6 +175,27 @@ expectedResultType:(NSString*)expectedResultType
         return nil;
 
     return  [NSDictionary dictionaryWithDictionary:_headers];
+}
+
+- (void)setUploadFileURL:(NSURL *)uploadFileURL
+{
+    if (uploadFileURL)
+    {
+        NSError *error = nil;
+        
+        NSDictionary *fileAttributes = [[NSFileManager defaultManager] attributesOfItemAtPath:[uploadFileURL path] error:&error];
+        
+        NSNumber *fileSizeNumber = [fileAttributes objectForKey:NSFileSize];
+        self.contentLength = [fileSizeNumber longLongValue];
+        
+        [self setValue:[NSString stringWithFormat:@"%u", self.contentLength] forHTTPHeaderField:@"Content-Length"];
+    }
+    else if (_uploadFileURL)
+    {
+        [_headers removeObjectForKey:@"Content-Length"];
+    }
+    
+    _uploadFileURL = uploadFileURL;
 }
 
 -(void) start
@@ -446,6 +469,34 @@ expectedResultType:(NSString*)expectedResultType
             } 
 
             
+        }
+    }
+}
+
+- (void)connection:(NSURLConnection *)connection 
+   didSendBodyData:(NSInteger)bytesWritten 
+ totalBytesWritten:(NSInteger)totalBytesWritten 
+totalBytesExpectedToWrite:(NSInteger)totalBytesExpectedToWrite
+{
+    float progress = -1.0f;
+    
+    if (totalBytesExpectedToWrite > 0)
+    {
+        progress = (double)totalBytesWritten / (double)totalBytesExpectedToWrite;
+    }
+    else if (self.contentLength > 0)
+    {
+        progress = (double)totalBytesWritten / (double)self.contentLength;
+    }
+    
+    if (progress >= 0.0)
+    {
+        if ([self.target respondsToSelector:@selector(setProgress:animated:)]) {
+            [self.target setProgress:progress animated:YES];
+        } else if ([self.target respondsToSelector:@selector(setProgress:withRequest:)]) {
+            [self.target setProgress:progress withRequest:self];
+        } else if ([self.target respondsToSelector:@selector(setProgress:)])  {
+            [self.target setProgress:progress];
         }
     }
 }

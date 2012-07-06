@@ -109,14 +109,36 @@ NSString * const kProgressDelegateKey = @"progressDelegateKey";
 
 - (RZWebServiceRequest*)uploadFile:(NSURL*)localFile toURL:(NSURL*)remoteURL withProgressDelegate:(id<RZFileProgressDelegate>)progressDelegate completion:(RZFileManagerUploadCompletionBlock)completionBlock
 {
-    return [self uploadFile:localFile toURL:remoteURL withProgressDelegate:progressDelegate enqueue:YES completion:completionBlock];
+    return [self uploadFile:localFile toURL:remoteURL withProgressDelegateSet:[NSSet setWithObject:progressDelegate] enqueue:YES completion:completionBlock];
 }
 
 - (RZWebServiceRequest*)uploadFile:(NSURL*)localFile toURL:(NSURL*)remoteURL withProgressDelegate:(id<RZFileProgressDelegate>)progressDelegate enqueue:(BOOL)enqueue completion:(RZFileManagerUploadCompletionBlock)completionBlock
 {
-    
+    return [self uploadFile:localFile toURL:remoteURL withProgressDelegateSet:[NSSet setWithObject:progressDelegate] enqueue:enqueue completion:completionBlock];
 }
 
+- (RZWebServiceRequest*)uploadFile:(NSURL*)localFile toURL:(NSURL*)remoteURL withProgressDelegateSet:(NSSet *)progressDelegates completion:(RZFileManagerUploadCompletionBlock)completionBlock
+{
+    return [self uploadFile:localFile toURL:remoteURL withProgressDelegateSet:progressDelegates enqueue:YES completion:completionBlock];
+}
+
+- (RZWebServiceRequest*)uploadFile:(NSURL*)localFile toURL:(NSURL*)remoteURL withProgressDelegateSet:(NSSet *)progressDelegates enqueue:(BOOL)enqueue completion:(RZFileManagerUploadCompletionBlock)completionBlock
+{
+    // Check if file exists
+    
+    // Check if it's a local file
+    
+    RZWebServiceRequest * request = [self.webManager makeRequestWithURL:remoteURL target:self successCallback:@selector(uploadRequestComplete:request:) failureCallback:@selector(uploadRequestFailed:request:) parameters:nil enqueue:NO];
+    [self putObject:progressDelegates inRequest:request atKey:kProgressDelegateKey];
+    [self putObject:completionBlock inRequest:request atKey:kCompletionBlockKey];
+    request.httpMethod = @"PUT";
+    request.uploadFileURL = localFile;
+    if (enqueue) {
+        [self.webManager enqueueRequest:request];
+    }
+    [self.uploadRequests addObject:request];    
+    return request;
+}
 
 - (void)removeProgressDelegate:(id<RZFileProgressDelegate>)delegate fromURL:(NSURL *)remoteURL 
 {
@@ -141,7 +163,7 @@ NSString * const kProgressDelegateKey = @"progressDelegateKey";
 
 - (void)cancelUploadToURL:(NSURL*)remoteURL
 {
-    
+    [[self requestWithUploadURL:remoteURL] cancel];
 }
 
 
@@ -206,6 +228,21 @@ NSString * const kProgressDelegateKey = @"progressDelegateKey";
     [[self downloadRequests] removeObject:request];
     compBlock(NO,request.targetFileURL,request);
 }
+
+#pragma mark - Upload Completion Methods
+
+- (void)uploadRequestComplete:(NSData *)data request:(RZWebServiceRequest *)request {
+    RZFileManagerUploadCompletionBlock compBlock = [request.userInfo objectForKey:kCompletionBlockKey];
+    [self.uploadRequests removeObject:request];
+    compBlock(YES,request.uploadFileURL,request);
+}
+- (void)uploadRequestFailed:(NSError *)error request:(RZWebServiceRequest *)request {
+    RZFileManagerUploadCompletionBlock compBlock = [request.userInfo objectForKey:kCompletionBlockKey];
+    [self.uploadRequests removeObject:request];
+    compBlock(NO,request.uploadFileURL,request);
+}
+
+#pragma mark - Progress Delegate Helper Methods
 
 - (void)setProgress:(float)progress withRequest:(RZWebServiceRequest *)request {
     id delegateSet = [request.userInfo objectForKey:kProgressDelegateKey];
