@@ -39,6 +39,7 @@ NSTimeInterval const kDefaultTimeout = 60;
 @property (strong, nonatomic) NSURL* redirectedURL;
 
 -(void) beginOperation;
+-(void) cancelOperation;
 
 // report an error to the delegate. 
 -(void) reportError:(NSError*)error;
@@ -231,26 +232,29 @@ expectedResultType:(NSString*)expectedResultType
         
         // create and start the connection.
         self.connection = [[NSURLConnection alloc] initWithRequest:self.urlRequest delegate:self startImmediately:YES];
-
+        
         // setup our timeout callback. 
         if(self.timeoutInterval <= 0)
             self.timeoutInterval = kDefaultTimeout;
         [self scheduleTimeout];
-        
-        [self didChangeValueForKey:@"isExecuting"];
-        
+                
         while (!self.done && !self.isCancelled) {
             [[NSRunLoop currentRunLoop] runMode:NSDefaultRunLoopMode beforeDate:[NSDate distantFuture]];
         }
         
-        [self willChangeValueForKey:@"isFinished"];
-        [self willChangeValueForKey:@"isExecuting"];
-        
-        _finished = YES;
-        _executing = NO;
-        
-        [self didChangeValueForKey:@"isExecuting"];
-        [self didChangeValueForKey:@"isFinished"];
+        @synchronized(self){
+            
+            self.connectionThread = nil;
+            
+            [self willChangeValueForKey:@"isFinished"];
+            [self willChangeValueForKey:@"isExecuting"];
+            
+            _finished = YES;
+            _executing = NO;
+            
+            [self didChangeValueForKey:@"isExecuting"];
+            [self didChangeValueForKey:@"isFinished"];
+        }
 
     }
 }
@@ -269,10 +273,22 @@ expectedResultType:(NSString*)expectedResultType
 
 -(void) cancel
 {
-    [self cancelTimeout];
-    [super cancel];
-    
+    if ([NSThread currentThread] != self.connectionThread && self.connectionThread){
+        [self performSelector:@selector(cancelOperation) onThread:self.connectionThread withObject:nil waitUntilDone:NO];
+    }
+    else{
+        [self cancelOperation];
+    }
+}
+
+-(void) cancelOperation
+{
     @synchronized(self){
+        
+        if (self.isFinished) return;
+        
+        [super cancel];
+        [self cancelTimeout];
         [self.connection cancel];
         if (self.targetFileURL && (self.executing || !self.done)) {
             
@@ -292,7 +308,7 @@ expectedResultType:(NSString*)expectedResultType
                     NSLog(@"Error removing %@: %@", path, error);
                 }
             }
-
+            
         }
         self.done = YES;
     }
@@ -313,24 +329,17 @@ expectedResultType:(NSString*)expectedResultType
 -(void) cancelTimeout
 {
     // if we never assigned the connection thread property, we never will have scheduled a timeout
-    @synchronized(self){
-        if (self.connectionThread){
-            [self performSelector:@selector(cancelTimeoutSelector) onThread:self.connectionThread withObject:nil waitUntilDone:NO];
-        }
-    }
-}
-
--(void) cancelTimeoutSelector{
     [NSObject cancelPreviousPerformRequestsWithTarget:self];
 }
 
 -(void) scheduleTimeout
 {
-    if (self.isCancelled) return;
-    
-    [self cancelTimeout];
-    
     @synchronized(self){
+        
+        if (self.isCancelled) return;
+        
+        [self cancelTimeout];
+        
         if (nil == self.timeoutSelector) {
             self.timeoutSelector =  @selector(timeout);
         }
@@ -346,10 +355,12 @@ expectedResultType:(NSString*)expectedResultType
 
 -(void) reportError:(NSError*)error
 {
-    [self cancelTimeout];
+    @synchronized(self){
+        [self cancelTimeout];
     
-    if([self.delegate respondsToSelector:@selector(webServiceRequest:failedWithError:)])
-        [self.delegate webServiceRequest:self failedWithError:error];    
+        if([self.delegate respondsToSelector:@selector(webServiceRequest:failedWithError:)])
+            [self.delegate webServiceRequest:self failedWithError:error];    
+    }
 }
 
 #pragma mark - NSURLConnectionDelegate
@@ -363,13 +374,14 @@ expectedResultType:(NSString*)expectedResultType
 
 - (void)connection:(NSURLConnection *)connection didReceiveData:(NSData *)data
 {
-    // we received data. reset the timeout. 
-    [self scheduleTimeout];
-    
-    if (!data) return;
-    
     @synchronized(self)
     {
+        
+        // we received data. reset the timeout. 
+        [self scheduleTimeout];
+        
+        if (!data) return;
+        
         self.bytesReceived += data.length;
         
         if (self.targetFileURL) {        
@@ -421,14 +433,14 @@ expectedResultType:(NSString*)expectedResultType
             }
         }
     }
-    
 }
 
 - (void)connectionDidFinishLoading:(NSURLConnection *)connection
 {    
-    [self cancelTimeout];
-
     @synchronized(self){
+        
+        [self cancelTimeout];
+        
         if ([self.delegate respondsToSelector:@selector(webServiceRequest:completedWithData:)]) {
             
             if(self.targetFileHandle)
@@ -452,9 +464,10 @@ expectedResultType:(NSString*)expectedResultType
 
 - (void)connection:(NSURLConnection *)connection didReceiveResponse:(NSURLResponse *)response
 {
-    [self scheduleTimeout];
-    
     @synchronized(self){
+        
+        [self scheduleTimeout];
+        
         if ([response isKindOfClass:[NSHTTPURLResponse class]]) {
             NSHTTPURLResponse* httpResponse = (NSHTTPURLResponse*)response;
             self.responseHeaders = [httpResponse allHeaderFields];
