@@ -98,7 +98,7 @@ NSString * const kProgressDelegateKey = @"progressDelegateKey";
     
     RZWebServiceRequest * request = [self.webManager makeRequestWithURL:remoteURL target:self successCallback:@selector(downloadRequestComplete:request:) failureCallback:@selector(downloadRequestFailed:request:) parameters:nil enqueue:NO];
     [self putObject:progressDelegate inRequest:request atKey:kProgressDelegateKey];
-    [self putObject:completionBlock inRequest:request atKey:kCompletionBlockKey];
+    [self putBlock:completionBlock inRequest:request atKey:kCompletionBlockKey];
     request.targetFileURL = cachePath;
     if (enqueue) {
         [self.webManager enqueueRequest:request];
@@ -130,7 +130,7 @@ NSString * const kProgressDelegateKey = @"progressDelegateKey";
     
     RZWebServiceRequest * request = [self.webManager makeRequestWithURL:remoteURL target:self successCallback:@selector(uploadRequestComplete:request:) failureCallback:@selector(uploadRequestFailed:request:) parameters:nil enqueue:NO];
     [self putObject:progressDelegates inRequest:request atKey:kProgressDelegateKey];
-    [self putObject:completionBlock inRequest:request atKey:kCompletionBlockKey];
+    [self putBlock:completionBlock inRequest:request atKey:kCompletionBlockKey];
     request.httpMethod = @"PUT";
     request.uploadFileURL = localFile;
     if (enqueue) {
@@ -328,6 +328,12 @@ NSString * const kProgressDelegateKey = @"progressDelegateKey";
 }
 
 #pragma mark - Request Modification Helper functions
+
+- (void)putBlock:(id)block inRequest:(RZWebServiceRequest*)request atKey:(id)key
+{
+    [self putObject:[block copy] inRequest:request atKey:key];
+    
+}
 
 - (void)putObject:(id)obj inRequest:(RZWebServiceRequest*)request atKey:(id)key
 {
