@@ -17,8 +17,13 @@
 
 - (NSURL*)defaultDownloadCacheURL;
 
-- (RZWebServiceRequest*)requestWithDownloadURL:(NSURL*)downloadURL;
-- (RZWebServiceRequest*)requestWithUploadURL:(NSURL*)uploadURL;
+- (NSSet*)requestsWithDownloadURL:(NSURL*)downloadURL;
+- (NSSet*)requestsWithUploadURL:(NSURL*)uploadURL;
+- (NSSet*)requestsWithUploadFileURL:(NSURL*)uploadFileURL;
+
+- (void)addProgressDelegate:(id<RZFileProgressDelegate>)delegate toRequests:(NSSet*)requests;
+- (void)removeProgressDelegate:(id<RZFileProgressDelegate>)delegate fromRequests:(NSSet*)requests;
+- (void)removeAllProgressDelegatesFromRequests:(NSSet*)requests;
 
 @end
 
@@ -55,6 +60,8 @@ NSString * const kProgressDelegateKey = @"progressDelegateKey";
     
     return self;
 }
+
+#pragma mark - Download File Request Methods
 
 - (RZWebServiceRequest*)downloadFileFromURL:(NSURL*)remoteURL withProgressDelegate:(id<RZFileProgressDelegate>)progressDelegate completion:(RZFileManagerDownloadCompletionBlock)completionBlock
 {
@@ -107,6 +114,8 @@ NSString * const kProgressDelegateKey = @"progressDelegateKey";
     return request;
 }
 
+#pragma mark - Upload File Request Methods
+
 - (RZWebServiceRequest*)uploadFile:(NSURL*)localFile toURL:(NSURL*)remoteURL withProgressDelegate:(id<RZFileProgressDelegate>)progressDelegate completion:(RZFileManagerUploadCompletionBlock)completionBlock
 {
     return [self uploadFile:localFile toURL:remoteURL withProgressDelegateSet:[NSSet setWithObject:progressDelegate] enqueue:YES completion:completionBlock];
@@ -140,33 +149,120 @@ NSString * const kProgressDelegateKey = @"progressDelegateKey";
     return request;
 }
 
+#pragma mark - Download Progress Delegate Methods
+
+- (void)addProgressDelegate:(id<RZFileProgressDelegate>)delegate toURL:(NSURL *)remoteURL 
+{
+    NSSet *requestsForURL = [self requestsWithDownloadURL:remoteURL];
+    [self addProgressDelegate:delegate toRequests:requestsForURL];
+}
+
 - (void)removeProgressDelegate:(id<RZFileProgressDelegate>)delegate fromURL:(NSURL *)remoteURL 
 {
-    [self removeObject:delegate fromRequest:[self requestWithDownloadURL:remoteURL] atKey:kProgressDelegateKey];
+    NSSet *requestsForURL = [self requestsWithDownloadURL:remoteURL];
+    [self removeProgressDelegate:delegate fromRequests:requestsForURL];
 }
 
 - (void)removeAllProgressDelegatesFromURL:(NSURL *)remoteURL
 {
-    [self removeKey:kProgressDelegateKey fromRequest:[self requestWithDownloadURL:remoteURL]];
+    NSSet *requestsForURL = [self requestsWithDownloadURL:remoteURL];
+    [self removeAllProgressDelegatesFromRequests:requestsForURL];
 }
 
-- (void)addProgressDelegate:(id<RZFileProgressDelegate>)delegate toURL:(NSURL *)remoteURL 
+#pragma mark - Upload Progress Delegate Methods
+
+- (void)addUploadProgressDelegate:(id<RZFileProgressDelegate>)delegate toURL:(NSURL*)remoteURL
 {
-    [self addObject:delegate toRequest:[self requestWithDownloadURL:remoteURL] atKey:kProgressDelegateKey];
+    NSSet *requestsForURL = [self requestsWithUploadURL:remoteURL];
+    [self addProgressDelegate:delegate toRequests:requestsForURL];
 }
 
-// Cancel File Transfer Requests
+- (void)addUploadProgressDelegate:(id<RZFileProgressDelegate>)delegate toFileURL:(NSURL*)localFileURL
+{
+    NSSet *requestsForURL = [self requestsWithUploadFileURL:localFileURL];
+    [self addProgressDelegate:delegate toRequests:requestsForURL];
+}
+
+- (void)removeUploadProgressDelegate:(id<RZFileProgressDelegate>)delegate fromURL:(NSURL*)remoteURL
+{
+    NSSet *requestsForURL = [self requestsWithUploadURL:remoteURL];
+    [self removeProgressDelegate:delegate fromRequests:requestsForURL];
+}
+
+- (void)removeUplaodProgressDelegate:(id<RZFileProgressDelegate>)delegate fromFileURL:(NSURL*)localFileURL
+{
+    NSSet *requestsForURL = [self requestsWithUploadFileURL:localFileURL];
+    [self removeProgressDelegate:delegate fromRequests:requestsForURL];
+}
+
+- (void)removeAllUploadProgressDelegatesFromURL:(NSURL*)remoteURL
+{
+    NSSet *requestsForURL = [self requestsWithUploadURL:remoteURL];
+    [self removeAllProgressDelegatesFromRequests:requestsForURL];
+}
+
+- (void)removeAllUploadProgressDelegatesFromFileURL:(NSURL*)localFileURL
+{
+    NSSet *requestsForURL = [self requestsWithUploadFileURL:localFileURL];
+    [self removeAllProgressDelegatesFromRequests:requestsForURL];
+}
+
+#pragma mark - Progress Delegate Remove All Methods
+
+- (void)removeProgressDelegateFromAllDownloads:(id<RZFileProgressDelegate>)delegate
+{
+    [self removeProgressDelegate:delegate fromRequests:self.downloadRequests];
+}
+
+- (void)removeProgressDelegateFromAllUploads:(id<RZFileProgressDelegate>)delegate
+{
+    [self removeProgressDelegate:delegate fromRequests:self.uploadRequests];
+}
+
+- (void)removeProgressDelegateFromAllFileRequests:(id<RZFileProgressDelegate>)delegate
+{
+    [self removeProgressDelegate:delegate fromRequests:[self.downloadRequests setByAddingObjectsFromSet:self.uploadRequests]];
+}
+
+#pragma mark - Cancel File Transfer Requests Methods
+
 - (void)cancelDownloadFromURL:(NSURL*)remoteURL
 {
-    [[self requestWithDownloadURL:remoteURL] cancel];
+    NSSet *requestsForURL = [self requestsWithDownloadURL:remoteURL];
+    
+    [requestsForURL enumerateObjectsUsingBlock:^(id obj, BOOL *stop) {
+        RZWebServiceRequest *request = (RZWebServiceRequest*)obj;
+        [request cancel];
+    }];
+    
+    [self.downloadRequests minusSet:requestsForURL];
 }
 
 - (void)cancelUploadToURL:(NSURL*)remoteURL
 {
-    [[self requestWithUploadURL:remoteURL] cancel];
+    NSSet *requestsForURL = [self requestsWithUploadURL:remoteURL];
+    
+    [requestsForURL enumerateObjectsUsingBlock:^(id obj, BOOL *stop) {
+        RZWebServiceRequest *request = (RZWebServiceRequest*)obj;
+        [request cancel];
+    }];
+    
+    [self.uploadRequests minusSet:requestsForURL];
 }
 
+- (void)cancelUploadOfLocalFileURL:(NSURL*)localFileURL
+{
+    NSSet *requestsForURL = [self requestsWithUploadFileURL:localFileURL];
+    
+    [requestsForURL enumerateObjectsUsingBlock:^(id obj, BOOL *stop) {
+        RZWebServiceRequest *request = (RZWebServiceRequest*)obj;
+        [request cancel];
+    }];
+    
+    [self.uploadRequests minusSet:requestsForURL];
+}
 
+#pragma mark - Cache File Deletion Methods
 
 - (void)deleteFileFromCacheWithName:(NSString *)name ofType:(NSString *)extension 
 {
@@ -311,21 +407,52 @@ NSString * const kProgressDelegateKey = @"progressDelegateKey";
 
 }
 
+#pragma mark - Filtered Request Set Methods
 
-
-- (RZWebServiceRequest*)requestWithDownloadURL:(NSURL*)downloadURL
+- (NSSet*)requestsWithDownloadURL:(NSURL*)downloadURL
 {
     NSSet *filteredRequests = [self.downloadRequests filteredSetUsingPredicate:[NSPredicate predicateWithFormat:@"url == %@", downloadURL]];
     
-    return [filteredRequests anyObject];
+    return filteredRequests;
 }
 
-- (RZWebServiceRequest*)requestWithUploadURL:(NSURL*)uploadURL
+- (NSSet*)requestsWithUploadURL:(NSURL*)uploadURL
 {
     NSSet *filteredRequests = [self.uploadRequests filteredSetUsingPredicate:[NSPredicate predicateWithFormat:@"url == %@", uploadURL]];
     
-    return [filteredRequests anyObject];
+    return filteredRequests;
 }
+
+- (NSSet*)requestsWithUploadFileURL:(NSURL*)uploadFileURL
+{
+    NSSet *filteredRequests = [self.uploadRequests filteredSetUsingPredicate:[NSPredicate predicateWithFormat:@"uploadFileURL == %@", uploadFileURL]];
+    
+    return filteredRequests;
+}
+
+#pragma mark - Progress Delegate Mutator Helper Methods
+
+- (void)addProgressDelegate:(id<RZFileProgressDelegate>)delegate toRequests:(NSSet*)requests
+{
+    [requests enumerateObjectsUsingBlock:^(id obj, BOOL *stop) {
+        [self addObject:delegate toRequest:obj atKey:kProgressDelegateKey];
+    }];
+}
+
+- (void)removeProgressDelegate:(id<RZFileProgressDelegate>)delegate fromRequests:(NSSet*)requests
+{
+    [requests enumerateObjectsUsingBlock:^(id obj, BOOL *stop) {
+        [self removeObject:delegate fromRequest:obj atKey:kProgressDelegateKey];
+    }];
+}
+
+- (void)removeAllProgressDelegatesFromRequests:(NSSet*)requests
+{
+    [requests enumerateObjectsUsingBlock:^(id obj, BOOL *stop) {
+        [self removeKey:kProgressDelegateKey fromRequest:obj];
+    }];
+}
+
 
 #pragma mark - Request Modification Helper functions
 
