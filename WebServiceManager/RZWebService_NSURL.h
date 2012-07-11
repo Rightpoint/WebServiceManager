@@ -8,8 +8,6 @@
 
 #import <Foundation/Foundation.h>
 
-extern NSString* const kRZURLParameterNameKey;
-extern NSString* const kRZURLParameterValueKey;
 
 @interface NSURL (RZWebService_NSURL)
 

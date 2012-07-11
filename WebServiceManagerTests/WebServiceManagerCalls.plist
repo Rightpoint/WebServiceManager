@@ -145,5 +145,18 @@
 		<key>SuccessHandler</key>
 		<string>contentCompleted:</string>
 	</dict>
+	<key>echoPUTFile</key>
+	<dict>
+		<key>URL</key>
+		<string>http://localhost:8888/echoPutFile.php</string>
+		<key>Method</key>
+		<string>PUT</string>
+		<key>ExpectedResultType</key>
+		<string>JSON</string>
+		<key>FailureHandler</key>
+		<string>echoPutFileFailed:</string>
+		<key>SuccessHandler</key>
+		<string>echoPutFileCompleted:</string>
+	</dict>
 </dict>
 </plist>

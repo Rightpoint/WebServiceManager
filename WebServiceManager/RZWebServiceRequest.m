@@ -26,6 +26,7 @@ NSTimeInterval const kDefaultTimeout = 60;
 @property (strong, nonatomic) NSURLConnection* connection;
 @property (strong, nonatomic) NSThread *connectionThread;
 @property (assign, nonatomic) float responseSize;
+@property (assign, nonatomic) long long contentLength;
 @property (assign, nonatomic) BOOL done;
 @property (assign, nonatomic) BOOL finished;
 @property (assign, nonatomic) BOOL executing;
@@ -74,11 +75,13 @@ NSTimeInterval const kDefaultTimeout = 60;
 @synthesize headers = _headers;
 @synthesize userInfo = _userInfo;
 @synthesize targetFileURL = _targetFileURL;
+@synthesize uploadFileURL = _uploadFileURL;
 @synthesize targetFileHandle = _targetFileHandle;
 @synthesize responseSize = _responseSize;
 @synthesize timeoutInterval = _timeoutInterval;
 @synthesize timeoutSelector = _timeoutSelector;
 
+@synthesize contentLength = _contentLength;
 @synthesize done = _done;
 @synthesize finished = _finished;
 @synthesize executing = _executing;
@@ -135,7 +138,12 @@ expectedResultType:(NSString*)expectedResultType
         self.parameters = [NSMutableArray arrayWithCapacity:sortedKeys.count];
 
         for (NSString* key in sortedKeys) {
-            NSDictionary* parameter = [NSDictionary dictionaryWithObjectsAndKeys:key, kRZURLParameterNameKey, [parameters objectForKey:key], kRZURLParameterValueKey, nil];
+            id value = [parameters objectForKey:key];
+            RZWebServiceRequestParameterType type = RZWebServiceRequestParamterTypeQueryString;
+            
+            // TODO: Check value's class and change parameter type accordingly
+            
+            RZWebServiceRequestParamter* parameter = [RZWebServiceRequestParamter parameterWithName:key value:value type:type];
             [self.parameters addObject:parameter];
         }
  
@@ -167,6 +175,27 @@ expectedResultType:(NSString*)expectedResultType
         return nil;
 
     return  [NSDictionary dictionaryWithDictionary:_headers];
+}
+
+- (void)setUploadFileURL:(NSURL *)uploadFileURL
+{
+    if (uploadFileURL)
+    {
+        NSError *error = nil;
+        
+        NSDictionary *fileAttributes = [[NSFileManager defaultManager] attributesOfItemAtPath:[uploadFileURL path] error:&error];
+        
+        NSNumber *fileSizeNumber = [fileAttributes objectForKey:NSFileSize];
+        self.contentLength = [fileSizeNumber longLongValue];
+        
+        [self setValue:[NSString stringWithFormat:@"%u", self.contentLength] forHTTPHeaderField:@"Content-Length"];
+    }
+    else if (_uploadFileURL)
+    {
+        [_headers removeObjectForKey:@"Content-Length"];
+    }
+    
+    _uploadFileURL = uploadFileURL;
 }
 
 -(void) start
@@ -214,6 +243,12 @@ expectedResultType:(NSString*)expectedResultType
                 self.urlRequest.HTTPBody = [[NSURL URLQueryStringFromParameters:self.parameters] dataUsingEncoding:NSUTF8StringEncoding];
             }
             
+        }
+        
+        if (self.uploadFileURL && [self.uploadFileURL isFileURL])
+        {
+            NSInputStream *fileStream = [NSInputStream inputStreamWithURL:self.uploadFileURL];
+            self.urlRequest.HTTPBodyStream = fileStream;
         }
         
         // add the string/string pairs as headers.
@@ -438,6 +473,34 @@ expectedResultType:(NSString*)expectedResultType
     }
 }
 
+- (void)connection:(NSURLConnection *)connection 
+   didSendBodyData:(NSInteger)bytesWritten 
+ totalBytesWritten:(NSInteger)totalBytesWritten 
+totalBytesExpectedToWrite:(NSInteger)totalBytesExpectedToWrite
+{
+    float progress = -1.0f;
+    
+    if (totalBytesExpectedToWrite > 0)
+    {
+        progress = (double)totalBytesWritten / (double)totalBytesExpectedToWrite;
+    }
+    else if (self.contentLength > 0)
+    {
+        progress = (double)totalBytesWritten / (double)self.contentLength;
+    }
+    
+    if (progress >= 0.0)
+    {
+        if ([self.target respondsToSelector:@selector(setProgress:animated:)]) {
+            [self.target setProgress:progress animated:YES];
+        } else if ([self.target respondsToSelector:@selector(setProgress:withRequest:)]) {
+            [self.target setProgress:progress withRequest:self];
+        } else if ([self.target respondsToSelector:@selector(setProgress:)])  {
+            [self.target setProgress:progress];
+        }
+    }
+}
+
 - (void)connectionDidFinishLoading:(NSURLConnection *)connection
 {    
     @synchronized(self){
@@ -582,4 +645,30 @@ expectedResultType:(NSString*)expectedResultType
         [challenge.sender continueWithoutCredentialForAuthenticationChallenge:challenge];
     }
 }
+@end
+
+
+@implementation RZWebServiceRequestParamter
+
+@synthesize parameterName = _parameterName;
+@synthesize parameterValue = _parameterValue;
+@synthesize parameterType = _parameterType;
+
++ (id)parameterWithName:(NSString*)name value:(id)value type:(RZWebServiceRequestParameterType)type
+{
+    return [[RZWebServiceRequestParamter alloc] initWithName:name value:value type:type];
+}
+
+- (id)initWithName:(NSString*)name value:(id)value type:(RZWebServiceRequestParameterType)type
+{
+    if ((self = [super init]))
+    {
+        self.parameterName = name;
+        self.parameterValue = value;
+        self.parameterType = type;
+    }
+    
+    return self;
+}
+
 @end
