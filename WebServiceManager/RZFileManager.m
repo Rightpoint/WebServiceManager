@@ -133,9 +133,27 @@ NSString * const kProgressDelegateKey = @"progressDelegateKey";
 
 - (RZWebServiceRequest*)uploadFile:(NSURL*)localFile toURL:(NSURL*)remoteURL withProgressDelegateSet:(NSSet *)progressDelegates enqueue:(BOOL)enqueue completion:(RZFileManagerUploadCompletionBlock)completionBlock
 {
-    // Check if file exists
-    
     // Check if it's a local file
+    if (![localFile isFileURL])
+    {
+        NSLog(@"Upload File URL is not a file URL: %@", localFile);
+        return nil;
+    }
+    
+    // Check if file exists
+    BOOL isDir = NO;
+    if (![[NSFileManager defaultManager] fileExistsAtPath:[localFile path] isDirectory:&isDir])
+    {
+        NSLog(@"Upload File does not exist: %@", [localFile path]);
+        return nil;
+    }
+    
+    // Check that the file is not a directory
+    if (isDir)
+    {
+        NSLog(@"Upload File is a directory or symbolic link: %@", [localFile path]);
+        return nil;
+    }
     
     RZWebServiceRequest * request = [self.webManager makeRequestWithURL:remoteURL target:self successCallback:@selector(uploadRequestComplete:request:) failureCallback:@selector(uploadRequestFailed:request:) parameters:nil enqueue:NO];
     [self putObject:progressDelegates inRequest:request atKey:kProgressDelegateKey];
