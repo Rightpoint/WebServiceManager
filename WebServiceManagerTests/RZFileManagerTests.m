@@ -103,6 +103,21 @@
     }
 }
 
+-(void) test05EchoUploadFileWithProgress
+{
+    NSURL *fileURL = [NSURL fileURLWithPath:[[self bundlePath] stringByAppendingPathComponent:@"raizlabs-logo-sheetrock.png"]];
+    
+    [[RZFileManager defaultManager] uploadFile:fileURL toURL:[NSURL URLWithString:@"http://localhost:8888/echoPutFile.php"] withProgressDelegate:self completion:^(BOOL success, NSURL *uploadedFile, RZWebServiceRequest *request) {
+        STAssertTrue(success, @"EchoUploadWithProgress Failed.");
+        self.apiCallCompleted = YES;
+    }];
+    
+    while (!self.apiCallCompleted) {
+        [[NSRunLoop currentRunLoop] runUntilDate:[NSDate dateWithTimeIntervalSinceNow:1]];
+    }
+    
+}
+
 - (void)setProgress:(float)progress {
     if (progress == 1.0) {
         self.apiCallCompleted = YES;

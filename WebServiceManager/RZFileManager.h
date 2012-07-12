@@ -32,26 +32,46 @@ typedef void (^RZFileManagerUploadCompletionBlock)(BOOL success, NSURL* uploaded
 // Shared Instance Method
 + (RZFileManager*)defaultManager;
 
+// Download File Request Methods
 - (RZWebServiceRequest*)downloadFileFromURL:(NSURL*)remoteURL withProgressDelegate:(id<RZFileProgressDelegate>)progressDelegate completion:(RZFileManagerDownloadCompletionBlock)completionBlock;
 - (RZWebServiceRequest*)downloadFileFromURL:(NSURL*)remoteURL withProgressDelegate:(id<RZFileProgressDelegate>)progressDelegate enqueue:(BOOL)enqueue completion:(RZFileManagerDownloadCompletionBlock)completionBlock;
 - (RZWebServiceRequest*)downloadFileFromURL:(NSURL*)remoteURL withProgressDelegate:(id<RZFileProgressDelegate>)progressDelegate cacheName:(NSString *)name enqueue:(BOOL)enqueue completion:(RZFileManagerDownloadCompletionBlock)completionBlock;
 - (RZWebServiceRequest*)downloadFileFromURL:(NSURL*)remoteURL withProgressDelegateSet:(NSSet *)progressDelegate enqueue:(BOOL)enqueue completion:(RZFileManagerDownloadCompletionBlock)completionBlock;
 - (RZWebServiceRequest*)downloadFileFromURL:(NSURL*)remoteURL withProgressDelegateSet:(NSSet *)progressDelegate cacheName:(NSString *)name enqueue:(BOOL)enqueue completion:(RZFileManagerDownloadCompletionBlock)completionBlock;
 
+// Upload File Request Mothods
 - (RZWebServiceRequest*)uploadFile:(NSURL*)localFile toURL:(NSURL*)remoteURL withProgressDelegate:(id<RZFileProgressDelegate>)progressDelegate completion:(RZFileManagerUploadCompletionBlock)completionBlock;
 - (RZWebServiceRequest*)uploadFile:(NSURL*)localFile toURL:(NSURL*)remoteURL withProgressDelegate:(id<RZFileProgressDelegate>)progressDelegate enqueue:(BOOL)enqueue completion:(RZFileManagerUploadCompletionBlock)completionBlock;
+- (RZWebServiceRequest*)uploadFile:(NSURL*)localFile toURL:(NSURL*)remoteURL withProgressDelegateSet:(NSSet *)progressDelegates completion:(RZFileManagerUploadCompletionBlock)completionBlock;
+- (RZWebServiceRequest*)uploadFile:(NSURL*)localFile toURL:(NSURL*)remoteURL withProgressDelegateSet:(NSSet *)progressDelegates enqueue:(BOOL)enqueue completion:(RZFileManagerUploadCompletionBlock)completionBlock;
 
-//ProgressDelegateMethods
+//Download ProgressDelegateMethods
+- (void)addProgressDelegate:(id<RZFileProgressDelegate>)delegate toURL:(NSURL *)remoteURL;
+
 - (void)removeProgressDelegate:(id<RZFileProgressDelegate>)delegate fromURL:(NSURL *)remoteURL;
 - (void)removeAllProgressDelegatesFromURL:(NSURL *)remoteURL;
 
-- (void)addProgressDelegate:(id<RZFileProgressDelegate>)delegate toURL:(NSURL *)remoteURL;
+// Upload Progress Delegate Methods
+- (void)addUploadProgressDelegate:(id<RZFileProgressDelegate>)delegate toURL:(NSURL*)remoteURL;
+- (void)addUploadProgressDelegate:(id<RZFileProgressDelegate>)delegate toFileURL:(NSURL*)localFileURL;
 
+- (void)removeUploadProgressDelegate:(id<RZFileProgressDelegate>)delegate fromURL:(NSURL*)remoteURL;
+- (void)removeUplaodProgressDelegate:(id<RZFileProgressDelegate>)delegate fromFileURL:(NSURL*)localFileURL;
+
+- (void)removeAllUploadProgressDelegatesFromURL:(NSURL*)remoteURL;
+- (void)removeAllUploadProgressDelegatesFromFileURL:(NSURL*)localFileURL;
+
+// Progress Delegate Remove All Methods
+- (void)removeProgressDelegateFromAllDownloads:(id<RZFileProgressDelegate>)delegate;
+- (void)removeProgressDelegateFromAllUploads:(id<RZFileProgressDelegate>)delegate;
+- (void)removeProgressDelegateFromAllFileRequests:(id<RZFileProgressDelegate>)delegate;
 
 // Cancel File Transfer Requests
 - (void)cancelDownloadFromURL:(NSURL*)remoteURL;
 - (void)cancelUploadToURL:(NSURL*)remoteURL;
+- (void)cancelUploadOfLocalFileURL:(NSURL*)localFileURL;
 
+// Cache File Deletion Methods
 - (void)deleteFileFromCacheWithName:(NSString *)name ofType:(NSString *)extension;
 - (void)deleteFileFromCacheWithURL:(NSURL *)remoteURL;
 

@@ -328,6 +328,21 @@
     
 }
 
+-(void) test19EchoUploadFile
+{
+    NSURL *fileURL = [NSURL fileURLWithPath:[[self bundlePath] stringByAppendingPathComponent:@"TestData.json"]];
+    
+    RZWebServiceRequest *uploadRequest = [self.webServiceManager makeRequestWithKey:@"echoPUTFile" andTarget:self enqueue:NO];
+    uploadRequest.uploadFileURL = fileURL;
+    
+    [self.webServiceManager enqueueRequest:uploadRequest];
+    
+    while (!self.apiCallCompleted) {
+        [[NSRunLoop currentRunLoop] runUntilDate:[NSDate dateWithTimeIntervalSinceNow:1]];
+    }
+    
+}
+
 
 
 //
@@ -512,6 +527,38 @@
 
 -(void) expectErrorCompleted:(NSDictionary*)data
 {
+    self.apiCallCompleted = YES;
+}
+
+//
+// postFile callbacks
+//
+-(void) echoPutFileCompleted:(NSDictionary*)results
+{
+    if ([results isKindOfClass:[NSDictionary class]]) {
+        
+        // compare this dictionary to the included data, which should match.
+        
+        NSString* testDataPath = [[self bundlePath] stringByAppendingPathComponent:@"TestData.json"];
+        NSInputStream* stream = [NSInputStream inputStreamWithFileAtPath:testDataPath];
+        [stream open];
+        NSDictionary* testData = [NSJSONSerialization JSONObjectWithStream:stream options:0 error:nil];
+        [stream close];
+        
+        STAssertTrue([testData isEqualToDictionary:results], @"json data: %@ does not match expected results,: %@", results, testData);
+        
+    }
+    else
+    {
+        STAssertTrue(NO, @"echoPutFile operation returned wrong data type: %@", results);
+    }
+    
+    self.apiCallCompleted = YES;
+}
+
+-(void) echoPutFileFailed:(NSError*)error
+{
+    STAssertTrue(NO, @"echoPutFile failed with error: %@", error);
     self.apiCallCompleted = YES;
 }
   

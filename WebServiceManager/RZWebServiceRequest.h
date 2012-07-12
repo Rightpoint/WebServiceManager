@@ -20,7 +20,7 @@ extern NSTimeInterval const kDefaultTimeout;
 @protocol WebServiceRequestDelegate;
 @class RZWebServiceManager;
 
-@interface RZWebServiceRequest : NSOperation <NSURLConnectionDelegate>
+@interface RZWebServiceRequest : NSOperation <NSURLConnectionDataDelegate>
 {
 @private
     NSMutableDictionary* _headers;
@@ -63,6 +63,11 @@ expectedResultType:(NSString*)expectedResultType
 // can be saved. This will prevent the data from being kept in memory.
 @property (strong, nonatomic) NSURL* targetFileURL;
 
+// if you'd like use a file on disk as the request body, set the upload file 
+// URL that we can stream the body data from. This will override the parameters 
+// in a POST request's body.
+@property (strong, nonatomic) NSURL *uploadFileURL;
+
 // data returned by the web service
 @property (strong, readonly) NSData* data;
 
@@ -86,5 +91,27 @@ expectedResultType:(NSString*)expectedResultType
 
 -(void) webServiceRequest:(RZWebServiceRequest*)request failedWithError:(NSError*)error;
 -(void) webServiceRequest:(RZWebServiceRequest *)request completedWithData:(NSData*)data;
+
+@end
+
+
+// Parameter Type Enum
+typedef enum {
+    RZWebServiceRequestParamterTypeQueryString,                                 // For String and Number parameters that can go in the query string of a URL
+    RZWebServiceRequestParamterTypeFile,                                        // For File URL parameters in multi-part form posts
+    RZWebServiceRequestParamterTypeBinaryData                                   // For images and other binary data parameters in multi-part form posts
+} RZWebServiceRequestParameterType;
+
+
+// Parameter object for WebService Requests
+@interface RZWebServiceRequestParamter : NSObject
+
+@property (strong, nonatomic) NSString *parameterName;
+@property (strong, nonatomic) id parameterValue;
+@property (assign, nonatomic) RZWebServiceRequestParameterType parameterType;
+
++ (id)parameterWithName:(NSString*)name value:(id)value type:(RZWebServiceRequestParameterType)type;
+
+- (id)initWithName:(NSString*)name value:(id)value type:(RZWebServiceRequestParameterType)type;
 
 @end
