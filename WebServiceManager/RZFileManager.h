@@ -20,6 +20,15 @@ typedef void (^RZFileManagerUploadCompletionBlock)(BOOL success, NSURL* uploaded
 
 @end
 
+@protocol RZCacheSchema <NSObject>
+
+@required
+- (NSURL *)cacheURLFromRemoteURL:(NSURL *)remoteURL;
+- (NSURL *)cacheURLFromCustomName:(NSString *)name;
+- (void)setDownloadCacheDirectory:(NSURL *)url;
+
+@end
+
 @interface RZFileManager : NSObject
 
 // Cache Dir URL - Directory will be created if it does not exist and set to not sync/backup
@@ -27,6 +36,7 @@ typedef void (^RZFileManagerUploadCompletionBlock)(BOOL success, NSURL* uploaded
 @property (assign, nonatomic) BOOL shouldCacheDownloads;                        // Turns download caching on/off - Defaults to YES
 
 @property (nonatomic, weak) RZWebServiceManager* webManager;
+@property (nonatomic, strong) id<RZCacheSchema> cacheSchema;
 
 
 // Shared Instance Method
@@ -73,7 +83,8 @@ typedef void (^RZFileManagerUploadCompletionBlock)(BOOL success, NSURL* uploaded
 
 // Cache File Deletion Methods
 - (void)deleteFileFromCacheWithName:(NSString *)name ofType:(NSString *)extension;
-- (void)deleteFileFromCacheWithURL:(NSURL *)remoteURL;
+- (void)deleteFileFromCacheWithRemoteURL:(NSURL *)remoteURL;
+- (void)deleteFileFromCacheWithURL:(NSURL *)localURL;
 
 - (void)setProgress:(float)progress withRequest:(RZWebServiceRequest *)request;
 - (NSURL *)defaultDocumentsDirectoryURL; 

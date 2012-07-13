@@ -9,6 +9,7 @@
 #import "RZFileManager.h"
 #import "RZWebServiceManager.h"
 #import "RZWebServiceRequest.h"
+#import "RZFileCacheSchema.h"
 
 @interface RZFileManager ()
 
@@ -35,6 +36,7 @@ NSString * const kProgressDelegateKey = @"progressDelegateKey";
 @synthesize downloadCacheDirectory = _downloadCacheDirectory;
 @synthesize shouldCacheDownloads = _shouldCacheDownloads;
 @synthesize webManager = _webManager;
+@synthesize cacheSchema = _cacheSchema;
 
 @synthesize downloadRequests = _downloadRequests;
 @synthesize uploadRequests = _uploadRequests;
@@ -56,6 +58,7 @@ NSString * const kProgressDelegateKey = @"progressDelegateKey";
     {
         self.downloadCacheDirectory = [self defaultDownloadCacheURL];
         self.shouldCacheDownloads = YES;
+        self.cacheSchema = [[RZFileCacheSchema alloc] init];
     }
     
     return self;
@@ -86,27 +89,23 @@ NSString * const kProgressDelegateKey = @"progressDelegateKey";
 
 - (RZWebServiceRequest*)downloadFileFromURL:(NSURL*)remoteURL withProgressDelegateSet:(NSSet *)progressDelegate cacheName:(NSString *)name enqueue:(BOOL)enqueue completion:(RZFileManagerDownloadCompletionBlock)completionBlock
 {
-    NSString* cacheName = (NSString*)[remoteURL.pathComponents lastObject];
+    NSURL* cacheURL = nil;
     if (name != nil) {
-        NSString* fileFormat = [[(NSString *)[remoteURL.pathComponents lastObject] componentsSeparatedByString:@"."] lastObject];
-        if ([name rangeOfString:[NSString stringWithFormat:@".%@",fileFormat]].location == NSNotFound) {
-            cacheName = [NSString stringWithFormat:@"%@.%@",name,fileFormat];
-        } else {
-            cacheName = name;
-        }
+        cacheURL = [self.cacheSchema cacheURLFromCustomName:name];
+    } else {
+        cacheURL = [self.cacheSchema cacheURLFromRemoteURL:remoteURL];
     }
-    NSURL* cachePath = [[self downloadCacheDirectory] URLByAppendingPathComponent:cacheName];
     
-    BOOL fileExists = [[NSFileManager defaultManager] fileExistsAtPath:[cachePath path]];
+    BOOL fileExists = [[NSFileManager defaultManager] fileExistsAtPath:[cacheURL path]];
     if (fileExists) {
-        completionBlock(YES,cachePath,nil);
+        completionBlock(YES,cacheURL,nil);
         return nil;
     }
     
     RZWebServiceRequest * request = [self.webManager makeRequestWithURL:remoteURL target:self successCallback:@selector(downloadRequestComplete:request:) failureCallback:@selector(downloadRequestFailed:request:) parameters:nil enqueue:NO];
     [self putObject:progressDelegate inRequest:request atKey:kProgressDelegateKey];
     [self putBlock:completionBlock inRequest:request atKey:kCompletionBlockKey];
-    request.targetFileURL = cachePath;
+    request.targetFileURL = cacheURL;
     if (enqueue) {
         [self.webManager enqueueRequest:request];
     }
@@ -293,16 +292,27 @@ NSString * const kProgressDelegateKey = @"progressDelegateKey";
     [self deleteFileFromCacheWithURL:filePath];
 }
 
-- (void)deleteFileFromCacheWithURL:(NSURL *)remoteURL 
-{
-    NSURL* filePath = [[self downloadCacheDirectory] URLByAppendingPathComponent:(NSString*)[remoteURL.pathComponents lastObject]];
-
-    BOOL fileExists = [[NSFileManager defaultManager] fileExistsAtPath:[filePath path]];
+- (void)deleteFileFromCacheWithRemoteURL:(NSURL *)remoteURL
+{ 
+    NSURL* cacheURL = [self.cacheSchema cacheURLFromRemoteURL:remoteURL];
+    BOOL fileExists = [[NSFileManager defaultManager] fileExistsAtPath:[cacheURL path]];
     if (fileExists) {
         NSError* error = nil;
-        [[NSFileManager defaultManager] removeItemAtPath:[filePath path] error:&error];
+        [[NSFileManager defaultManager] removeItemAtPath:[cacheURL path] error:&error];
         if (error != nil) {
-            NSLog(@"Error removing file:%@ with error:%@",remoteURL, error);
+            NSLog(@"Error removing file:%@ with error:%@",cacheURL, error);
+        }
+    }
+}
+
+- (void)deleteFileFromCacheWithURL:(NSURL *)localURL 
+{
+    BOOL fileExists = [[NSFileManager defaultManager] fileExistsAtPath:[localURL path]];
+    if (fileExists) {
+        NSError* error = nil;
+        [[NSFileManager defaultManager] removeItemAtPath:[localURL path] error:&error];
+        if (error != nil) {
+            NSLog(@"Error removing file:%@ with error:%@",localURL, error);
         }
     }
     
@@ -329,6 +339,24 @@ NSString * const kProgressDelegateKey = @"progressDelegateKey";
     
     return _uploadRequests;
 }
+
+#pragma mark - Setter Overrides
+- (void)setCacheSchema:(id<RZCacheSchema>)cacheSchema {
+    if (_cacheSchema != cacheSchema) {
+        _cacheSchema = cacheSchema;
+        [_cacheSchema setDownloadCacheDirectory:[self downloadCacheDirectory]];
+    }
+}
+
+- (void)setDownloadCacheDirectory:(NSURL *)downloadCacheDirectory {
+    if (_downloadCacheDirectory != downloadCacheDirectory) {
+        _downloadCacheDirectory = downloadCacheDirectory;
+        if (self.cacheSchema != nil) {
+            [self.cacheSchema setDownloadCacheDirectory:downloadCacheDirectory];
+        }
+    }
+}
+
 
 #pragma mark - Download Completion Methods
 
@@ -370,6 +398,8 @@ NSString * const kProgressDelegateKey = @"progressDelegateKey";
 }
 
 #pragma mark - Private Methods
+
+
 
 - (NSURL*)defaultDownloadCacheURL
 {
