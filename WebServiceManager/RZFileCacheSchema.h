@@ -8,8 +8,9 @@
 
 #import <Foundation/Foundation.h>
 #import "RZFileManager.h"
+#import "RZCacheSchema.h"
 
-@interface RZFileCacheSchema : NSObject <RZCacheSchema>
 
-@property (strong, nonatomic) NSURL *downloadCacheDirectory;
+@interface RZFileCacheSchema : RZCacheSchema
+
 @end
