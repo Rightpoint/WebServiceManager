@@ -7,7 +7,11 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		98216E1515B062940099166B /* RZCacheSchema.h in Headers */ = {isa = PBXBuildFile; fileRef = 98216E1315B062940099166B /* RZCacheSchema.h */; };
+		98216E1615B062940099166B /* RZCacheSchema.m in Sources */ = {isa = PBXBuildFile; fileRef = 98216E1415B062940099166B /* RZCacheSchema.m */; };
 		985B2CB81594A2C000FADCCA /* RZFileManagerTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 985B2CB71594A2C000FADCCA /* RZFileManagerTests.m */; };
+		9885D140159A382A003DECDF /* RZFileCacheSchema.h in Headers */ = {isa = PBXBuildFile; fileRef = 9885D13E159A382A003DECDF /* RZFileCacheSchema.h */; };
+		9885D141159A382A003DECDF /* RZFileCacheSchema.m in Sources */ = {isa = PBXBuildFile; fileRef = 9885D13F159A382A003DECDF /* RZFileCacheSchema.m */; };
 		CB588CC11453C6730052A336 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = CB588CC01453C6730052A336 /* Foundation.framework */; };
 		CB588CCF1453C6730052A336 /* SenTestingKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = CB588CCE1453C6730052A336 /* SenTestingKit.framework */; };
 		CB588CD11453C6730052A336 /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = CB588CD01453C6730052A336 /* UIKit.framework */; };
@@ -46,8 +50,12 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		98216E1315B062940099166B /* RZCacheSchema.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RZCacheSchema.h; sourceTree = "<group>"; };
+		98216E1415B062940099166B /* RZCacheSchema.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RZCacheSchema.m; sourceTree = "<group>"; };
 		985B2CB61594A2C000FADCCA /* RZFileManagerTests.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RZFileManagerTests.h; sourceTree = "<group>"; };
 		985B2CB71594A2C000FADCCA /* RZFileManagerTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RZFileManagerTests.m; sourceTree = "<group>"; };
+		9885D13E159A382A003DECDF /* RZFileCacheSchema.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RZFileCacheSchema.h; sourceTree = "<group>"; };
+		9885D13F159A382A003DECDF /* RZFileCacheSchema.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RZFileCacheSchema.m; sourceTree = "<group>"; };
 		CB3005AD14C3B95A00B4A5E5 /* postFile.php */ = {isa = PBXFileReference; lastKnownFileType = text.script.php; path = postFile.php; sourceTree = "<group>"; };
 		CB588CBD1453C6730052A336 /* libWebServiceManager.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libWebServiceManager.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		CB588CC01453C6730052A336 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
@@ -102,6 +110,26 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		98216E1815B066510099166B /* CacheSchema */ = {
+			isa = PBXGroup;
+			children = (
+				9885D13E159A382A003DECDF /* RZFileCacheSchema.h */,
+				9885D13F159A382A003DECDF /* RZFileCacheSchema.m */,
+				98216E1315B062940099166B /* RZCacheSchema.h */,
+				98216E1415B062940099166B /* RZCacheSchema.m */,
+			);
+			name = CacheSchema;
+			sourceTree = "<group>";
+		};
+		9885D142159A3DF8003DECDF /* Categories */ = {
+			isa = PBXGroup;
+			children = (
+				CBFFEC181457936000A003D6 /* RZWebService_NSURL.h */,
+				CBFFEC191457936000A003D6 /* RZWebService_NSURL.m */,
+			);
+			name = Categories;
+			sourceTree = "<group>";
+		};
 		CB588CB21453C6730052A336 = {
 			isa = PBXGroup;
 			children = (
@@ -135,16 +163,16 @@
 		CB588CC21453C6730052A336 /* WebServiceManager */ = {
 			isa = PBXGroup;
 			children = (
+				98216E1815B066510099166B /* CacheSchema */,
+				9885D142159A3DF8003DECDF /* Categories */,
 				CBFFEB2E14565F1E00A003D6 /* JSONKit */,
 				CB588CE71453C6B40052A336 /* RZWebServiceManager.h */,
 				CB588CE81453C6B40052A336 /* RZWebServiceManager.m */,
 				CB588CE91453C6B40052A336 /* RZWebServiceRequest.h */,
 				CB588CEA1453C6B40052A336 /* RZWebServiceRequest.m */,
-				CB588CC31453C6730052A336 /* Supporting Files */,
-				CBFFEC181457936000A003D6 /* RZWebService_NSURL.h */,
-				CBFFEC191457936000A003D6 /* RZWebService_NSURL.m */,
 				FEC9669B158F723B00E90A65 /* RZFileManager.h */,
 				FEC9669C158F723B00E90A65 /* RZFileManager.m */,
+				CB588CC31453C6730052A336 /* Supporting Files */,
 			);
 			path = WebServiceManager;
 			sourceTree = "<group>";
@@ -223,6 +251,8 @@
 				CBFFEB3414565F1E00A003D6 /* JSONKit.h in Headers */,
 				CBFFEC1A1457936000A003D6 /* RZWebService_NSURL.h in Headers */,
 				FEC9669D158F723B00E90A65 /* RZFileManager.h in Headers */,
+				9885D140159A382A003DECDF /* RZFileCacheSchema.h in Headers */,
+				98216E1515B062940099166B /* RZCacheSchema.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -333,6 +363,8 @@
 				CBFFEB3514565F1E00A003D6 /* JSONKit.m in Sources */,
 				CBFFEC1B1457936000A003D6 /* RZWebService_NSURL.m in Sources */,
 				FEC9669E158F723B00E90A65 /* RZFileManager.m in Sources */,
+				9885D141159A382A003DECDF /* RZFileCacheSchema.m in Sources */,
+				98216E1615B062940099166B /* RZCacheSchema.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

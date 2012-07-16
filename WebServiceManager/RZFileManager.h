@@ -10,6 +10,7 @@
 
 @class RZWebServiceRequest;
 @class RZWebServiceManager;
+@class RZCacheSchema;
 
 typedef void (^RZFileManagerDownloadCompletionBlock)(BOOL success, NSURL* downloadedFile, RZWebServiceRequest *request);
 typedef void (^RZFileManagerUploadCompletionBlock)(BOOL success, NSURL* uploadedFile, RZWebServiceRequest *request);
@@ -23,10 +24,10 @@ typedef void (^RZFileManagerUploadCompletionBlock)(BOOL success, NSURL* uploaded
 @interface RZFileManager : NSObject
 
 // Cache Dir URL - Directory will be created if it does not exist and set to not sync/backup
-@property (strong, nonatomic) NSURL *downloadCacheDirectory;
 @property (assign, nonatomic) BOOL shouldCacheDownloads;                        // Turns download caching on/off - Defaults to YES
 
 @property (nonatomic, weak) RZWebServiceManager* webManager;
+@property (nonatomic, strong) RZCacheSchema* cacheSchema;
 
 
 // Shared Instance Method
@@ -35,9 +36,7 @@ typedef void (^RZFileManagerUploadCompletionBlock)(BOOL success, NSURL* uploaded
 // Download File Request Methods
 - (RZWebServiceRequest*)downloadFileFromURL:(NSURL*)remoteURL withProgressDelegate:(id<RZFileProgressDelegate>)progressDelegate completion:(RZFileManagerDownloadCompletionBlock)completionBlock;
 - (RZWebServiceRequest*)downloadFileFromURL:(NSURL*)remoteURL withProgressDelegate:(id<RZFileProgressDelegate>)progressDelegate enqueue:(BOOL)enqueue completion:(RZFileManagerDownloadCompletionBlock)completionBlock;
-- (RZWebServiceRequest*)downloadFileFromURL:(NSURL*)remoteURL withProgressDelegate:(id<RZFileProgressDelegate>)progressDelegate cacheName:(NSString *)name enqueue:(BOOL)enqueue completion:(RZFileManagerDownloadCompletionBlock)completionBlock;
 - (RZWebServiceRequest*)downloadFileFromURL:(NSURL*)remoteURL withProgressDelegateSet:(NSSet *)progressDelegate enqueue:(BOOL)enqueue completion:(RZFileManagerDownloadCompletionBlock)completionBlock;
-- (RZWebServiceRequest*)downloadFileFromURL:(NSURL*)remoteURL withProgressDelegateSet:(NSSet *)progressDelegate cacheName:(NSString *)name enqueue:(BOOL)enqueue completion:(RZFileManagerDownloadCompletionBlock)completionBlock;
 
 // Upload File Request Mothods
 - (RZWebServiceRequest*)uploadFile:(NSURL*)localFile toURL:(NSURL*)remoteURL withProgressDelegate:(id<RZFileProgressDelegate>)progressDelegate completion:(RZFileManagerUploadCompletionBlock)completionBlock;
@@ -72,9 +71,12 @@ typedef void (^RZFileManagerUploadCompletionBlock)(BOOL success, NSURL* uploaded
 - (void)cancelUploadOfLocalFileURL:(NSURL*)localFileURL;
 
 // Cache File Deletion Methods
-- (void)deleteFileFromCacheWithName:(NSString *)name ofType:(NSString *)extension;
-- (void)deleteFileFromCacheWithURL:(NSURL *)remoteURL;
+- (void)deleteFileFromCacheWithRemoteURL:(NSURL *)remoteURL;
+- (void)deleteFileFromCacheWithURL:(NSURL *)localURL;
 
 - (void)setProgress:(float)progress withRequest:(RZWebServiceRequest *)request;
 - (NSURL *)defaultDocumentsDirectoryURL; 
+
+- (NSSet*)requestsWithDownloadURL:(NSURL*)downloadURL;
+
 @end

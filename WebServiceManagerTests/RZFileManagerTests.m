@@ -52,20 +52,21 @@
         [[NSRunLoop currentRunLoop] runUntilDate:[NSDate dateWithTimeIntervalSinceNow:1]];
     }
 }
--(void) test02getPDFandCacheToCustomFileWithoutExtension
+-(void) test02getPDFandDeleteWithRemoteURL
 {
-    [[RZFileManager defaultManager] downloadFileFromURL:[NSURL URLWithString:@"http://www.gnu.org/prep/standards/standards.pdf"] withProgressDelegate:nil cacheName:@"testNotPDF" enqueue:YES completion:^(BOOL success, NSURL *downloadedFile, RZWebServiceRequest *request) {
+    [[RZFileManager defaultManager] downloadFileFromURL:[NSURL URLWithString:@"http://www.gnu.org/prep/standards/standards.pdf"] withProgressDelegate:nil enqueue:YES completion:^(BOOL success, NSURL *downloadedFile, RZWebServiceRequest *request) {
         STAssertTrue(success,@"The Request Failed");
         STAssertTrue([[NSFileManager defaultManager] fileExistsAtPath:[downloadedFile path]],@"Cacheing failed");
-        NSString* extensionName = [[[downloadedFile path] componentsSeparatedByString:@"."] lastObject];
-        STAssertTrue([extensionName isEqualToString:@"pdf"],@"Failed to name the file the correct extension");
         self.apiCallCompleted = YES;
-        [[RZFileManager defaultManager] deleteFileFromCacheWithURL:downloadedFile];
+        [[RZFileManager defaultManager] deleteFileFromCacheWithRemoteURL:[NSURL URLWithString:@"http://www.gnu.org/prep/standards/standards.pdf"]];
+        STAssertTrue(![[NSFileManager defaultManager] fileExistsAtPath:[downloadedFile path]],@"Deleteing download Failed");
     }];
+    
     while (!self.apiCallCompleted) {
         [[NSRunLoop currentRunLoop] runUntilDate:[NSDate dateWithTimeIntervalSinceNow:1]];
     }
 }
+
 -(void) test03workingWithProgressDelegate
 {
     RZWebServiceRequest* request = [[RZFileManager defaultManager] downloadFileFromURL:[NSURL URLWithString:@"http://www.gnu.org/prep/standards/standards.pdf"] withProgressDelegate:self enqueue:NO completion:^(BOOL success, NSURL *downloadedFile, RZWebServiceRequest *request) {
