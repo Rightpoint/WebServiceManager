@@ -9,6 +9,7 @@
 #import "RZFileManager.h"
 #import "RZWebServiceManager.h"
 #import "RZWebServiceRequest.h"
+#import "RZFileCacheSchema.h"
 
 @interface RZFileManager ()
 
@@ -32,9 +33,9 @@ NSString * const kCompletionBlockKey = @"completionBlockKey";
 NSString * const kProgressDelegateKey = @"progressDelegateKey";
 
 @implementation RZFileManager
-@synthesize downloadCacheDirectory = _downloadCacheDirectory;
 @synthesize shouldCacheDownloads = _shouldCacheDownloads;
 @synthesize webManager = _webManager;
+@synthesize cacheSchema = _cacheSchema;
 
 @synthesize downloadRequests = _downloadRequests;
 @synthesize uploadRequests = _uploadRequests;
@@ -54,7 +55,6 @@ NSString * const kProgressDelegateKey = @"progressDelegateKey";
 {
     if ((self = [super init]))
     {
-        self.downloadCacheDirectory = [self defaultDownloadCacheURL];
         self.shouldCacheDownloads = YES;
     }
     
@@ -74,39 +74,21 @@ NSString * const kProgressDelegateKey = @"progressDelegateKey";
     return [self downloadFileFromURL:remoteURL withProgressDelegateSet:progressDelegateSet enqueue:enqueue completion:completionBlock];
 }
 
-- (RZWebServiceRequest*)downloadFileFromURL:(NSURL*)remoteURL withProgressDelegate:(id<RZFileProgressDelegate>)progressDelegate cacheName:(NSString *)name enqueue:(BOOL)enqueue completion:(RZFileManagerDownloadCompletionBlock)completionBlock 
+- (RZWebServiceRequest*)downloadFileFromURL:(NSURL*)remoteURL withProgressDelegateSet:(NSSet *)progressDelegate enqueue:(BOOL)enqueue completion:(RZFileManagerDownloadCompletionBlock)completionBlock
 {
-    NSSet* progressDelegateSet = [[NSSet alloc] initWithObjects:progressDelegate, nil];
-    return [self downloadFileFromURL:remoteURL withProgressDelegateSet:progressDelegateSet cacheName:name enqueue:enqueue completion:completionBlock];
-}
-
-- (RZWebServiceRequest*)downloadFileFromURL:(NSURL*)remoteURL withProgressDelegateSet:(NSSet *)progressDelegate enqueue:(BOOL)enqueue completion:(RZFileManagerDownloadCompletionBlock)completionBlock {
-    return [self downloadFileFromURL:remoteURL withProgressDelegateSet:progressDelegate cacheName:nil enqueue:enqueue completion:completionBlock];
-}
-
-- (RZWebServiceRequest*)downloadFileFromURL:(NSURL*)remoteURL withProgressDelegateSet:(NSSet *)progressDelegate cacheName:(NSString *)name enqueue:(BOOL)enqueue completion:(RZFileManagerDownloadCompletionBlock)completionBlock
-{
-    NSString* cacheName = (NSString*)[remoteURL.pathComponents lastObject];
-    if (name != nil) {
-        NSString* fileFormat = [[(NSString *)[remoteURL.pathComponents lastObject] componentsSeparatedByString:@"."] lastObject];
-        if ([name rangeOfString:[NSString stringWithFormat:@".%@",fileFormat]].location == NSNotFound) {
-            cacheName = [NSString stringWithFormat:@"%@.%@",name,fileFormat];
-        } else {
-            cacheName = name;
-        }
-    }
-    NSURL* cachePath = [[self downloadCacheDirectory] URLByAppendingPathComponent:cacheName];
+    NSURL* cacheURL = nil;
+    cacheURL = [self.cacheSchema cacheURLFromRemoteURL:remoteURL];
     
-    BOOL fileExists = [[NSFileManager defaultManager] fileExistsAtPath:[cachePath path]];
+    BOOL fileExists = [[NSFileManager defaultManager] fileExistsAtPath:[cacheURL path]];
     if (fileExists) {
-        completionBlock(YES,cachePath,nil);
+        completionBlock(YES,cacheURL,nil);
         return nil;
     }
     
     RZWebServiceRequest * request = [self.webManager makeRequestWithURL:remoteURL target:self successCallback:@selector(downloadRequestComplete:request:) failureCallback:@selector(downloadRequestFailed:request:) parameters:nil enqueue:NO];
     [self putObject:progressDelegate inRequest:request atKey:kProgressDelegateKey];
     [self putBlock:completionBlock inRequest:request atKey:kCompletionBlockKey];
-    request.targetFileURL = cachePath;
+    request.targetFileURL = cacheURL;
     if (enqueue) {
         [self.webManager enqueueRequest:request];
     }
@@ -282,27 +264,26 @@ NSString * const kProgressDelegateKey = @"progressDelegateKey";
 
 #pragma mark - Cache File Deletion Methods
 
-- (void)deleteFileFromCacheWithName:(NSString *)name ofType:(NSString *)extension 
-{
-    [self deleteFileFromCacheWithName:[name stringByAppendingPathExtension:extension]];
-}
-
 - (void)deleteFileFromCacheWithName:(NSString *)name 
 {
-    NSURL* filePath = [[self downloadCacheDirectory] URLByAppendingPathComponent:name];
+    NSURL* filePath = [self.cacheSchema.downloadCacheDirectory URLByAppendingPathComponent:name];
     [self deleteFileFromCacheWithURL:filePath];
 }
 
-- (void)deleteFileFromCacheWithURL:(NSURL *)remoteURL 
-{
-    NSURL* filePath = [[self downloadCacheDirectory] URLByAppendingPathComponent:(NSString*)[remoteURL.pathComponents lastObject]];
+- (void)deleteFileFromCacheWithRemoteURL:(NSURL *)remoteURL
+{ 
+    NSURL* cacheURL = [self.cacheSchema cacheURLFromRemoteURL:remoteURL];
+    [self deleteFileFromCacheWithURL:cacheURL];
+}
 
-    BOOL fileExists = [[NSFileManager defaultManager] fileExistsAtPath:[filePath path]];
+- (void)deleteFileFromCacheWithURL:(NSURL *)localURL 
+{
+    BOOL fileExists = [[NSFileManager defaultManager] fileExistsAtPath:[localURL path]];
     if (fileExists) {
         NSError* error = nil;
-        [[NSFileManager defaultManager] removeItemAtPath:[filePath path] error:&error];
+        [[NSFileManager defaultManager] removeItemAtPath:[localURL path] error:&error];
         if (error != nil) {
-            NSLog(@"Error removing file:%@ with error:%@",remoteURL, error);
+            NSLog(@"Error removing file:%@ with error:%@",localURL, error);
         }
     }
     
@@ -328,6 +309,16 @@ NSString * const kProgressDelegateKey = @"progressDelegateKey";
     });
     
     return _uploadRequests;
+}
+
+- (RZCacheSchema *)cacheSchema 
+{    
+    if (_cacheSchema == nil) {
+        _cacheSchema = [[RZFileCacheSchema alloc] init];
+        _cacheSchema.downloadCacheDirectory = [self defaultDownloadCacheURL];
+    }
+    
+    return _cacheSchema;
 }
 
 #pragma mark - Download Completion Methods
@@ -370,6 +361,8 @@ NSString * const kProgressDelegateKey = @"progressDelegateKey";
 }
 
 #pragma mark - Private Methods
+
+
 
 - (NSURL*)defaultDownloadCacheURL
 {
