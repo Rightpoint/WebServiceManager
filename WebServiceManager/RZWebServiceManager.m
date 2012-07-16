@@ -301,8 +301,10 @@
                 //
                 // if we're supporting anything earlier than 5.0, use JSONKit. 
                 //
+                
                 #if __IPHONE_OS_VERSION_MIN_REQUIRED < __IPHONE_5_0
-                   convertedResult = [NSJSONSerialization JSONObjectWithData:data options:0 error:&jsonError];
+                    convertedResult = [data objectFromJSONData];
+
                 //
                 // if we're 5.0 or above, use the build in JSON deserialization
                 //
