@@ -9,6 +9,12 @@
 #import <Foundation/Foundation.h>
 #import "RZWebServiceRequest.h"
 
+extern NSString* const kRZWebserviceDataTypeJSON;
+extern NSString* const kRZWebserviceDataTypeFile;
+extern NSString* const kRZWebserviceDataTypeText;
+extern NSString* const kRZWebserviceDataTypeImage;
+extern NSString* const kRZWebserviceDataTypePlist;
+
 @interface RZWebServiceManager : NSObject <WebServiceRequestDelegate>
 
 @property (strong, nonatomic) NSDictionary* apiCalls;

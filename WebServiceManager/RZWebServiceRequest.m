@@ -9,8 +9,10 @@
 #import "RZWebServiceRequest.h"
 #import "RZWebService_NSURL.h"
 #import "RZFileManager.h"
-
+#import "RZWebServiceManager.h"
+#if __IPHONE_OS_VERSION_MIN_REQUIRED < __IPHONE_5_0
 #import "JSONKit.h"
+#endif
 
 NSString *const kURLkey = @"URL";
 NSString *const kHTTPMethodKey = @"Method";
@@ -257,14 +259,32 @@ expectedResultType:(NSString*)expectedResultType
         // If there is a request body, try to serialize to type defined in bodyType
         if (self.requestBody && !self.urlRequest.HTTPBody)
         {
+            // If no body type is specified, can we make an assumption?
+            if (!self.bodyType)
+            {
+                if ([self.requestBody isKindOfClass:[UIImage class]])
+                {
+                    self.bodyType = kRZWebserviceDataTypeImage;
+                }
+                else if ([self.requestBody isKindOfClass:[NSString class]])
+                {
+                    self.bodyType = kRZWebserviceDataTypeText;
+                }
+                
+                if (self.bodyType){
+                    NSLog(@"[RZWebserviceRequest] No body type specified, assuming %@", self.bodyType);
+                }
+            }
+            
+            
             NSError *bodyError = nil;
             
-            // For File/Image assume request body is already serialized to NSData
-            if (([self.bodyType isEqualToString:@"File"] || [self.bodyType isEqualToString:@"Image"]) && [self.requestBody isKindOfClass:[NSData class]])
+            // If already converted to NSData, just tack it on
+            if ([self.requestBody isKindOfClass:[NSData class]])
             {
                 self.urlRequest.HTTPBody = (NSData*)self.requestBody;
             }
-            else if ([self.bodyType isEqualToString:@"JSON"])
+            else if ([self.bodyType isEqualToString:kRZWebserviceDataTypeJSON])
             {
                 #if __IPHONE_OS_VERSION_MIN_REQUIRED < __IPHONE_5_0
                     if ([self.requestBody isKindOfClass:[NSString class]])
@@ -284,19 +304,24 @@ expectedResultType:(NSString*)expectedResultType
                 #endif
             
             }
-            // No body type defined, or TEXT, assume it's an NSString
-            else if ((!self.bodyType || [self.bodyType isEqualToString:@"Text"]) && [self.requestBody isKindOfClass:[NSString class]])
+            // convert images to PNG
+            else if ([self.bodyType isEqualToString:kRZWebserviceDataTypeImage] && [self.requestBody isKindOfClass:[UIImage class]])
+            {
+                self.urlRequest.HTTPBody = UIImagePNGRepresentation((UIImage*)[self requestBody]);
+            }
+            // No body type defined, or bodyType == "text", assume it's an NSString
+            else if ((!self.bodyType || [self.bodyType isEqualToString:kRZWebserviceDataTypeText]) && [self.requestBody isKindOfClass:[NSString class]])
             {
                 self.requestBody = [(NSString*)self.requestBody dataUsingEncoding:NSUTF8StringEncoding];
             }
             // TODO: More body types... plist? XML?
             else{
 
-                NSLog(@"Error with request body: could not determine serialization for body class %@ and desired type %@", NSStringFromClass([self.requestBody class]), self.bodyType);
+                NSLog(@"[RZWebserviceRequest] Error with request body: could not determine serialization for body contents of class %@ and desired type %@", NSStringFromClass([self.requestBody class]), self.bodyType);
             }
             
-            if (bodyError){
-                NSLog(@"Error with request body: %@", [bodyError localizedDescription]);
+            if (!self.urlRequest.HTTPBody || bodyError){
+                NSLog(@"[RZWebserviceRequest] Error with request body: %@", bodyError ? [bodyError localizedDescription] : @"failed to convert to NSData");
             }
         }
         
