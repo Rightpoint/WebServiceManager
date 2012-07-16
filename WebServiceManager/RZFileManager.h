@@ -77,4 +77,7 @@ typedef void (^RZFileManagerUploadCompletionBlock)(BOOL success, NSURL* uploaded
 
 - (void)setProgress:(float)progress withRequest:(RZWebServiceRequest *)request;
 - (NSURL *)defaultDocumentsDirectoryURL; 
+
+- (NSSet*)requestsWithDownloadURL:(NSURL*)downloadURL;
+
 @end
