@@ -71,7 +71,6 @@ typedef void (^RZFileManagerUploadCompletionBlock)(BOOL success, NSURL* uploaded
 - (void)cancelUploadOfLocalFileURL:(NSURL*)localFileURL;
 
 // Cache File Deletion Methods
-- (void)deleteFileFromCacheWithName:(NSString *)name ofType:(NSString *)extension;
 - (void)deleteFileFromCacheWithRemoteURL:(NSURL *)remoteURL;
 - (void)deleteFileFromCacheWithURL:(NSURL *)localURL;
 

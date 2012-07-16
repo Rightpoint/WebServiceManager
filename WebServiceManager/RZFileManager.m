@@ -56,8 +56,6 @@ NSString * const kProgressDelegateKey = @"progressDelegateKey";
     if ((self = [super init]))
     {
         self.shouldCacheDownloads = YES;
-        self.cacheSchema = [[RZFileCacheSchema alloc] init];
-        self.cacheSchema.downloadCacheDirectory = [self defaultDownloadCacheURL];
     }
     
     return self;
