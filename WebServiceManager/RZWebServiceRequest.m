@@ -9,10 +9,15 @@
 #import "RZWebServiceRequest.h"
 #import "RZWebService_NSURL.h"
 #import "RZFileManager.h"
+#import "RZWebServiceManager.h"
+#if __IPHONE_OS_VERSION_MIN_REQUIRED < __IPHONE_5_0
+#import "JSONKit.h"
+#endif
 
 NSString *const kURLkey = @"URL";
 NSString *const kHTTPMethodKey = @"Method";
 NSString *const kExpectedResultTypeKey = @"ExpectedResultType";
+NSString *const kBodyTypeKey = @"BodyType";
 NSString *const kFailureHandlerKey = @"FailureHandler";
 NSString *const kSuccessHandlerKey = @"SuccessHandler";
 NSString *const kTimeoutKey = @"Timeout";
@@ -68,6 +73,8 @@ NSTimeInterval const kDefaultTimeout = 60;
 @synthesize successHandler = _successHandler;
 @synthesize failureHandler = _failureHandler;
 @synthesize parameters = _parameters;
+@synthesize requestBody = _requestBody;
+@synthesize bodyType = _bodyType;
 @synthesize urlRequest = _urlRequest;
 @synthesize expectedResultType = _expectedResultType;
 @synthesize responseHeaders = _responseHeaders;
@@ -99,6 +106,7 @@ NSTimeInterval const kDefaultTimeout = 60;
     NSURL* url = [NSURL URLWithString:[apiInfo objectForKey:kURLkey]];
     NSString* httpMethod = [apiInfo objectForKey:kHTTPMethodKey];
     NSString* expectedResultType = [apiInfo objectForKey:kExpectedResultTypeKey];
+    NSString* bodyType = [apiInfo objectForKey:kBodyTypeKey];
     SEL successCallback = NSSelectorFromString([apiInfo objectForKey:kSuccessHandlerKey]);
     SEL failureCallback = NSSelectorFromString([apiInfo objectForKey:kFailureHandlerKey]);
     
@@ -110,8 +118,9 @@ NSTimeInterval const kDefaultTimeout = 60;
              successCallback:successCallback
              failureCallback:failureCallback
           expectedResultType:expectedResultType
+                    bodyType:bodyType
                andParameters:parameters];
-    
+        
     return self;
 }
 
@@ -121,6 +130,7 @@ NSTimeInterval const kDefaultTimeout = 60;
   successCallback:(SEL)successCallback
   failureCallback:(SEL)failureCallback
 expectedResultType:(NSString*)expectedResultType
+         bodyType:(NSString*)bodyType
     andParameters:(NSDictionary*)parameters
 {
     self = [super init];
@@ -132,6 +142,7 @@ expectedResultType:(NSString*)expectedResultType
         self.successHandler = successCallback;
         self.failureHandler = failureCallback;
         self.expectedResultType = expectedResultType;
+        self.bodyType = bodyType;
 
         // convert the parameters to a sorted array of parameter objects
         NSArray* sortedKeys = [[parameters allKeys] sortedArrayUsingSelector:@selector(compare:)];
@@ -237,12 +248,81 @@ expectedResultType:(NSString*)expectedResultType
             if ([self.httpMethod isEqualToString:@"GET"] || [self.httpMethod isEqualToString:@"PUT"]) {
                 self.urlRequest.URL = [self.url URLByAddingParameters:self.parameters];
             }
-            else if([self.httpMethod isEqualToString:@"POST"])
+            else if([self.httpMethod isEqualToString:@"POST"] && !self.requestBody)
             {
-                // set the post body to the formatted parameters. 
+                // set the post body to the formatted parameters, but not if we already have a body set
                 self.urlRequest.HTTPBody = [[NSURL URLQueryStringFromParameters:self.parameters] dataUsingEncoding:NSUTF8StringEncoding];
             }
             
+        }
+        
+        // If there is a request body, try to serialize to type defined in bodyType
+        if (self.requestBody && !self.urlRequest.HTTPBody)
+        {
+            // If no body type is specified, can we make an assumption?
+            if (!self.bodyType)
+            {
+                if ([self.requestBody isKindOfClass:[UIImage class]])
+                {
+                    self.bodyType = kRZWebserviceDataTypeImage;
+                }
+                else if ([self.requestBody isKindOfClass:[NSString class]])
+                {
+                    self.bodyType = kRZWebserviceDataTypeText;
+                }
+                
+                if (self.bodyType){
+                    NSLog(@"[RZWebserviceRequest] No body type specified, assuming %@", self.bodyType);
+                }
+            }
+            
+            
+            NSError *bodyError = nil;
+            
+            // If already converted to NSData, just tack it on
+            if ([self.requestBody isKindOfClass:[NSData class]])
+            {
+                self.urlRequest.HTTPBody = (NSData*)self.requestBody;
+            }
+            else if ([self.bodyType isEqualToString:kRZWebserviceDataTypeJSON])
+            {
+                #if __IPHONE_OS_VERSION_MIN_REQUIRED < __IPHONE_5_0
+                    if ([self.requestBody isKindOfClass:[NSString class]])
+                    {
+                        self.urlRequest.HTTPBody = [(NSString*)self.requestBody JSONDataWithOptions:0 includeQuotes:NO error:&bodyError];
+                    }
+                    else if ([self.requestBody isKindOfClass:[NSArray class]])
+                    {
+                        self.urlRequest.HTTPBody = [(NSArray*)self.requestBody JSONDataWithOptions:0 error:&bodyError];
+                    }
+                    else if ([self.requestBody isKindOfClass:[NSDictionary class]])
+                    {
+                        self.urlRequest.HTTPBody = [(NSDictionary*)self.requestBody JSONDataWithOptions:0 error:&bodyError];
+                    }
+                #else
+                    self.urlRequest.HTTPBody = [NSJSONSerialization dataWithJSONObject:self.requestBody options:0 error:&bodyError];
+                #endif
+            
+            }
+            // convert images to PNG
+            else if ([self.bodyType isEqualToString:kRZWebserviceDataTypeImage] && [self.requestBody isKindOfClass:[UIImage class]])
+            {
+                self.urlRequest.HTTPBody = UIImagePNGRepresentation((UIImage*)[self requestBody]);
+            }
+            // No body type defined, or bodyType == "text", assume it's an NSString
+            else if ((!self.bodyType || [self.bodyType isEqualToString:kRZWebserviceDataTypeText]) && [self.requestBody isKindOfClass:[NSString class]])
+            {
+                self.requestBody = [(NSString*)self.requestBody dataUsingEncoding:NSUTF8StringEncoding];
+            }
+            // TODO: More body types... plist? XML?
+            else{
+
+                NSLog(@"[RZWebserviceRequest] Error with request body: could not determine serialization for body contents of class %@ and desired type %@", NSStringFromClass([self.requestBody class]), self.bodyType);
+            }
+            
+            if (!self.urlRequest.HTTPBody || bodyError){
+                NSLog(@"[RZWebserviceRequest] Error with request body: %@", bodyError ? [bodyError localizedDescription] : @"failed to convert to NSData");
+            }
         }
         
         if (self.uploadFileURL && [self.uploadFileURL isFileURL])

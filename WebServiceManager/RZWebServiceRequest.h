@@ -36,6 +36,7 @@ extern NSTimeInterval const kDefaultTimeout;
   successCallback:(SEL)successCallback
   failureCallback:(SEL)failureCallback
 expectedResultType:(NSString*)expectedResultType
+         bodyType:(NSString*)bodyType
     andParameters:(NSDictionary*)parameters;
 
 // set a request header on the outgoing request
@@ -54,6 +55,8 @@ expectedResultType:(NSString*)expectedResultType
 @property (strong, nonatomic) NSString* httpMethod;
 @property (strong, nonatomic) NSString* expectedResultType;
 @property (strong, nonatomic) NSMutableArray* parameters;
+@property (strong, nonatomic) NSObject* requestBody;
+@property (strong, nonatomic) NSString* bodyType;
 @property (strong, nonatomic) NSDictionary* userInfo;
 
 // timeout interval
