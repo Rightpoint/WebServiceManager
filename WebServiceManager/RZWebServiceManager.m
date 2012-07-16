@@ -11,6 +11,12 @@
 #import "JSONKit.h"
 #endif
 
+NSString* const kRZWebserviceDataTypeJSON = @"JSON";
+NSString* const kRZWebserviceDataTypeFile = @"File";
+NSString* const kRZWebserviceDataTypeText = @"Text";
+NSString* const kRZWebserviceDataTypeImage = @"Image";
+NSString* const kRZWebserviceDataTypePlist = @"Plist";
+
 @interface RZWebServiceManager()
 
 @property (strong, nonatomic) NSOperationQueue* requests; 
@@ -214,7 +220,7 @@
 
 -(RZWebServiceRequest*) makeRequestWithURL:(NSURL *)url target:(id)target successCallback:(SEL)success failureCallback:(SEL)failure parameters:(NSDictionary*)parameters enqueue:(BOOL)enqueue 
 {
-    RZWebServiceRequest* request = [[RZWebServiceRequest alloc] initWithURL:url httpMethod:@"GET" andTarget:target successCallback:success failureCallback:failure expectedResultType:@"NONE" andParameters:parameters];
+    RZWebServiceRequest* request = [[RZWebServiceRequest alloc] initWithURL:url httpMethod:@"GET" andTarget:target successCallback:success failureCallback:failure expectedResultType:@"NONE" bodyType:nil andParameters:parameters];
     if (enqueue)
         [self enqueueRequest:request];
     
@@ -275,19 +281,19 @@
             // try to convert the data to the expected type. 
             id convertedResult = nil;
             
-            if ([request.expectedResultType isEqualToString:@"File"]) {
+            if ([request.expectedResultType isEqualToString:kRZWebserviceDataTypeFile]) {
                 NSString* path = [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding];
                 convertedResult = [NSURL fileURLWithPath:path];
             }
-            else if([request.expectedResultType isEqualToString:@"Image"])
+            else if([request.expectedResultType isEqualToString:kRZWebserviceDataTypeImage])
             {
                 convertedResult = [UIImage imageWithData:data];
             }
-            else if([request.expectedResultType isEqualToString:@"Text"])
+            else if([request.expectedResultType isEqualToString:kRZWebserviceDataTypeText])
             {
                 convertedResult = [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding];
             }
-            else if([request.expectedResultType isEqualToString:@"JSON"])
+            else if([request.expectedResultType isEqualToString:kRZWebserviceDataTypeJSON])
             {
                 NSError* jsonError = nil;
                 
@@ -321,7 +327,7 @@
                     return;
                 }
             }
-            else if([request.expectedResultType isEqualToString:@"PList"])
+            else if([request.expectedResultType isEqualToString:kRZWebserviceDataTypePlist])
             {
                 NSError* plistError  = nil;
                 convertedResult = [NSPropertyListSerialization propertyListWithData:data options: NSPropertyListImmutable format:nil error:&plistError];
