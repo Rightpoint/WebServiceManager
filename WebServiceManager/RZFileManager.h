@@ -33,6 +33,10 @@ typedef void (^RZFileManagerUploadCompletionBlock)(BOOL success, NSURL* uploaded
 // Shared Instance Method
 + (RZFileManager*)defaultManager;
 
+// Class methods for docs/cache directory
++ (NSURL*)defaultDocumentsDirectoryURL;
++ (NSURL*)defaultDownloadCacheURL;
+
 // Download File Request Methods
 - (RZWebServiceRequest*)downloadFileFromURL:(NSURL*)remoteURL withProgressDelegate:(id<RZFileProgressDelegate>)progressDelegate completion:(RZFileManagerDownloadCompletionBlock)completionBlock;
 - (RZWebServiceRequest*)downloadFileFromURL:(NSURL*)remoteURL withProgressDelegate:(id<RZFileProgressDelegate>)progressDelegate enqueue:(BOOL)enqueue completion:(RZFileManagerDownloadCompletionBlock)completionBlock;
@@ -75,7 +79,7 @@ typedef void (^RZFileManagerUploadCompletionBlock)(BOOL success, NSURL* uploaded
 - (void)deleteFileFromCacheWithURL:(NSURL *)localURL;
 
 - (void)setProgress:(float)progress withRequest:(RZWebServiceRequest *)request;
-- (NSURL *)defaultDocumentsDirectoryURL; 
+
 
 - (NSSet*)requestsWithDownloadURL:(NSURL*)downloadURL;
 
