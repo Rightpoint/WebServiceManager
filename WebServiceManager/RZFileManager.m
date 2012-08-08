@@ -16,8 +16,6 @@
 @property (strong, nonatomic, readonly) NSMutableSet *downloadRequests;
 @property (strong, nonatomic, readonly) NSMutableSet *uploadRequests;
 
-- (NSURL*)defaultDownloadCacheURL;
-
 - (NSSet*)requestsWithDownloadURL:(NSURL*)downloadURL;
 - (NSSet*)requestsWithUploadURL:(NSURL*)uploadURL;
 - (NSSet*)requestsWithUploadFileURL:(NSURL*)uploadFileURL;
@@ -50,6 +48,63 @@ NSString * const kProgressDelegateKey = @"progressDelegateKey";
     
     return s_RZFileManager;
 }
+
+
++ (NSURL*)defaultDownloadCacheURL
+{
+    NSArray* cachePathsArray = NSSearchPathForDirectoriesInDomains(NSCachesDirectory, NSUserDomainMask, YES);
+    NSString* cachePath = [cachePathsArray lastObject];
+    
+    NSURL *cacheURL = nil;
+    
+    if (cachePath)
+    {
+        NSError* error = nil;
+        cacheURL = [NSURL fileURLWithPath:cachePath isDirectory:YES];
+        NSString* fullPath = [cachePath stringByAppendingPathComponent:@"DownloadCache"];
+        if (![[NSFileManager defaultManager] fileExistsAtPath:fullPath])
+        {
+            [[NSFileManager defaultManager] createDirectoryAtPath:fullPath
+                                      withIntermediateDirectories:NO
+                                                       attributes:nil
+                                                            error:&error];
+            if (error != nil)
+                NSLog(@"Error:%@:",error);
+        }
+        cacheURL = [NSURL fileURLWithPath:fullPath];
+    }
+    
+    return cacheURL;
+}
+
++ (NSURL *)defaultDocumentsDirectoryURL {
+    NSArray* cachePathsArray = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES);
+    NSString* cachePath = [cachePathsArray lastObject];
+    
+    NSURL *cacheURL = nil;
+    
+    if (cachePath)
+    {
+        NSError* error = nil;
+        cacheURL = [NSURL fileURLWithPath:cachePath isDirectory:YES];
+        NSString* fullPath = [cachePath stringByAppendingPathComponent:@"DownloadCache"];
+        if (![[NSFileManager defaultManager] fileExistsAtPath:fullPath])
+        {
+            [[NSFileManager defaultManager] createDirectoryAtPath:fullPath
+                                      withIntermediateDirectories:NO
+                                                       attributes:nil
+                                                            error:&error];
+            if (error != nil) {
+                NSLog(@"Error:%@:",error);
+            }
+        }
+        cacheURL = [NSURL fileURLWithPath:fullPath];
+    }
+    
+    return cacheURL;
+    
+}
+
 
 - (id)init
 {
@@ -315,7 +370,7 @@ NSString * const kProgressDelegateKey = @"progressDelegateKey";
 {    
     if (_cacheSchema == nil) {
         _cacheSchema = [[RZFileCacheSchema alloc] init];
-        _cacheSchema.downloadCacheDirectory = [self defaultDownloadCacheURL];
+        _cacheSchema.downloadCacheDirectory = [RZFileManager defaultDownloadCacheURL];
     }
     
     return _cacheSchema;
@@ -363,60 +418,6 @@ NSString * const kProgressDelegateKey = @"progressDelegateKey";
 #pragma mark - Private Methods
 
 
-
-- (NSURL*)defaultDownloadCacheURL
-{
-    NSArray* cachePathsArray = NSSearchPathForDirectoriesInDomains(NSCachesDirectory, NSUserDomainMask, YES);
-    NSString* cachePath = [cachePathsArray lastObject];
-    
-    NSURL *cacheURL = nil;
-    
-    if (cachePath)
-    {
-        NSError* error = nil;
-        cacheURL = [NSURL fileURLWithPath:cachePath isDirectory:YES];
-        NSString* fullPath = [cachePath stringByAppendingPathComponent:@"DownloadCache"];
-        if (![[NSFileManager defaultManager] fileExistsAtPath:fullPath])
-        {
-            [[NSFileManager defaultManager] createDirectoryAtPath:fullPath
-                                      withIntermediateDirectories:NO
-                                                       attributes:nil
-                                                            error:&error];
-            if (error != nil)
-                NSLog(@"Error:%@:",error);
-        }
-        cacheURL = [NSURL fileURLWithPath:fullPath];
-    }
-    
-    return cacheURL;
-}
-- (NSURL *)defaultDocumentsDirectoryURL {
-    NSArray* cachePathsArray = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES);
-    NSString* cachePath = [cachePathsArray lastObject];
-    
-    NSURL *cacheURL = nil;
-    
-    if (cachePath)
-    {
-        NSError* error = nil;
-        cacheURL = [NSURL fileURLWithPath:cachePath isDirectory:YES];
-        NSString* fullPath = [cachePath stringByAppendingPathComponent:@"DownloadCache"];
-        if (![[NSFileManager defaultManager] fileExistsAtPath:fullPath])
-        {
-            [[NSFileManager defaultManager] createDirectoryAtPath:fullPath
-                                      withIntermediateDirectories:NO
-                                                       attributes:nil
-                                                            error:&error];
-            if (error != nil) {
-                NSLog(@"Error:%@:",error);
-            }
-        }
-        cacheURL = [NSURL fileURLWithPath:fullPath];
-    }
-    
-    return cacheURL;
-
-}
 
 #pragma mark - Filtered Request Set Methods
 
