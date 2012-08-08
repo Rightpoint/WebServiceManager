@@ -21,6 +21,15 @@ typedef void (^RZFileManagerUploadCompletionBlock)(BOOL success, NSURL* uploaded
 
 @end
 
+extern NSString* const kNotificationRemoteURLKey;
+extern NSString* const kNotificationLocalURLKey; 
+extern NSString* const kNotificationRequestSuccessfulKey;
+
+extern NSString* const kDownloadStartedNotification;
+extern NSString* const kDownloadEndedNotification;
+extern NSString* const kUploadStartedNotification;
+extern NSString* const kUploadEndedNotification;
+
 @interface RZFileManager : NSObject
 
 // Cache Dir URL - Directory will be created if it does not exist and set to not sync/backup
