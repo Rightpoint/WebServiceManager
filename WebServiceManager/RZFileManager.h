@@ -21,14 +21,14 @@ typedef void (^RZFileManagerUploadCompletionBlock)(BOOL success, NSURL* uploaded
 
 @end
 
-extern NSString* const kNotificationRemoteURLKey;
-extern NSString* const kNotificationLocalURLKey; 
-extern NSString* const kNotificationRequestSuccessfulKey;
+extern NSString* const RZFileManagerNotificationRemoteURLKey;
+extern NSString* const RZFileManagerNotificationLocalURLKey; 
+extern NSString* const RZFileManagerNotificationRequestSuccessfulKey;
 
-extern NSString* const kDownloadStartedNotification;
-extern NSString* const kDownloadEndedNotification;
-extern NSString* const kUploadStartedNotification;
-extern NSString* const kUploadEndedNotification;
+extern NSString* const RZFileManagerFileDownloadStartedNotification;
+extern NSString* const RZFileManagerFileDownloadCompletedNotification;
+extern NSString* const RZFileManagerFileUploadStartedNotification;
+extern NSString* const RZFileManagerFileUploadCompletedNotification;
 
 @interface RZFileManager : NSObject
 
@@ -87,5 +87,12 @@ extern NSString* const kUploadEndedNotification;
 - (NSURL *)defaultDocumentsDirectoryURL; 
 
 - (NSSet*)requestsWithDownloadURL:(NSURL*)downloadURL;
+
+// Notification Posting Methods
+
+- (void)postDownloadStartedNotificationForRequest:(RZWebServiceRequest*)request;
+- (void)postUploadStartedNotificationForRequest:(RZWebServiceRequest*)request;
+- (void)postDownloadCompletedNotificationForRequest:(RZWebServiceRequest*)request successful:(BOOL)success;
+- (void)postUploadCompletedNotificationForRequest:(RZWebServiceRequest*)request successful:(BOOL)success;
 
 @end

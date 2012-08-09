@@ -32,14 +32,14 @@
 NSString* const kCompletionBlockKey = @"completionBlockKey";
 NSString* const kProgressDelegateKey = @"progressDelegateKey";
 
-NSString* const kNotificationRemoteURLKey = @"fileRemoteUrl";
-NSString* const kNotificationLocalURLKey = @"fileLocalUrl";
-NSString* const kNotificationRequestSuccessfulKey = @"requestSuccessful";
+NSString* const RZFileManagerNotificationRemoteURLKey = @"RZFileManagerNotificationRemoteURLKey";
+NSString* const RZFileManagerNotificationLocalURLKey = @"RZFileManagerNotificationLocalURLKey";
+NSString* const RZFileManagerNotificationRequestSuccessfulKey = @"RZFileManagerNotificationRequestSuccessfulKey";
 
-NSString* const kDownloadStartedNotification = @"fileDownloadStarted";
-NSString* const kDownloadEndedNotification = @"fileDownloadEnded";
-NSString* const kUploadStartedNotification = @"fileUploadStarted";
-NSString* const kUploadEndedNotification = @"fileUploadEnded";
+NSString* const RZFileManagerFileDownloadStartedNotification = @"RZFileManagerFileDownloadStartedNotification ";
+NSString* const RZFileManagerFileDownloadCompletedNotification = @"RZFileManagerFileDownloadCompletedNotification";
+NSString* const RZFileManagerFileUploadStartedNotification = @"RZFileManagerFileUploadStartedNotification";
+NSString* const RZFileManagerFileUploadCompletedNotification = @"RZFileManagerFileUploadCompletedNotification";
 
 @implementation RZFileManager
 @synthesize shouldCacheDownloads = _shouldCacheDownloads;
@@ -103,9 +103,7 @@ NSString* const kUploadEndedNotification = @"fileUploadEnded";
     }
     [self.downloadRequests addObject:request]; 
     
-    NSDictionary* notificationInfo = [NSDictionary dictionaryWithObject:remoteURL forKey:kNotificationRemoteURLKey];
-    [[NSNotificationCenter defaultCenter] postNotificationName:kDownloadStartedNotification object:nil userInfo:notificationInfo];
-
+    [self postDownloadStartedNotificationForRequest:request];
     
     return request;
 }
@@ -161,8 +159,7 @@ NSString* const kUploadEndedNotification = @"fileUploadEnded";
     }
     [self.uploadRequests addObject:request];    
     
-    NSDictionary* notificationInfo = [NSDictionary dictionaryWithObject:remoteURL forKey:kNotificationRemoteURLKey];
-    [[NSNotificationCenter defaultCenter] postNotificationName:kUploadStartedNotification object:nil userInfo:notificationInfo];
+    [self postUploadStartedNotificationForRequest:request];
     
     return request;
 }
@@ -251,13 +248,10 @@ NSString* const kUploadEndedNotification = @"fileUploadEnded";
     [requestsForURL enumerateObjectsUsingBlock:^(id obj, BOOL *stop) {
         RZWebServiceRequest *request = (RZWebServiceRequest*)obj;
         [request cancel];
-        NSDictionary* notificationInfo = 
-        [NSDictionary dictionaryWithObjects:[NSArray arrayWithObjects:request.url, request.targetFileURL,[NSNumber numberWithBool:NO],nil]  
-                                    forKeys:[NSArray arrayWithObjects:kNotificationRemoteURLKey, kNotificationLocalURLKey, kNotificationRequestSuccessfulKey, nil]]; 
-        [[NSNotificationCenter defaultCenter] postNotificationName:kDownloadEndedNotification object:nil userInfo:notificationInfo];    
-
+        [self postDownloadCompletedNotificationForRequest:request successful:NO];
     }];
-       [self.downloadRequests minusSet:requestsForURL];
+    
+    [self.downloadRequests minusSet:requestsForURL];
 }
 
 - (void)cancelUploadToURL:(NSURL*)remoteURL
@@ -267,10 +261,7 @@ NSString* const kUploadEndedNotification = @"fileUploadEnded";
     [requestsForURL enumerateObjectsUsingBlock:^(id obj, BOOL *stop) {
         RZWebServiceRequest *request = (RZWebServiceRequest*)obj;
         [request cancel];
-        NSDictionary* notificationInfo = 
-        [NSDictionary dictionaryWithObjects:[NSArray arrayWithObjects:request.url, request.uploadFileURL,[NSNumber numberWithBool:NO],nil]  
-                                    forKeys:[NSArray arrayWithObjects:kNotificationRemoteURLKey, kNotificationLocalURLKey, kNotificationRequestSuccessfulKey, nil]];
-        [[NSNotificationCenter defaultCenter] postNotificationName:kUploadEndedNotification object:nil userInfo:notificationInfo];
+        [self postUploadCompletedNotificationForRequest:request successful:NO];
     }];
 
     [self.uploadRequests minusSet:requestsForURL];
@@ -283,13 +274,9 @@ NSString* const kUploadEndedNotification = @"fileUploadEnded";
     [requestsForURL enumerateObjectsUsingBlock:^(id obj, BOOL *stop) {
         RZWebServiceRequest *request = (RZWebServiceRequest*)obj;
         [request cancel];
-        NSDictionary* notificationInfo = 
-        [NSDictionary dictionaryWithObjects:[NSArray arrayWithObjects:request.url, request.uploadFileURL,[NSNumber numberWithBool:NO],nil]  
-                                    forKeys:[NSArray arrayWithObjects:kNotificationRemoteURLKey, kNotificationLocalURLKey, kNotificationRequestSuccessfulKey, nil]];
-        [[NSNotificationCenter defaultCenter] postNotificationName:kUploadEndedNotification object:nil userInfo:notificationInfo];
+        [self postUploadCompletedNotificationForRequest:request successful:NO];
     }];
-
-
+    
     [self.uploadRequests minusSet:requestsForURL];
 }
 
@@ -359,21 +346,14 @@ NSString* const kUploadEndedNotification = @"fileUploadEnded";
     [[self downloadRequests] removeObject:request];
     compBlock(YES,request.targetFileURL,request);
     
-    NSDictionary* notificationInfo = 
-        [NSDictionary dictionaryWithObjects:[NSArray arrayWithObjects:request.url, request.targetFileURL,[NSNumber numberWithBool:YES],nil]  
-                                    forKeys:[NSArray arrayWithObjects:kNotificationRemoteURLKey, kNotificationLocalURLKey, kNotificationRequestSuccessfulKey, nil]];
-    [[NSNotificationCenter defaultCenter] postNotificationName:kDownloadEndedNotification object:nil userInfo:notificationInfo];
-
+    [self postDownloadCompletedNotificationForRequest:request successful:YES];
 }
 - (void)downloadRequestFailed:(NSError *)error request:(RZWebServiceRequest *)request {
     RZFileManagerDownloadCompletionBlock compBlock = [request.userInfo objectForKey:kCompletionBlockKey];
     [[self downloadRequests] removeObject:request];
     compBlock(NO,request.targetFileURL,request);
-    
-    NSDictionary* notificationInfo = 
-        [NSDictionary dictionaryWithObjects:[NSArray arrayWithObjects:request.url, request.targetFileURL,[NSNumber numberWithBool:NO],nil]  
-                                    forKeys:[NSArray arrayWithObjects:kNotificationRemoteURLKey, kNotificationLocalURLKey, kNotificationRequestSuccessfulKey, nil]]; 
-    [[NSNotificationCenter defaultCenter] postNotificationName:kDownloadEndedNotification object:nil userInfo:notificationInfo];
+
+    [self postDownloadCompletedNotificationForRequest:request successful:NO];
 }
 
 #pragma mark - Upload Completion Methods
@@ -382,21 +362,15 @@ NSString* const kUploadEndedNotification = @"fileUploadEnded";
     RZFileManagerUploadCompletionBlock compBlock = [request.userInfo objectForKey:kCompletionBlockKey];
     [self.uploadRequests removeObject:request];
     compBlock(YES,request.uploadFileURL,request);
-    NSDictionary* notificationInfo = 
-        [NSDictionary dictionaryWithObjects:[NSArray arrayWithObjects:request.url, request.uploadFileURL,[NSNumber numberWithBool:YES],nil]  
-                                    forKeys:[NSArray arrayWithObjects:kNotificationRemoteURLKey, kNotificationLocalURLKey, kNotificationRequestSuccessfulKey, nil]];
-    [[NSNotificationCenter defaultCenter] postNotificationName:kUploadEndedNotification object:nil userInfo:notificationInfo];
-
+    
+    [self postUploadCompletedNotificationForRequest:request successful:YES];
 }
 - (void)uploadRequestFailed:(NSError *)error request:(RZWebServiceRequest *)request {
     RZFileManagerUploadCompletionBlock compBlock = [request.userInfo objectForKey:kCompletionBlockKey];
     [self.uploadRequests removeObject:request];
     compBlock(NO,request.uploadFileURL,request);
     
-    NSDictionary* notificationInfo = 
-    [NSDictionary dictionaryWithObjects:[NSArray arrayWithObjects:request.url, request.uploadFileURL,[NSNumber numberWithBool:NO],nil]  
-                                forKeys:[NSArray arrayWithObjects:kNotificationRemoteURLKey, kNotificationLocalURLKey, kNotificationRequestSuccessfulKey, nil]];
-    [[NSNotificationCenter defaultCenter] postNotificationName:kUploadEndedNotification object:nil userInfo:notificationInfo];
+    [self postUploadCompletedNotificationForRequest:request successful:NO];
 }
 
 #pragma mark - Progress Delegate Helper Methods
@@ -609,6 +583,29 @@ NSString* const kUploadEndedNotification = @"fileUploadEnded";
         [requestDictionary removeObjectForKey:key];
         request.userInfo = requestDictionary;
     }
+}
+
+- (void)postDownloadStartedNotificationForRequest:(RZWebServiceRequest*)request{
+    NSDictionary* notificationInfo = [NSDictionary dictionaryWithObject:request.url forKey:RZFileManagerNotificationRemoteURLKey];
+    [[NSNotificationCenter defaultCenter] postNotificationName:RZFileManagerFileDownloadStartedNotification object:self userInfo:notificationInfo];
+}
+- (void)postUploadStartedNotificationForRequest:(RZWebServiceRequest*)request{
+    NSDictionary* notificationInfo = [NSDictionary dictionaryWithObject:request.url forKey:RZFileManagerNotificationRemoteURLKey];
+    [[NSNotificationCenter defaultCenter] postNotificationName:RZFileManagerFileUploadStartedNotification object:self userInfo:notificationInfo];
+}
+- (void)postDownloadCompletedNotificationForRequest:(RZWebServiceRequest*)request successful:(BOOL)success{
+    NSDictionary* notificationInfo = 
+    [NSDictionary dictionaryWithObjects:[NSArray arrayWithObjects:request.url, request.targetFileURL,[NSNumber numberWithBool:success],nil]  
+                                forKeys:[NSArray arrayWithObjects:RZFileManagerNotificationRemoteURLKey, RZFileManagerNotificationLocalURLKey, RZFileManagerNotificationRequestSuccessfulKey, nil]];
+    [[NSNotificationCenter defaultCenter] postNotificationName:RZFileManagerFileDownloadCompletedNotification object:self userInfo:notificationInfo];
+
+}
+- (void)postUploadCompletedNotificationForRequest:(RZWebServiceRequest*)request successful:(BOOL)success{
+   NSDictionary* notificationInfo = 
+   [NSDictionary dictionaryWithObjects:[NSArray arrayWithObjects:request.url, request.uploadFileURL,[NSNumber numberWithBool:success],nil]  
+                               forKeys:[NSArray arrayWithObjects:RZFileManagerNotificationRemoteURLKey, RZFileManagerNotificationLocalURLKey, RZFileManagerNotificationRequestSuccessfulKey, nil]];
+   [[NSNotificationCenter defaultCenter] postNotificationName:RZFileManagerFileUploadCompletedNotification object:self userInfo:notificationInfo];
+
 }
 
 @end
