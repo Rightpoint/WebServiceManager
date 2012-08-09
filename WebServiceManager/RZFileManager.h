@@ -91,6 +91,7 @@ extern NSString* const RZFileManagerFileUploadCompletedNotification;
 
 
 - (NSSet*)requestsWithDownloadURL:(NSURL*)downloadURL;
+- (NSSet*)requestsWithUploadURL:(NSURL*)uploadURL;
 
 // Notification Posting Methods
 

@@ -167,12 +167,12 @@ NSString* const RZFileManagerFileUploadCompletedNotification = @"RZFileManagerFi
 
 - (RZWebServiceRequest*)uploadFile:(NSURL*)localFile toURL:(NSURL*)remoteURL withProgressDelegate:(id<RZFileProgressDelegate>)progressDelegate completion:(RZFileManagerUploadCompletionBlock)completionBlock
 {
-    return [self uploadFile:localFile toURL:remoteURL withProgressDelegateSet:[NSSet setWithObject:progressDelegate] enqueue:YES completion:completionBlock];
+    return [self uploadFile:localFile toURL:remoteURL withProgressDelegateSet:[NSSet setWithObjects:progressDelegate,nil] enqueue:YES completion:completionBlock];
 }
 
 - (RZWebServiceRequest*)uploadFile:(NSURL*)localFile toURL:(NSURL*)remoteURL withProgressDelegate:(id<RZFileProgressDelegate>)progressDelegate enqueue:(BOOL)enqueue completion:(RZFileManagerUploadCompletionBlock)completionBlock
 {
-    return [self uploadFile:localFile toURL:remoteURL withProgressDelegateSet:[NSSet setWithObject:progressDelegate] enqueue:enqueue completion:completionBlock];
+    return [self uploadFile:localFile toURL:remoteURL withProgressDelegateSet:[NSSet setWithObjects:progressDelegate, nil] enqueue:enqueue completion:completionBlock];
 }
 
 - (RZWebServiceRequest*)uploadFile:(NSURL*)localFile toURL:(NSURL*)remoteURL withProgressDelegateSet:(NSSet *)progressDelegates completion:(RZFileManagerUploadCompletionBlock)completionBlock
