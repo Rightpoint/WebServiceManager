@@ -51,8 +51,8 @@ I'd like to display a progress indicator, how do I get progress?
 RZWebserviceManager will work on iOS 4.3 and above. However, to get it to build and run correctly for iOS 4.3, a few
 extra steps must be taken:
 
-1. In your target's Build Phases, make sure that all of RZWebserviceManager's .m files have the compiler flag "-fobjc-arc"
-2. In your target's Build Settings, also add "-fobjc-arc" to "Other Linker Flags"
+1. In your target's Build Phases, make sure that all of RZWebserviceManager's .m files have the compiler flag `-fobjc-arc`
+2. In your target's Build Settings, also add `-fobjc-arc` to "Other Linker Flags"
 
 This will enable ARC during compilation and linking, and RZWebserviceManager should work just fine with your iOS 4.3 project!
 
