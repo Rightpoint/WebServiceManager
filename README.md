@@ -6,7 +6,7 @@ The goal of this project is to provide a simple way to define an Objective-C wra
 
 The initial version of this class is _extremely_ limited, and can only handle GET requests with standard URL query strings. This will of course change, hopefully in the near future, to support all the HTTP request methods, as well as file uploads on the methods that support it. 
 
-This project is ARC only. I was tired of typing *autorelease*
+This project is ARC only. I was tired of typing *autorelease*. However, it *will* work for iOS 4.3. See details below.
 
 ### Features
 * Specify your full set of APIs and callbacks in a plist file. 
@@ -46,6 +46,15 @@ I'd like to display a progress indicator, how do I get progress?
 * The RZWebServiceRequest will always pass `animated:YES`
 * You should not add both methods.
 
+#### Building for iOS 4.3
+
+RZWebserviceManager will work on iOS 4.3 and above. However, to get it to build and run correctly for iOS 4.3, a few
+extra steps must be taken:
+
+1. In your target's Build Phases, make sure that all of RZWebserviceManager's .m files have the compiler flag "-fobjc-arc"
+2. In your target's Build Settings, also add "-fobjc-arc" to "Other Linker Flags"
+
+This will enable ARC during compilation and linking, and RZWebserviceManager should work just fine with your iOS 4.3 project!
 
 ### Overrides
 * There aren't may things you can currently override, but as you can see in Test Case 5 (concurrent requests), you have the ability to override the success and failure cases of a request programatically. This of course defeats the purpose of using this framework, and should be avoided. 
