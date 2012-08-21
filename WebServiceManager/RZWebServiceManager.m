@@ -237,6 +237,11 @@ NSString* const kRZWebserviceDataTypePlist = @"Plist";
     }
 }
 
+-(void) cancelAllRequests
+{
+    [self.requests cancelAllOperations];
+}
+
 /*
 -(void) startNextRequest
 {
