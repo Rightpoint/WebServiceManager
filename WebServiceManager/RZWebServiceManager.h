@@ -52,6 +52,7 @@ extern NSString* const kRZWebserviceDataTypePlist;
 -(void) enqueueRequest:(RZWebServiceRequest*)request;
 
 -(void) cancelRequestsForTarget:(id)target;
+-(void) cancelAllRequests;
 
 // Allow for multiple requests to execute concurrently.
 -(void) setMaximumConcurrentRequests:(NSInteger)maxRequests;

@@ -30,6 +30,7 @@ NSTimeInterval const kDefaultTimeout = 60;
 @property (assign, readwrite) NSUInteger bytesReceived;
 @property (strong, nonatomic) NSURLConnection* connection;
 @property (strong, nonatomic) NSThread *connectionThread;
+@property (assign, nonatomic) UIBackgroundTaskIdentifier backgroundTaskId;
 @property (assign, nonatomic) float responseSize;
 @property (assign, nonatomic) long long contentLength;
 @property (assign, nonatomic) BOOL done;
@@ -67,6 +68,7 @@ NSTimeInterval const kDefaultTimeout = 60;
 @synthesize bytesReceived = _bytesReceived;
 @synthesize connection = _connection;
 @synthesize connectionThread = _connectionThread;
+@synthesize backgroundTaskId = _backgroundTaskId;
 @synthesize url = _url;
 @synthesize redirectedURL = _redirectedURL;
 @synthesize delegate  = _delegate;
@@ -136,6 +138,9 @@ expectedResultType:(NSString*)expectedResultType
     self = [super init];
     
     if (nil != self) {
+        
+        self.backgroundTaskId = UIBackgroundTaskInvalid;
+        
         self.url = url;
         self.httpMethod = httpMethod;
         self.target = target;
@@ -230,6 +235,28 @@ expectedResultType:(NSString*)expectedResultType
 {
     
     @autoreleasepool {
+        
+        // start a background task handler
+        if ([[UIDevice currentDevice] respondsToSelector:@selector(isMultitaskingSupported)]){
+            if ([[UIDevice currentDevice] isMultitaskingSupported]){
+                _backgroundTaskId = [[UIApplication sharedApplication] beginBackgroundTaskWithExpirationHandler:^{
+                    if (_backgroundTaskId != UIBackgroundTaskInvalid){
+                        
+                        // cleanup the request
+                        [self cancel];
+                        
+                        // report a background timeout error
+                        NSError* error = [NSError errorWithDomain:NSURLErrorDomain code:NSURLErrorTimedOut userInfo:nil];
+                        [self reportError:error];
+                        
+                        // end the background task
+                        [[UIApplication sharedApplication] endBackgroundTask:_backgroundTaskId];
+                        _backgroundTaskId = UIBackgroundTaskInvalid;
+                    }
+                }];
+            }
+        }
+
         
         // keep track of the current thread
         self.connectionThread = [NSThread currentThread];
@@ -358,6 +385,12 @@ expectedResultType:(NSString*)expectedResultType
         }
         
         @synchronized(self){
+            
+            // end the background task
+            if (_backgroundTaskId != UIBackgroundTaskInvalid){
+                [[UIApplication sharedApplication] endBackgroundTask:_backgroundTaskId];
+                _backgroundTaskId = UIBackgroundTaskInvalid;
+            }
             
             self.connectionThread = nil;
             
