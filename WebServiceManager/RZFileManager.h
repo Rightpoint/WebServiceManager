@@ -79,7 +79,7 @@ extern NSString* const RZFileManagerFileUploadCompletedNotification;
 - (void)removeProgressDelegateFromAllFileRequests:(id<RZFileProgressDelegate>)delegate;
 
 // Cancel File Transfer Requests
-- (void)cancelAlDownloads;
+- (void)cancelAllDownloads;
 - (void)cancelDownloadFromURL:(NSURL*)remoteURL;
 - (void)cancelUploadToURL:(NSURL*)remoteURL;
 - (void)cancelUploadOfLocalFileURL:(NSURL*)localFileURL;

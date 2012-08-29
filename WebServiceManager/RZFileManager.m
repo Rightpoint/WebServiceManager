@@ -296,7 +296,7 @@ NSString* const RZFileManagerFileUploadCompletedNotification = @"RZFileManagerFi
 
 #pragma mark - Cancel File Transfer Requests Methods
 
-- (void)cancelAlDownloads
+- (void)cancelAllDownloads
 {
     // cancel all and deliver failed completion notifications
     for (RZWebServiceRequest *request in self.downloadRequests)
