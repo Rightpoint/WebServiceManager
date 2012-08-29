@@ -35,9 +35,7 @@ NSString* const kRZWebserviceDataTypePlist = @"Plist";
 
 -(id)init{
     if (self = [super init]){
-        self.requests = [[NSOperationQueue alloc] init];
-        [self.requests setName:@"RZWebServiceManagerQueue"];
-        [self.requests setMaxConcurrentOperationCount:1];
+        [self requests];
     }
     return self;
 }
@@ -58,22 +56,26 @@ NSString* const kRZWebserviceDataTypePlist = @"Plist";
         self.apiCalls = apiCalls;
         self.apiSpecificHosts = [NSMutableDictionary dictionary];
         
-        self.requests = [[NSOperationQueue alloc] init];
-        [self.requests setName:@"RZWebServiceManagerQueue"];
-        [self.requests setMaxConcurrentOperationCount:1];
+        [self requests];
     }
     
     return self;
 }
 
--(void) enqueueRequest:(RZWebServiceRequest*)request
+- (NSOperationQueue*)requests
 {
-    if (nil == self.requests) {
-        self.requests = [[NSOperationQueue alloc] init];
-        [self.requests setName:@"RZWebServiceManagerQueue"];
-        [self.requests setMaxConcurrentOperationCount:1];
+    if (nil == _requests)
+    {
+        _requests = [[NSOperationQueue alloc] init];
+        [_requests setName:@"RZWebServiceManagerQueue"];
+        [_requests setMaxConcurrentOperationCount:1];
     }
     
+    return _requests;
+}
+
+-(void) enqueueRequest:(RZWebServiceRequest*)request
+{
     request.delegate = self;
     [self.requests addOperation:request];
    
