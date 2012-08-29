@@ -321,6 +321,18 @@ NSString* const RZFileManagerFileUploadCompletedNotification = @"RZFileManagerFi
     [self.downloadRequests minusSet:requestsForURL];
 }
 
+- (void)cancelAllUploads
+{
+    // cancel all and deliver failed completion notifications
+    for (RZWebServiceRequest *request in self.uploadRequests)
+    {
+        [request cancel];
+        [self postUploadCompletedNotificationForRequest:request successful:NO];
+    }
+    
+    [self.uploadRequests removeAllObjects];
+}
+
 - (void)cancelUploadToURL:(NSURL*)remoteURL
 {
     NSSet *requestsForURL = [self requestsWithUploadURL:remoteURL];

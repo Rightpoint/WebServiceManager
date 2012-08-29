@@ -81,6 +81,7 @@ extern NSString* const RZFileManagerFileUploadCompletedNotification;
 // Cancel File Transfer Requests
 - (void)cancelAllDownloads;
 - (void)cancelDownloadFromURL:(NSURL*)remoteURL;
+- (void)cancelAllUploads;
 - (void)cancelUploadToURL:(NSURL*)remoteURL;
 - (void)cancelUploadOfLocalFileURL:(NSURL*)localFileURL;
 
