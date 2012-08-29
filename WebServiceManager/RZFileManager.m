@@ -44,6 +44,9 @@ NSString* const RZFileManagerFileUploadCompletedNotification = @"RZFileManagerFi
 @synthesize webManager = _webManager;
 @synthesize cacheSchema = _cacheSchema;
 
+@synthesize downloadsQueue = _downloadsQueue;
+@synthesize uploadsQueue = _uploadsQueue;
+
 @synthesize downloadRequests = _downloadRequests;
 @synthesize uploadRequests = _uploadRequests;
 

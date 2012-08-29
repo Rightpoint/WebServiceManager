@@ -38,6 +38,8 @@ extern NSString* const RZFileManagerFileUploadCompletedNotification;
 @property (nonatomic, unsafe_unretained) RZWebServiceManager* webManager;
 @property (nonatomic, strong) RZCacheSchema* cacheSchema;
 
+@property (strong, nonatomic) NSOperationQueue *downloadsQueue;
+@property (strong, nonatomic) NSOperationQueue *uploadsQueue;
 
 // Shared Instance Method
 + (RZFileManager*)defaultManager;
