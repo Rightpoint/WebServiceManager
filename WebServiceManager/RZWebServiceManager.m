@@ -76,9 +76,13 @@ NSString* const kRZWebserviceDataTypePlist = @"Plist";
 
 -(void) enqueueRequest:(RZWebServiceRequest*)request
 {
+    [self enqueueRequest:request inQueue:self.requests];
+}
+
+-(void) enqueueRequest:(RZWebServiceRequest *)request inQueue:(NSOperationQueue*)queue
+{
     request.delegate = self;
-    [self.requests addOperation:request];
-   
+    [queue addOperation:request];
 }
 
 -(void) setMaximumConcurrentRequests:(NSInteger)maxRequests
