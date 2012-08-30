@@ -24,6 +24,19 @@
 - (void)removeProgressDelegate:(id<RZFileProgressDelegate>)delegate fromRequests:(NSSet*)requests;
 - (void)removeAllProgressDelegatesFromRequests:(NSSet*)requests;
 
+// user info helpers
+- (void)putBlock:(id)block inRequest:(RZWebServiceRequest*)request atKey:(id)key;
+- (void)putObject:(id)obj inRequest:(RZWebServiceRequest*)request atKey:(id)key;
+- (void)addObject:(id)obj toRequest:(RZWebServiceRequest *)request atKey:(id)key;
+- (void)removeObject:(id)obj fromRequest:(RZWebServiceRequest*)request atKey:(id)key;
+- (void)removeKey:(id)key fromRequest:(RZWebServiceRequest*)request;
+
+// notification helpers
+- (void)postDownloadStartedNotificationForRequest:(RZWebServiceRequest*)request;
+- (void)postUploadStartedNotificationForRequest:(RZWebServiceRequest*)request;
+- (void)postDownloadCompletedNotificationForRequest:(RZWebServiceRequest*)request successful:(BOOL)success;
+- (void)postUploadCompletedNotificationForRequest:(RZWebServiceRequest*)request successful:(BOOL)success;
+
 @end
 
 
