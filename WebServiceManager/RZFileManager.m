@@ -24,6 +24,21 @@
 - (void)removeProgressDelegate:(id<RZFileProgressDelegate>)delegate fromRequests:(NSSet*)requests;
 - (void)removeAllProgressDelegatesFromRequests:(NSSet*)requests;
 
+// user info helpers
+- (void)putBlock:(id)block inRequest:(RZWebServiceRequest*)request atKey:(id)key;
+- (void)addBlock:(id)block toRequest:(RZWebServiceRequest*)request atKey:(id)key;
+- (void)removeBlock:(id)block fromRequest:(RZWebServiceRequest*)request atKey:(id)key;
+- (void)putObject:(id)obj inRequest:(RZWebServiceRequest*)request atKey:(id)key;
+- (void)addObject:(id)obj toRequest:(RZWebServiceRequest *)request atKey:(id)key;
+- (void)removeObject:(id)obj fromRequest:(RZWebServiceRequest*)request atKey:(id)key;
+- (void)removeKey:(id)key fromRequest:(RZWebServiceRequest*)request;
+
+// notification helpers
+- (void)postDownloadStartedNotificationForRequest:(RZWebServiceRequest*)request;
+- (void)postUploadStartedNotificationForRequest:(RZWebServiceRequest*)request;
+- (void)postDownloadCompletedNotificationForRequest:(RZWebServiceRequest*)request successful:(BOOL)success;
+- (void)postUploadCompletedNotificationForRequest:(RZWebServiceRequest*)request successful:(BOOL)success;
+
 @end
 
 
@@ -143,6 +158,22 @@ NSString* const RZFileManagerFileUploadCompletedNotification = @"RZFileManagerFi
 
 - (RZWebServiceRequest*)downloadFileFromURL:(NSURL*)remoteURL withProgressDelegateSet:(NSSet *)progressDelegate enqueue:(BOOL)enqueue completion:(RZFileManagerDownloadCompletionBlock)completionBlock
 {
+    // Check if already downloading - if so, just add completion handlers
+    // *SHOULD* only be one request for a given URL at a time... they will get the same hashed cache name
+    NSSet *downloadsInProgress = [self requestsWithDownloadURL:remoteURL];
+    if ([downloadsInProgress count])
+    {
+        RZWebServiceRequest *request = [downloadsInProgress anyObject];
+        
+        // add progress delegate
+        [self addProgressDelegate:[progressDelegate anyObject] toRequests:[NSSet setWithObject:request]];
+        
+        // add completion block
+        [self addBlock:completionBlock toRequest:request atKey:kCompletionBlockKey];
+        
+        return [downloadsInProgress anyObject];
+    }
+    
     NSURL* cacheURL = nil;
     cacheURL = [self.cacheSchema cacheURLFromRemoteURL:remoteURL];
     
@@ -154,7 +185,7 @@ NSString* const RZFileManagerFileUploadCompletedNotification = @"RZFileManagerFi
     
     RZWebServiceRequest * request = [self.webManager makeRequestWithURL:remoteURL target:self successCallback:@selector(downloadRequestComplete:request:) failureCallback:@selector(downloadRequestFailed:request:) parameters:nil enqueue:NO];
     [self putObject:progressDelegate inRequest:request atKey:kProgressDelegateKey];
-    [self putBlock:completionBlock inRequest:request atKey:kCompletionBlockKey];
+    [self addBlock:completionBlock toRequest:request atKey:kCompletionBlockKey];
     request.targetFileURL = cacheURL;
     
     [self.downloadRequests addObject:request];
@@ -454,16 +485,24 @@ NSString* const RZFileManagerFileUploadCompletedNotification = @"RZFileManagerFi
 #pragma mark - Download Completion Methods
 
 - (void)downloadRequestComplete:(NSData *)data request:(RZWebServiceRequest *)request {
-    RZFileManagerDownloadCompletionBlock compBlock = [request.userInfo objectForKey:kCompletionBlockKey];
+    
     [[self downloadRequests] removeObject:request];
-    compBlock(YES,request.targetFileURL,request);
+    
+    NSSet *compBlocks = [request.userInfo objectForKey:kCompletionBlockKey];
+    for (RZFileManagerDownloadCompletionBlock compBlock in compBlocks){
+        compBlock(YES,request.targetFileURL,request);
+    }
     
     [self postDownloadCompletedNotificationForRequest:request successful:YES];
 }
 - (void)downloadRequestFailed:(NSError *)error request:(RZWebServiceRequest *)request {
-    RZFileManagerDownloadCompletionBlock compBlock = [request.userInfo objectForKey:kCompletionBlockKey];
+    
     [[self downloadRequests] removeObject:request];
-    compBlock(NO,request.targetFileURL,request);
+    
+    NSSet *compBlocks = [request.userInfo objectForKey:kCompletionBlockKey];
+    for (RZFileManagerDownloadCompletionBlock compBlock in compBlocks){
+        compBlock(NO,request.targetFileURL,request);
+    }
 
     [self postDownloadCompletedNotificationForRequest:request successful:NO];
 }
@@ -554,7 +593,16 @@ NSString* const RZFileManagerFileUploadCompletedNotification = @"RZFileManagerFi
 - (void)putBlock:(id)block inRequest:(RZWebServiceRequest*)request atKey:(id)key
 {
     [self putObject:[block copy] inRequest:request atKey:key];
-    
+}
+
+- (void)addBlock:(id)block toRequest:(RZWebServiceRequest*)request atKey:(id)key
+{
+    [self addObject:[block copy] toRequest:request atKey:key];
+}
+
+- (void)removeBlock:(id)block fromRequest:(RZWebServiceRequest*)request atKey:(id)key
+{
+    [self removeObject:block fromRequest:request atKey:key];
 }
 
 - (void)putObject:(id)obj inRequest:(RZWebServiceRequest*)request atKey:(id)key
