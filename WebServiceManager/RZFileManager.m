@@ -26,6 +26,8 @@
 
 // user info helpers
 - (void)putBlock:(id)block inRequest:(RZWebServiceRequest*)request atKey:(id)key;
+- (void)addBlock:(id)block toRequest:(RZWebServiceRequest*)request atKey:(id)key;
+- (void)removeBlock:(id)block fromRequest:(RZWebServiceRequest*)request atKey:(id)key;
 - (void)putObject:(id)obj inRequest:(RZWebServiceRequest*)request atKey:(id)key;
 - (void)addObject:(id)obj toRequest:(RZWebServiceRequest *)request atKey:(id)key;
 - (void)removeObject:(id)obj fromRequest:(RZWebServiceRequest*)request atKey:(id)key;
@@ -167,7 +169,7 @@ NSString* const RZFileManagerFileUploadCompletedNotification = @"RZFileManagerFi
         [self addProgressDelegate:[progressDelegate anyObject] toRequests:[NSSet setWithObject:request]];
         
         // add completion block
-        [self putBlock:completionBlock inRequest:request atKey:kCompletionBlockKey];
+        [self addBlock:completionBlock toRequest:request atKey:kCompletionBlockKey];
         
         return [downloadsInProgress anyObject];
     }
@@ -183,7 +185,7 @@ NSString* const RZFileManagerFileUploadCompletedNotification = @"RZFileManagerFi
     
     RZWebServiceRequest * request = [self.webManager makeRequestWithURL:remoteURL target:self successCallback:@selector(downloadRequestComplete:request:) failureCallback:@selector(downloadRequestFailed:request:) parameters:nil enqueue:NO];
     [self putObject:progressDelegate inRequest:request atKey:kProgressDelegateKey];
-    [self putBlock:completionBlock inRequest:request atKey:kCompletionBlockKey];
+    [self addBlock:completionBlock toRequest:request atKey:kCompletionBlockKey];
     request.targetFileURL = cacheURL;
     
     [self.downloadRequests addObject:request];
@@ -487,8 +489,9 @@ NSString* const RZFileManagerFileUploadCompletedNotification = @"RZFileManagerFi
     [[self downloadRequests] removeObject:request];
     
     NSSet *compBlocks = [request.userInfo objectForKey:kCompletionBlockKey];
-    for (RZFileManagerDownloadCompletionBlock compBlock in compBlocks)
+    for (RZFileManagerDownloadCompletionBlock compBlock in compBlocks){
         compBlock(YES,request.targetFileURL,request);
+    }
     
     [self postDownloadCompletedNotificationForRequest:request successful:YES];
 }
@@ -497,8 +500,9 @@ NSString* const RZFileManagerFileUploadCompletedNotification = @"RZFileManagerFi
     [[self downloadRequests] removeObject:request];
     
     NSSet *compBlocks = [request.userInfo objectForKey:kCompletionBlockKey];
-    for (RZFileManagerDownloadCompletionBlock compBlock in compBlocks)
+    for (RZFileManagerDownloadCompletionBlock compBlock in compBlocks){
         compBlock(NO,request.targetFileURL,request);
+    }
 
     [self postDownloadCompletedNotificationForRequest:request successful:NO];
 }
@@ -588,28 +592,17 @@ NSString* const RZFileManagerFileUploadCompletedNotification = @"RZFileManagerFi
 
 - (void)putBlock:(id)block inRequest:(RZWebServiceRequest*)request atKey:(id)key
 {
-    if(nil != block && nil != key)
-    {
-        NSMutableDictionary* requestDictionary = nil;
-        if (nil != request.userInfo) {
-            requestDictionary = [NSMutableDictionary dictionaryWithDictionary:request.userInfo];
-        }
-        
-        if(!requestDictionary) {
-            requestDictionary = [[NSMutableDictionary alloc] initWithCapacity:1];
-        }
+    [self putObject:[block copy] inRequest:request atKey:key];
+}
 
-        // Can have multiple blocks for duplicate file downloads with different completion handlers
-        NSMutableSet *blockSet = [[requestDictionary objectForKey:key] mutableCopy];
-        if (!blockSet){
-            blockSet = [NSMutableSet setWithCapacity:2];
-        }
-        
-        [blockSet addObject:[block copy]];
-        
-        [requestDictionary setObject:blockSet forKey:key];
-        request.userInfo = requestDictionary;
-    }
+- (void)addBlock:(id)block toRequest:(RZWebServiceRequest*)request atKey:(id)key
+{
+    [self addObject:[block copy] toRequest:request atKey:key];
+}
+
+- (void)removeBlock:(id)block fromRequest:(RZWebServiceRequest*)request atKey:(id)key
+{
+    [self removeObject:block fromRequest:request atKey:key];
 }
 
 - (void)putObject:(id)obj inRequest:(RZWebServiceRequest*)request atKey:(id)key
