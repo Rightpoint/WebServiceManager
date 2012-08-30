@@ -38,6 +38,8 @@ extern NSString* const RZFileManagerFileUploadCompletedNotification;
 @property (nonatomic, unsafe_unretained) RZWebServiceManager* webManager;
 @property (nonatomic, strong) RZCacheSchema* cacheSchema;
 
+@property (strong, nonatomic) NSOperationQueue *downloadsQueue;
+@property (strong, nonatomic) NSOperationQueue *uploadsQueue;
 
 // Shared Instance Method
 + (RZFileManager*)defaultManager;
@@ -56,6 +58,10 @@ extern NSString* const RZFileManagerFileUploadCompletedNotification;
 - (RZWebServiceRequest*)uploadFile:(NSURL*)localFile toURL:(NSURL*)remoteURL withProgressDelegate:(id<RZFileProgressDelegate>)progressDelegate enqueue:(BOOL)enqueue completion:(RZFileManagerUploadCompletionBlock)completionBlock;
 - (RZWebServiceRequest*)uploadFile:(NSURL*)localFile toURL:(NSURL*)remoteURL withProgressDelegateSet:(NSSet *)progressDelegates completion:(RZFileManagerUploadCompletionBlock)completionBlock;
 - (RZWebServiceRequest*)uploadFile:(NSURL*)localFile toURL:(NSURL*)remoteURL withProgressDelegateSet:(NSSet *)progressDelegates enqueue:(BOOL)enqueue completion:(RZFileManagerUploadCompletionBlock)completionBlock;
+
+//Enqueue Methods
+- (void)enqueueDownloadRequest:(RZWebServiceRequest*)downloadRequest;
+- (void)enqueueUploadRequest:(RZWebServiceRequest*)uploadRequest;
 
 //Download ProgressDelegateMethods
 - (void)addProgressDelegate:(id<RZFileProgressDelegate>)delegate toURL:(NSURL *)remoteURL;

@@ -44,6 +44,9 @@ NSString* const RZFileManagerFileUploadCompletedNotification = @"RZFileManagerFi
 @synthesize webManager = _webManager;
 @synthesize cacheSchema = _cacheSchema;
 
+@synthesize downloadsQueue = _downloadsQueue;
+@synthesize uploadsQueue = _uploadsQueue;
+
 @synthesize downloadRequests = _downloadRequests;
 @synthesize uploadRequests = _uploadRequests;
 
@@ -153,12 +156,12 @@ NSString* const RZFileManagerFileUploadCompletedNotification = @"RZFileManagerFi
     [self putObject:progressDelegate inRequest:request atKey:kProgressDelegateKey];
     [self putBlock:completionBlock inRequest:request atKey:kCompletionBlockKey];
     request.targetFileURL = cacheURL;
-    if (enqueue) {
-        [self.webManager enqueueRequest:request];
-    }
-    [self.downloadRequests addObject:request]; 
     
-    [self postDownloadStartedNotificationForRequest:request];
+    [self.downloadRequests addObject:request];
+    
+    if (enqueue) {
+        [self enqueueDownloadRequest:request];
+    }
     
     return request;
 }
@@ -209,14 +212,44 @@ NSString* const RZFileManagerFileUploadCompletedNotification = @"RZFileManagerFi
     [self putBlock:completionBlock inRequest:request atKey:kCompletionBlockKey];
     request.httpMethod = @"PUT";
     request.uploadFileURL = localFile;
-    if (enqueue) {
-        [self.webManager enqueueRequest:request];
-    }
-    [self.uploadRequests addObject:request];    
     
-    [self postUploadStartedNotificationForRequest:request];
+    [self.uploadRequests addObject:request];
+    
+    if (enqueue) {
+        [self enqueueUploadRequest:request];
+    }
     
     return request;
+}
+
+#pragma mark - Enqueue Methods
+
+- (void)enqueueDownloadRequest:(RZWebServiceRequest*)downloadRequest
+{
+    if (nil == self.downloadsQueue)
+    {
+        [self.webManager enqueueRequest:downloadRequest];
+    }
+    else
+    {
+        [self.webManager enqueueRequest:downloadRequest inQueue:self.downloadsQueue];
+    }
+    
+    [self postDownloadStartedNotificationForRequest:downloadRequest];
+}
+
+- (void)enqueueUploadRequest:(RZWebServiceRequest*)uploadRequest
+{
+    if (nil == self.uploadsQueue)
+    {
+        [self.webManager enqueueRequest:uploadRequest];
+    }
+    else
+    {
+        [self.webManager enqueueRequest:uploadRequest inQueue:self.uploadsQueue];
+    }
+    
+    [self postUploadStartedNotificationForRequest:uploadRequest];
 }
 
 #pragma mark - Download Progress Delegate Methods

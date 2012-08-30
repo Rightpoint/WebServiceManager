@@ -50,6 +50,7 @@ extern NSString* const kRZWebserviceDataTypePlist;
 
 // add a request to the queue. This will execute the request when there are enough active slots for it.
 -(void) enqueueRequest:(RZWebServiceRequest*)request;
+-(void) enqueueRequest:(RZWebServiceRequest *)request inQueue:(NSOperationQueue*)queue;
 
 -(void) cancelRequestsForTarget:(id)target;
 -(void) cancelAllRequests;
