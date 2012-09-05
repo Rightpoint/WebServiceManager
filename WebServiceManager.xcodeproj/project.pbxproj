@@ -26,6 +26,9 @@
 		CB588CEF1453C6B40052A336 /* RZWebServiceRequest.m in Sources */ = {isa = PBXBuildFile; fileRef = CB588CEA1453C6B40052A336 /* RZWebServiceRequest.m */; };
 		CB588CF01453C6B40052A336 /* RZWebServiceRequest.m in Sources */ = {isa = PBXBuildFile; fileRef = CB588CEA1453C6B40052A336 /* RZWebServiceRequest.m */; };
 		CB588CF61453C9730052A336 /* WebServiceManagerCalls.plist in Resources */ = {isa = PBXBuildFile; fileRef = CB588CF51453C9730052A336 /* WebServiceManagerCalls.plist */; };
+		CBD0D69F15F6EFE3009EDF49 /* NSString+RZMD5.h in Headers */ = {isa = PBXBuildFile; fileRef = CBD0D69D15F6EFE3009EDF49 /* NSString+RZMD5.h */; };
+		CBD0D6A015F6EFE3009EDF49 /* NSString+RZMD5.m in Sources */ = {isa = PBXBuildFile; fileRef = CBD0D69E15F6EFE3009EDF49 /* NSString+RZMD5.m */; };
+		CBD0D6A115F6EFE3009EDF49 /* NSString+RZMD5.m in Sources */ = {isa = PBXBuildFile; fileRef = CBD0D69E15F6EFE3009EDF49 /* NSString+RZMD5.m */; };
 		CBFFEB2C1456589100A003D6 /* raizlabs-logo-sheetrock.png in Resources */ = {isa = PBXBuildFile; fileRef = CBFFEB2B1456589100A003D6 /* raizlabs-logo-sheetrock.png */; };
 		CBFFEB2D145658A900A003D6 /* TestData.plist in Resources */ = {isa = PBXBuildFile; fileRef = CBFFEB2A1456570000A003D6 /* TestData.plist */; };
 		CBFFEB3414565F1E00A003D6 /* JSONKit.h in Headers */ = {isa = PBXBuildFile; fileRef = CBFFEB3014565F1E00A003D6 /* JSONKit.h */; };
@@ -75,6 +78,8 @@
 		CBA1FA8614B4E552005A61B0 /* echoGet.php */ = {isa = PBXFileReference; lastKnownFileType = text.script.php; path = echoGet.php; sourceTree = "<group>"; };
 		CBA1FA8714B4E552005A61B0 /* echoHeaders.php */ = {isa = PBXFileReference; lastKnownFileType = text.script.php; path = echoHeaders.php; sourceTree = "<group>"; };
 		CBA1FA8814B4E552005A61B0 /* echoPost.php */ = {isa = PBXFileReference; lastKnownFileType = text.script.php; path = echoPost.php; sourceTree = "<group>"; };
+		CBD0D69D15F6EFE3009EDF49 /* NSString+RZMD5.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSString+RZMD5.h"; sourceTree = "<group>"; };
+		CBD0D69E15F6EFE3009EDF49 /* NSString+RZMD5.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSString+RZMD5.m"; sourceTree = "<group>"; };
 		CBFFEB2A1456570000A003D6 /* TestData.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = TestData.plist; sourceTree = "<group>"; };
 		CBFFEB2B1456589100A003D6 /* raizlabs-logo-sheetrock.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "raizlabs-logo-sheetrock.png"; sourceTree = "<group>"; };
 		CBFFEB3014565F1E00A003D6 /* JSONKit.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = JSONKit.h; sourceTree = "<group>"; };
@@ -124,6 +129,8 @@
 		9885D142159A3DF8003DECDF /* Categories */ = {
 			isa = PBXGroup;
 			children = (
+				CBD0D69D15F6EFE3009EDF49 /* NSString+RZMD5.h */,
+				CBD0D69E15F6EFE3009EDF49 /* NSString+RZMD5.m */,
 				CBFFEC181457936000A003D6 /* RZWebService_NSURL.h */,
 				CBFFEC191457936000A003D6 /* RZWebService_NSURL.m */,
 			);
@@ -253,6 +260,7 @@
 				FEC9669D158F723B00E90A65 /* RZFileManager.h in Headers */,
 				9885D140159A382A003DECDF /* RZFileCacheSchema.h in Headers */,
 				98216E1515B062940099166B /* RZCacheSchema.h in Headers */,
+				CBD0D69F15F6EFE3009EDF49 /* NSString+RZMD5.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -365,6 +373,7 @@
 				FEC9669E158F723B00E90A65 /* RZFileManager.m in Sources */,
 				9885D141159A382A003DECDF /* RZFileCacheSchema.m in Sources */,
 				98216E1615B062940099166B /* RZCacheSchema.m in Sources */,
+				CBD0D6A015F6EFE3009EDF49 /* NSString+RZMD5.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -378,6 +387,7 @@
 				CBFFEB3614565F1E00A003D6 /* JSONKit.m in Sources */,
 				CBFFEC1C1457936000A003D6 /* RZWebService_NSURL.m in Sources */,
 				985B2CB81594A2C000FADCCA /* RZFileManagerTests.m in Sources */,
+				CBD0D6A115F6EFE3009EDF49 /* NSString+RZMD5.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

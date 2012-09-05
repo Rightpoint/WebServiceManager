@@ -257,6 +257,9 @@ NSString* const RZFileManagerFileUploadCompletedNotification = @"RZFileManagerFi
 
 - (void)enqueueDownloadRequest:(RZWebServiceRequest*)downloadRequest
 {
+    // make sure files are copied atomically.
+    downloadRequest.copyToTargetAtomically = YES;
+    
     if (nil == self.downloadsQueue)
     {
         [self.webManager enqueueRequest:downloadRequest];

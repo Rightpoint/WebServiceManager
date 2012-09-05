@@ -10,6 +10,8 @@
 #import "RZWebService_NSURL.h"
 #import "RZFileManager.h"
 #import "RZWebServiceManager.h"
+#import "NSString+RZMD5.h"
+
 #if __IPHONE_OS_VERSION_MIN_REQUIRED < __IPHONE_5_0
 #import "JSONKit.h"
 #endif
@@ -39,6 +41,10 @@ NSTimeInterval const kDefaultTimeout = 60;
 
 // if the user has chosen to stream to a file, a targetFileHandle will be created
 @property (strong, nonatomic) NSFileHandle* targetFileHandle;
+
+// if the user has chosen to copy to the target atomically, this will be the
+// temporary path of the file until it is completed downloading. 
+@property (strong, nonatomic) NSString* atomicTempTargetPath;
 
 // selector used to trigger timeouts. 
 @property (assign, nonatomic) SEL timeoutSelector;
@@ -84,8 +90,10 @@ NSTimeInterval const kDefaultTimeout = 60;
 @synthesize headers = _headers;
 @synthesize userInfo = _userInfo;
 @synthesize targetFileURL = _targetFileURL;
+@synthesize copyToTargetAtomically = _copyToTargetAtomically;
 @synthesize uploadFileURL = _uploadFileURL;
 @synthesize targetFileHandle = _targetFileHandle;
+@synthesize atomicTempTargetPath = _atomicTempTargetPath;
 @synthesize responseSize = _responseSize;
 @synthesize timeoutInterval = _timeoutInterval;
 @synthesize timeoutSelector = _timeoutSelector;
@@ -148,7 +156,8 @@ expectedResultType:(NSString*)expectedResultType
         self.failureHandler = failureCallback;
         self.expectedResultType = expectedResultType;
         self.bodyType = bodyType;
-
+        self.copyToTargetAtomically = NO;
+        
         // convert the parameters to a sorted array of parameter objects
         NSArray* sortedKeys = [[parameters allKeys] sortedArrayUsingSelector:@selector(compare:)];
         self.parameters = [NSMutableArray arrayWithCapacity:sortedKeys.count];
@@ -443,7 +452,7 @@ expectedResultType:(NSString*)expectedResultType
             [self.targetFileHandle closeFile];
             self.targetFileHandle = nil;
             NSError* error = nil;
-            NSString* path = [self.targetFileURL path];
+            NSString* path = (nil != self.atomicTempTargetPath)  ? self.atomicTempTargetPath : [self.targetFileURL path];
             BOOL isDirectory = YES;
             
             NSFileManager* fileManager = [NSFileManager defaultManager];
@@ -539,13 +548,22 @@ expectedResultType:(NSString*)expectedResultType
             {
                 
                 NSString* path = [self.targetFileURL path];
+                
+                // if they've chosen to copy to the target atomically,
+                // modify the path to a temp directory and a hash of the original
+                if (self.copyToTargetAtomically) {
+                    NSString* dir = NSTemporaryDirectory();
+                    path = [dir stringByAppendingPathComponent:[path digest]];
+                    self.atomicTempTargetPath = path;
+                }
+                
                 [[NSFileManager defaultManager] createFileAtPath:path contents:nil attributes:nil];
-                self.targetFileHandle = [NSFileHandle fileHandleForWritingToURL:self.targetFileURL error:&error];
+                
+                self.targetFileHandle = [NSFileHandle fileHandleForWritingAtPath:path];
                 
                 if(nil == self.targetFileHandle)
                 {
-
-                    NSLog(@"Error opening file for streaming: %@", error); 
+                    NSLog(@"Error opening file for streaming: %@", error);
 
                     [self reportError:error];
                 
@@ -626,11 +644,31 @@ totalBytesExpectedToWrite:(NSInteger)totalBytesExpectedToWrite
             {
                 [self.targetFileHandle closeFile];
                 
-                // ensure the expected file type is set to "File"
-                self.expectedResultType = @"File";
-                NSString* path = [self.targetFileURL path];
-                NSData* data = [path dataUsingEncoding:NSUTF8StringEncoding];
-                [self.delegate webServiceRequest:self completedWithData:data];
+                NSError* error = nil;
+                
+                // if we are set to copy the file atomically, we've been streaming
+                // to a temporary path. Move the file from the path to the target.
+                if (self.copyToTargetAtomically) {
+                    
+                    if(![[NSFileManager defaultManager] moveItemAtPath:self.atomicTempTargetPath
+                                                            toPath:[self.targetFileURL path]
+                                                                error:&error])
+                    {
+                        [self.delegate webServiceRequest:self failedWithError:error];
+                    }
+                    
+                }
+                
+                
+                if (error == nil)
+                {
+                    // ensure the expected file type is set to "File"
+                    self.expectedResultType = @"File";
+                    NSString* path = [self.targetFileURL path];
+                    NSData* data = [path dataUsingEncoding:NSUTF8StringEncoding];
+                    [self.delegate webServiceRequest:self completedWithData:data];
+                }
+               
             }
             else {
                 [self.delegate webServiceRequest:self completedWithData:self.receivedData];            

@@ -66,6 +66,10 @@ expectedResultType:(NSString*)expectedResultType
 // can be saved. This will prevent the data from being kept in memory.
 @property (strong, nonatomic) NSURL* targetFileURL;
 
+// flag indicating whether we stream directly to the target file or if we
+// move the file after the download is complete. Default is NO. 
+@property (assign, nonatomic) BOOL copyToTargetAtomically;
+
 // if you'd like use a file on disk as the request body, set the upload file 
 // URL that we can stream the body data from. This will override the parameters 
 // in a POST request's body.
