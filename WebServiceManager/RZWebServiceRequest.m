@@ -62,6 +62,10 @@ NSTimeInterval const kDefaultTimeout = 60;
 // over-ride the read only redirectedURL property so we can write to it internally 
 @property (strong, nonatomic) NSURL* redirectedURL;
 
++ (RZWebServiceRequestCompletionBlock)completionBlockForTarget:(id)target
+                                               successCallBack:(SEL)successCallback
+                                               failureCallback:(SEL)failureCallback;
+
 -(void) beginOperation;
 -(void) cancelOperation;
 
@@ -125,6 +129,11 @@ NSTimeInterval const kDefaultTimeout = 60;
 @synthesize executing = _executing;
 @synthesize ignoreCertificateValidity = _ignoreCertificateValidity;
 
+@synthesize preProcessBlocks = _preProcessBlocks;
+@synthesize postProcessBlocks = _postProcessBlocks;
+
+@synthesize completionBlock = _completionBlock;
+
 -(id) initWithApiInfo:(NSDictionary *)apiInfo target:(id)target
 {
     self = [self initWithApiInfo:apiInfo target:target parameters:nil];
@@ -155,6 +164,43 @@ NSTimeInterval const kDefaultTimeout = 60;
     return self;
 }
 
+- (id)initWithApiInfo:(NSDictionary*)apiInfo target:(id)target completion:(RZWebServiceRequestCompletionBlock)completionBlock
+{
+    return [self initWithApiInfo:apiInfo target:target parameters:nil completion:completionBlock];
+}
+
+- (id)initWithApiInfo:(NSDictionary*)apiInfo target:(id)target parameters:(NSDictionary*)parameters completion:(RZWebServiceRequestCompletionBlock)completionBlock
+{
+    return [self initWithApiInfo:apiInfo target:target parameters:parameters preProcessBlocks:nil postProcessBlocks:nil completion:completionBlock];
+}
+
+- (id)initWithApiInfo:(NSDictionary*)apiInfo
+               target:(id)target
+           parameters:(NSDictionary*)parameters
+     preProcessBlocks:(NSArray*)preProcessBlocks
+    postProcessBlocks:(NSArray*)postProcessBlocks
+           completion:(RZWebServiceRequestCompletionBlock)completionBlock
+{
+    NSURL* url = [NSURL URLWithString:[apiInfo objectForKey:kURLkey]];
+    NSString* httpMethod = [apiInfo objectForKey:kHTTPMethodKey];
+    NSString* expectedResultType = [apiInfo objectForKey:kExpectedResultTypeKey];
+    NSString* bodyType = [apiInfo objectForKey:kBodyTypeKey];
+    
+    self = [self initWithURL:url
+           httpMethod:httpMethod
+               target:target
+     preProcessBlocks:preProcessBlocks
+    postProcessBlocks:postProcessBlocks
+   expectedResultType:expectedResultType
+             bodyType:bodyType
+           parameters:parameters
+           completion:completionBlock];
+    
+    self.timeoutInterval = [[apiInfo objectForKey:kTimeoutKey] doubleValue];
+    
+    return self;
+}
+
 -(id) initWithURL:(NSURL*)url 
        httpMethod:(NSString*)httpMethod
         andTarget:(id)target 
@@ -163,6 +209,43 @@ NSTimeInterval const kDefaultTimeout = 60;
 expectedResultType:(NSString*)expectedResultType
          bodyType:(NSString*)bodyType
     andParameters:(NSDictionary*)parameters
+{
+    self = [self initWithURL:url
+                  httpMethod:httpMethod
+                      target:target
+            preProcessBlocks:nil
+           postProcessBlocks:nil
+          expectedResultType:expectedResultType
+                    bodyType:bodyType
+                  parameters:parameters
+                  completion:[RZWebServiceRequest completionBlockForTarget:target
+                                                           successCallBack:successCallback
+                                                           failureCallback:failureCallback]];
+    
+    self.successHandler = successCallback;
+    self.failureHandler = failureCallback;
+}
+
+- (id) initWithURL:(NSURL *)url
+        httpMethod:(NSString *)httpMethod
+            target:(id)target
+expectedResultType:(NSString *)expectedResultType
+          bodyType:(NSString *)bodyType
+        parameters:(NSDictionary *)parameters
+        completion:(RZWebServiceRequestCompletionBlock)completionBlock
+{
+    return [self initWithURL:url httpMethod:httpMethod target:target preProcessBlocks:nil postProcessBlocks:nil expectedResultType:expectedResultType bodyType:bodyType parameters:parameters completion:completionBlock];
+}
+
+- (id) initWithURL:(NSURL *)url
+        httpMethod:(NSString *)httpMethod
+            target:(id)target
+  preProcessBlocks:(NSArray*)preProcessBlocks
+ postProcessBlocks:(NSArray*)postProcessBlocks
+expectedResultType:(NSString *)expectedResultType
+          bodyType:(NSString *)bodyType
+        parameters:(NSDictionary *)parameters
+        completion:(RZWebServiceRequestCompletionBlock)completionBlock
 {
     self = [super init];
     
@@ -173,8 +256,6 @@ expectedResultType:(NSString*)expectedResultType
         self.url = url;
         self.httpMethod = httpMethod;
         self.target = target;
-        self.successHandler = successCallback;
-        self.failureHandler = failureCallback;
         self.expectedResultType = expectedResultType;
         self.bodyType = bodyType;
         self.copyToTargetAtomically = NO;
@@ -182,7 +263,7 @@ expectedResultType:(NSString*)expectedResultType
         // convert the parameters to a sorted array of parameter objects
         NSArray* sortedKeys = [[parameters allKeys] sortedArrayUsingSelector:@selector(compare:)];
         self.parameters = [NSMutableArray arrayWithCapacity:sortedKeys.count];
-
+        
         for (NSString* key in sortedKeys) {
             id value = [parameters objectForKey:key];
             RZWebServiceRequestParameterType type = RZWebServiceRequestParamterTypeQueryString;
@@ -192,11 +273,58 @@ expectedResultType:(NSString*)expectedResultType
             RZWebServiceRequestParamter* parameter = [RZWebServiceRequestParamter parameterWithName:key value:value type:type];
             [self.parameters addObject:parameter];
         }
- 
+        
         self.urlRequest = [[NSMutableURLRequest alloc] initWithURL:self.url];
+        
+        self.preProcessBlocks = [[NSArray alloc] initWithArray:preProcessBlocks copyItems:YES];
+        self.postProcessBlocks = [[NSArray alloc] initWithArray:postProcessBlocks copyItems:YES];
+        
+        self.completionBlock = completionBlock;
     }
     
     return self;
+}
+
++ (RZWebServiceRequestCompletionBlock)completionBlockForTarget:(id)target
+                                               successCallBack:(SEL)successCallback
+                                               failureCallback:(SEL)failureCallback
+{
+    RZWebServiceRequestCompletionBlock compBlock = ^(BOOL succeeded, id data, NSError *error, RZWebServiceRequest *request) {
+        if (succeeded)
+        {
+            NSMethodSignature* signature = [target methodSignatureForSelector:successCallback];
+            NSInvocation* invocation = [NSInvocation invocationWithMethodSignature:signature];
+            [invocation setTarget:target];
+            [invocation setSelector:successCallback];
+            [invocation setArgument:&data atIndex:2];
+            [invocation retainArguments];
+            
+            if (signature.numberOfArguments > 3)
+            {
+                [invocation setArgument:&request atIndex:3];
+            }
+            
+            [invocation performSelectorOnMainThread:@selector(invoke) withObject:nil waitUntilDone:YES];
+        }
+        else
+        {
+            NSMethodSignature* signature = [target methodSignatureForSelector:failureCallback];
+            NSInvocation* invocation = [NSInvocation invocationWithMethodSignature:signature];
+            [invocation setTarget:target];
+            [invocation setSelector:failureCallback];
+            [invocation setArgument:&error atIndex:2];
+            [invocation retainArguments];
+            
+            if (signature.numberOfArguments > 3)
+            {
+                [invocation setArgument:&request atIndex:3];
+            }
+            
+            [invocation performSelectorOnMainThread:@selector(invoke) withObject:nil waitUntilDone:YES];
+        }
+    };
+    
+    return [compBlock copy];
 }
 
 -(void) setValue:(NSString*)value forHTTPHeaderField:(NSString*)headerField

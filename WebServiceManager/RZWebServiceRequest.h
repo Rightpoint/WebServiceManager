@@ -15,10 +15,15 @@ extern NSString* const kFailureHandlerKey;
 extern NSString* const kSuccessHandlerKey;
 extern NSString* const kTimeoutKey;
 
-extern NSTimeInterval const kDefaultTimeout; 
+extern NSTimeInterval const kDefaultTimeout;
+
+@class RZWebServiceRequest;
+
+typedef void (^RZWebServiceRequestCompletionBlock)(BOOL succeeded, id data, NSError *error, RZWebServiceRequest *request);
+typedef void (^RZWebServiceRequestPreProcessBlock)(RZWebServiceRequest *request);
+typedef id (^RZWebServiceRequestPostProcessBlock)(RZWebServiceRequest *request, id data);
 
 @protocol WebServiceRequestDelegate;
-@class RZWebServiceManager;
 
 typedef void (^RZWebServiceRequestSSLChallengeCompletionBlock)(BOOL allow);
 typedef void (^RZWebServiceRequestSSLChallengeBlock)(NSURLAuthenticationChallenge* challenge, RZWebServiceRequestSSLChallengeCompletionBlock completion);
@@ -41,6 +46,16 @@ typedef enum {
 -(id) initWithApiInfo:(NSDictionary*)apiInfo target:(id)target;
 -(id) initWithApiInfo:(NSDictionary *)apiInfo target:(id)target parameters:(NSDictionary*)parameters;
 
+- (id)initWithApiInfo:(NSDictionary*)apiInfo target:(id)target completion:(RZWebServiceRequestCompletionBlock)completionBlock;
+- (id)initWithApiInfo:(NSDictionary*)apiInfo target:(id)target parameters:(NSDictionary*)parameters completion:(RZWebServiceRequestCompletionBlock)completionBlock;
+
+- (id)initWithApiInfo:(NSDictionary*)apiInfo
+               target:(id)target
+           parameters:(NSDictionary*)parameters
+     preProcessBlocks:(NSArray*)preProcessBlocks
+    postProcessBlocks:(NSArray*)postProcessBlocks
+           completion:(RZWebServiceRequestCompletionBlock)completionBlock;
+
 // create a request
 -(id) initWithURL:(NSURL*)url 
        httpMethod:(NSString*)httpMethod
@@ -50,6 +65,24 @@ typedef enum {
 expectedResultType:(NSString*)expectedResultType
          bodyType:(NSString*)bodyType
     andParameters:(NSDictionary*)parameters;
+
+- (id) initWithURL:(NSURL *)url
+        httpMethod:(NSString *)httpMethod
+            target:(id)target
+expectedResultType:(NSString *)expectedResultType
+          bodyType:(NSString *)bodyType
+        parameters:(NSDictionary *)parameters
+        completion:(RZWebServiceRequestCompletionBlock)completionBlock;
+
+- (id) initWithURL:(NSURL *)url
+        httpMethod:(NSString *)httpMethod
+            target:(id)target
+  preProcessBlocks:(NSArray*)preProcessBlocks
+ postProcessBlocks:(NSArray*)postProcessBlocks
+expectedResultType:(NSString *)expectedResultType
+          bodyType:(NSString *)bodyType
+        parameters:(NSDictionary *)parameters
+        completion:(RZWebServiceRequestCompletionBlock)completionBlock;
 
 // set a request header on the outgoing request
 -(void) setValue:(NSString*)value forHTTPHeaderField:(NSString*)headerField;
@@ -114,6 +147,11 @@ expectedResultType:(NSString*)expectedResultType
 @property (assign, readonly, nonatomic) NSInteger statusCode;
 
 @property (assign, nonatomic) BOOL ignoreCertificateValidity;
+
+@property (copy, nonatomic) NSArray *preProcessBlocks;
+@property (copy, nonatomic) NSArray *postProcessBlocks;
+
+@property (copy, nonatomic) RZWebServiceRequestCompletionBlock completionBlock;
 
 @end
 
