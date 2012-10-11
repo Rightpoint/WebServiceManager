@@ -338,6 +338,8 @@ expectedResultType:(NSString*)expectedResultType
                 #else
                     self.urlRequest.HTTPBody = [NSJSONSerialization dataWithJSONObject:self.requestBody options:0 error:&bodyError];
                 #endif
+                
+                [self.urlRequest setValue:@"application/json" forHTTPHeaderField:@"Content-Type"];
             
             }
             // convert images to PNG
