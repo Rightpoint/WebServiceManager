@@ -59,6 +59,11 @@ expectedResultType:(NSString*)expectedResultType
 @property (strong, nonatomic) NSString* bodyType;
 @property (strong, nonatomic) NSDictionary* userInfo;
 
+// these properties will be populated when the request completes
+// error will remain nil if there is no error
+@property (strong, nonatomic) NSError *error;
+@property (strong, nonatomic, readonly) id convertedData;
+
 // timeout interval
 @property (assign, nonatomic) NSTimeInterval timeoutInterval;
 
