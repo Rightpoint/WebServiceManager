@@ -28,6 +28,9 @@ NSTimeInterval const kDefaultTimeout = 60;
 
 @interface RZWebServiceRequest()
 
+// redeclaration
+@property (strong, nonatomic, readwrite) id convertedData;
+
 @property (assign, readwrite) NSUInteger bytesReceived;
 @property (strong, nonatomic) NSMutableData* receivedData;
 @property (strong, nonatomic) NSURLConnection* connection;
@@ -603,7 +606,7 @@ expectedResultType:(NSString*)expectedResultType
         convertedResult = self.receivedData;
     }
     
-    _convertedData = convertedResult;
+    self.convertedData = convertedResult;
     return YES;
 }
 
@@ -767,7 +770,7 @@ totalBytesExpectedToWrite:(NSInteger)totalBytesExpectedToWrite
                     // In this case, no need to convert
                     self.expectedResultType = @"File";
                     NSString* path = [self.targetFileURL path];
-                    _convertedData = [path dataUsingEncoding:NSUTF8StringEncoding];
+                    self.convertedData = [path dataUsingEncoding:NSUTF8StringEncoding];
                     [self.delegate webServiceRequest:self completedWithData:self.convertedData];
                 }
                
