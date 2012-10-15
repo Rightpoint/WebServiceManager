@@ -30,6 +30,8 @@ NSTimeInterval const kDefaultTimeout = 60;
 
 // redeclaration
 @property (strong, nonatomic, readwrite) id convertedData;
+@property (strong, nonatomic, readwrite) NSDictionary *responseHeaders;
+@property (assign, nonatomic, readwrite) NSInteger statusCode;
 
 @property (assign, readwrite) NSUInteger bytesReceived;
 @property (strong, nonatomic) NSMutableData* receivedData;
@@ -742,6 +744,22 @@ totalBytesExpectedToWrite:(NSInteger)totalBytesExpectedToWrite
         
         [self cancelTimeout];
         
+        
+        if (self.statusCode >= 400)
+        {
+            [self cancel];
+            
+            NSDictionary *errorInfo = [NSDictionary dictionaryWithObject:
+                                       [NSString stringWithFormat: NSLocalizedString(@"Server returned status code %d", @""), self.statusCode]
+                                                                  forKey:NSLocalizedDescriptionKey];
+            NSError *statusError = [NSError errorWithDomain:@"Error"
+                                                       code:self.statusCode
+                                                   userInfo:errorInfo];
+            
+            [self connection:connection didFailWithError:statusError];
+            return;
+        }
+        
         if ([self.delegate respondsToSelector:@selector(webServiceRequest:completedWithData:)]) {
             
             if(self.targetFileHandle)
@@ -805,20 +823,7 @@ totalBytesExpectedToWrite:(NSInteger)totalBytesExpectedToWrite
             self.responseSize = [httpResponse expectedContentLength];
             self.statusCode = [httpResponse statusCode];
             
-            if (httpResponse.statusCode >= 400)
-            {
-                [self cancel];
-                
-                NSDictionary *errorInfo = [NSDictionary dictionaryWithObject:
-                                           [NSString stringWithFormat: NSLocalizedString(@"Server returned status code %d", @""), httpResponse.statusCode]
-                                                                      forKey:NSLocalizedDescriptionKey];
-                NSError *statusError = [NSError errorWithDomain:@"Error"
-                                                           code:httpResponse.statusCode   
-                                                       userInfo:errorInfo];
-                
-                [self connection:connection didFailWithError:statusError];
-            }
-
+            // allow to continue for error codes, will be handled in didFinishLoading
         }
     }
 }

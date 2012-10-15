@@ -90,9 +90,10 @@ expectedResultType:(NSString*)expectedResultType
 @property (strong, nonatomic) NSDictionary* headers;
 
 @property (unsafe_unretained, nonatomic) id<WebServiceRequestDelegate> delegate;
-@property (strong, nonatomic) NSDictionary* responseHeaders;
 
-@property (assign, nonatomic) NSInteger statusCode;
+// response info
+@property (strong, readonly, nonatomic) NSDictionary* responseHeaders;
+@property (assign, readonly, nonatomic) NSInteger statusCode;
 
 @property (assign, nonatomic) BOOL ignoreCertificateValidity;
 
