@@ -28,8 +28,13 @@ NSTimeInterval const kDefaultTimeout = 60;
 
 @interface RZWebServiceRequest()
 
-@property (strong, nonatomic) NSMutableData* receivedData;
+// redeclaration
+@property (strong, nonatomic, readwrite) id convertedData;
+@property (strong, nonatomic, readwrite) NSDictionary *responseHeaders;
+@property (assign, nonatomic, readwrite) NSInteger statusCode;
+
 @property (assign, readwrite) NSUInteger bytesReceived;
+@property (strong, nonatomic) NSMutableData* receivedData;
 @property (strong, nonatomic) NSURLConnection* connection;
 @property (strong, nonatomic) NSThread *connectionThread;
 @property (assign, nonatomic) UIBackgroundTaskIdentifier backgroundTaskId;
@@ -64,6 +69,10 @@ NSTimeInterval const kDefaultTimeout = 60;
 // cancel any scheduled timeout. 
 -(void) cancelTimeout;
 
+// utility to convert received data into target format
+-(BOOL) convertDataToExpectedType:(NSError**)error;
+-(BOOL) convertDataToType:(NSString*)dataType error:(NSError**)error;
+
 @end
 
 
@@ -89,6 +98,8 @@ NSTimeInterval const kDefaultTimeout = 60;
 @synthesize statusCode = _statusCode;
 @synthesize headers = _headers;
 @synthesize userInfo = _userInfo;
+@synthesize error = _error;
+@synthesize convertedData = _convertedData;
 @synthesize targetFileURL = _targetFileURL;
 @synthesize copyToTargetAtomically = _copyToTargetAtomically;
 @synthesize uploadFileURL = _uploadFileURL;
@@ -213,7 +224,7 @@ expectedResultType:(NSString*)expectedResultType
         NSNumber *fileSizeNumber = [fileAttributes objectForKey:NSFileSize];
         self.contentLength = [fileSizeNumber longLongValue];
         
-        [self setValue:[NSString stringWithFormat:@"%u", self.contentLength] forHTTPHeaderField:@"Content-Length"];
+        [self setValue:[NSString stringWithFormat:@"%llu", self.contentLength] forHTTPHeaderField:@"Content-Length"];
     }
     else if (_uploadFileURL)
     {
@@ -522,10 +533,103 @@ expectedResultType:(NSString*)expectedResultType
     }
 }
 
+- (BOOL)convertDataToExpectedType:(NSError *__autoreleasing *)error
+{
+    return [self convertDataToType:self.expectedResultType error:error];
+}
+
+- (BOOL)convertDataToType:(NSString *)dataType error:(NSError *__autoreleasing *)error
+{
+    // try to convert the data to the expected type.
+    id convertedResult = nil;
+    
+    if ([dataType isEqualToString:kRZWebserviceDataTypeFile]) {
+        NSString* path = [[NSString alloc] initWithData:self.receivedData encoding:NSUTF8StringEncoding];
+        convertedResult = [NSURL fileURLWithPath:path];
+    }
+    else if([dataType isEqualToString:kRZWebserviceDataTypeImage])
+    {
+        convertedResult = [UIImage imageWithData:self.receivedData];
+    }
+    else if([dataType isEqualToString:kRZWebserviceDataTypeText])
+    {
+        convertedResult = [[NSString alloc] initWithData:self.receivedData encoding:NSUTF8StringEncoding];
+    }
+    else if([dataType isEqualToString:kRZWebserviceDataTypeJSON])
+    {
+        NSError* jsonError = nil;
+        
+        //If data is nil we cant parse it as JSON or we get a crash
+        if (self.receivedData == nil) {
+            if (error){
+                *error = [NSError errorWithDomain:@"No data returned from server" code:0 userInfo:[NSDictionary dictionaryWithObject:self forKey:@"Request"]];
+            }
+            return NO;
+        }
+        
+        //
+        // if we're supporting anything earlier than 5.0, use JSONKit.
+        //
+        
+#if __IPHONE_OS_VERSION_MIN_REQUIRED < __IPHONE_5_0
+        convertedResult = [self.receivedData objectFromJSONData];
+        
+        //
+        // if we're 5.0 or above, use the build in JSON deserialization
+        //
+#else
+        convertedResult = [NSJSONSerialization JSONObjectWithData:self.receivedData options:0 error:&jsonError];
+#endif
+        
+        
+        if (jsonError) {
+            NSString* str = [[NSString alloc] initWithData:self.receivedData encoding:NSUTF8StringEncoding];
+            NSLog(@"Result from server was not valid JSON: %@", str);
+            if (error){
+                *error = jsonError;
+            }
+            return NO;
+        }
+    }
+    else if([self.expectedResultType isEqualToString:kRZWebserviceDataTypePlist])
+    {
+        NSError* plistError  = nil;
+        convertedResult = [NSPropertyListSerialization propertyListWithData:self.receivedData options: NSPropertyListImmutable format:nil error:&plistError];
+        
+        if(plistError) {
+            if (error){
+                *error = plistError;
+            }
+            return NO;
+        }
+    }
+    else
+    {
+        convertedResult = self.receivedData;
+    }
+    
+    self.convertedData = convertedResult;
+    return YES;
+}
+
 #pragma mark - NSURLConnectionDelegate
 - (void)connection:(NSURLConnection *)connection didFailWithError:(NSError *)error
 {
     @synchronized(self){
+        
+        // convert data anyway in case we got an error response body
+        // for now always assume JSON unless the type is text (could be HTML)
+        // TODO: This should definitely be made more robust. Perhaps an expected error type?
+        //       Or automatic detection of data type (voodoo!)
+        if (![self.expectedResultType isEqualToString:kRZWebserviceDataTypeText]){
+            [self convertDataToType:kRZWebserviceDataTypeJSON error:NULL];
+        }
+        else{
+            [self convertDataToExpectedType:NULL];
+        }
+ 
+                
+        self.error = error;
         [self reportError:error];
         self.done = YES;
     }
@@ -583,7 +687,7 @@ expectedResultType:(NSString*)expectedResultType
         {
             
             if (nil == self.receivedData) 
-                self.receivedData = [[NSMutableData alloc] init];
+                _receivedData = [[NSMutableData alloc] init];
                
             [self.receivedData appendData:data];
         }
@@ -640,6 +744,22 @@ totalBytesExpectedToWrite:(NSInteger)totalBytesExpectedToWrite
         
         [self cancelTimeout];
         
+        
+        if (self.statusCode >= 400)
+        {
+            [self cancel];
+            
+            NSDictionary *errorInfo = [NSDictionary dictionaryWithObject:
+                                       [NSString stringWithFormat: NSLocalizedString(@"Server returned status code %d", @""), self.statusCode]
+                                                                  forKey:NSLocalizedDescriptionKey];
+            NSError *statusError = [NSError errorWithDomain:@"Error"
+                                                       code:self.statusCode
+                                                   userInfo:errorInfo];
+            
+            [self connection:connection didFailWithError:statusError];
+            return;
+        }
+        
         if ([self.delegate respondsToSelector:@selector(webServiceRequest:completedWithData:)]) {
             
             if(self.targetFileHandle)
@@ -665,15 +785,25 @@ totalBytesExpectedToWrite:(NSInteger)totalBytesExpectedToWrite
                 if (error == nil)
                 {
                     // ensure the expected file type is set to "File"
+                    // In this case, no need to convert
                     self.expectedResultType = @"File";
                     NSString* path = [self.targetFileURL path];
-                    NSData* data = [path dataUsingEncoding:NSUTF8StringEncoding];
-                    [self.delegate webServiceRequest:self completedWithData:data];
+                    self.convertedData = [path dataUsingEncoding:NSUTF8StringEncoding];
+                    [self.delegate webServiceRequest:self completedWithData:self.convertedData];
                 }
                
             }
             else {
-                [self.delegate webServiceRequest:self completedWithData:self.receivedData];            
+                
+                // attempt to convert data
+                NSError *conversionError = nil;
+                if (![self convertDataToExpectedType:&conversionError]){
+                    self.error = conversionError;
+                    [self.delegate webServiceRequest:self failedWithError:conversionError];
+                }
+                else{
+                    [self.delegate webServiceRequest:self completedWithData:self.receivedData];
+                }
             }
         }
         
@@ -693,20 +823,7 @@ totalBytesExpectedToWrite:(NSInteger)totalBytesExpectedToWrite
             self.responseSize = [httpResponse expectedContentLength];
             self.statusCode = [httpResponse statusCode];
             
-            if (httpResponse.statusCode >= 400)
-            {
-                [self cancel];
-                
-                NSDictionary *errorInfo = [NSDictionary dictionaryWithObject:
-                                           [NSString stringWithFormat: NSLocalizedString(@"Server returned status code %d", @""), httpResponse.statusCode]
-                                                                      forKey:NSLocalizedDescriptionKey];
-                NSError *statusError = [NSError errorWithDomain:@"Error"
-                                                           code:httpResponse.statusCode   
-                                                       userInfo:errorInfo];
-                
-                [self connection:connection didFailWithError:statusError];
-            }
-
+            // allow to continue for error codes, will be handled in didFinishLoading
         }
     }
 }
