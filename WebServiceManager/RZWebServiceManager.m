@@ -264,12 +264,15 @@ NSString* const kRZWebserviceDataTypePlist = @"Plist";
     }
 }
  */
-                    
+
+
+
 #pragma mark - WebServiceRequestDelegate
 -(void) webServiceRequest:(RZWebServiceRequest*)request failedWithError:(NSError*)error
 {
+    
     if(nil != request.failureHandler && [request.target respondsToSelector:request.failureHandler])
-    {
+    {        
         NSMethodSignature* signature = [request.target methodSignatureForSelector:request.failureHandler];
         NSInvocation* invocation = [NSInvocation invocationWithMethodSignature:signature];
         [invocation setTarget:request.target];
@@ -287,77 +290,16 @@ NSString* const kRZWebserviceDataTypePlist = @"Plist";
 
 -(void) webServiceRequest:(RZWebServiceRequest *)request completedWithData:(NSData*)data
 {
+    
     if (nil != request.successHandler && [request.target respondsToSelector:request.successHandler]) {
         
-            // try to convert the data to the expected type. 
-            id convertedResult = nil;
-            
-            if ([request.expectedResultType isEqualToString:kRZWebserviceDataTypeFile]) {
-                NSString* path = [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding];
-                convertedResult = [NSURL fileURLWithPath:path];
-            }
-            else if([request.expectedResultType isEqualToString:kRZWebserviceDataTypeImage])
-            {
-                convertedResult = [UIImage imageWithData:data];
-            }
-            else if([request.expectedResultType isEqualToString:kRZWebserviceDataTypeText])
-            {
-                convertedResult = [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding];
-            }
-            else if([request.expectedResultType isEqualToString:kRZWebserviceDataTypeJSON])
-            {
-                NSError* jsonError = nil;
-                
-                //If data is nil we cant parse it as JSON or we get a crash
-                if (data == nil) {
-                    NSError* requestError = [NSError errorWithDomain:@"No data returned from server" code:0 userInfo:[NSDictionary dictionaryWithObject:request forKey:@"Request"]];
-                    [self webServiceRequest:request failedWithError:requestError];
-                    return;
-                }
-                
-                //
-                // if we're supporting anything earlier than 5.0, use JSONKit. 
-                //
-                
-                #if __IPHONE_OS_VERSION_MIN_REQUIRED < __IPHONE_5_0
-                    convertedResult = [data objectFromJSONData];
-
-                //
-                // if we're 5.0 or above, use the build in JSON deserialization
-                //
-                #else   
-                    convertedResult = [NSJSONSerialization JSONObjectWithData:data options:0 error:&jsonError];  
-                #endif
-                
-                
-                if (jsonError) {
-                    NSString* str = [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding];
-                    NSLog(@"Result from server was not valid JSON: %@", str);
-                    
-                    [self webServiceRequest:request failedWithError:jsonError];
-                    return;
-                }
-            }
-            else if([request.expectedResultType isEqualToString:kRZWebserviceDataTypePlist])
-            {
-                NSError* plistError  = nil;
-                convertedResult = [NSPropertyListSerialization propertyListWithData:data options: NSPropertyListImmutable format:nil error:&plistError];
-
-                if(plistError) {
-                    [self webServiceRequest:request failedWithError:plistError];
-                    return;
-                }
-            }
-            else
-            {
-                convertedResult = data;
-            }
-            
+            id convertedData = request.convertedData;
+        
             NSMethodSignature* signature = [request.target methodSignatureForSelector:request.successHandler];
             NSInvocation* invocation = [NSInvocation invocationWithMethodSignature:signature];
             [invocation setTarget:request.target];
             [invocation setSelector:request.successHandler];
-            [invocation setArgument:&convertedResult atIndex:2];
+            [invocation setArgument:&convertedData atIndex:2];
             [invocation retainArguments];
             
             if (signature.numberOfArguments > 3) 
