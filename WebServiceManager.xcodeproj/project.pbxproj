@@ -274,6 +274,7 @@
 				CB588CB91453C6730052A336 /* Sources */,
 				CB588CBA1453C6730052A336 /* Frameworks */,
 				CB588CBB1453C6730052A336 /* Headers */,
+				CBB06B3B15FA30DC00D57A77 /* ShellScript */,
 			);
 			buildRules = (
 			);
@@ -358,6 +359,19 @@
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
 			shellScript = "# Run the unit tests in this test bundle.\n\"${SYSTEM_DEVELOPER_DIR}/Tools/RunUnitTests\"\n";
+		};
+		CBB06B3B15FA30DC00D57A77 /* ShellScript */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "mkdir -p help\n\n/usr/local/bin/appledoc appdoctest --project-name \"WebServiceManager\" \\\n--project-company \"Raizlabs\" \\\n--company-id \"com.raizlabs\" \\\n--create-html --keep-intermediate-files \\\n--output \"help\" \"WebServiceManager\"";
 		};
 /* End PBXShellScriptBuildPhase section */
 

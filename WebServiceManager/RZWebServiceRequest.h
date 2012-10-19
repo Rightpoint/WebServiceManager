@@ -6,6 +6,11 @@
 //  Copyright (c) 2011 Raizlabs Corporation. All rights reserved.
 //
 
+/** The RZWebServiceRequest class represents indivudual web requests that are
+ queued up to be sent to their respective endpoints. A request can be created 
+ manually or can be created by the RZWebServiceManager which may maintain the 
+ master list of valid API enpoints for a given application.
+ */
 #import <Foundation/Foundation.h>
 
 extern NSString* const kURLkey;

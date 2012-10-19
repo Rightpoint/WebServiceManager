@@ -1,11 +1,15 @@
-//
-//  RZFileManager.h
-//  WebServiceManager
-//
-//  Created by Joe Goullaud on 6/18/12.
-//  Copyright (c) 2012 Raizlabs Corporation. All rights reserved.
-//
-
+/** This is the main RZFileManager class. This class simplifies the downloading
+ and caching of files hosted on remote servers.
+ 
+Files downloaded by the RZFileManager are automatically cached according to the
+ deails of RZCacheSchema. A default cacheSchema of type RZFileCacheSchema is created
+ for requests if one is not explicitly specified by the client. Custom cache behavior 
+ can be specified by providing a RZCacheSchema derived object with its own 
+ functionality. See RZCacheSchema for details. 
+ 
+ 
+ 
+ */
 #import <Foundation/Foundation.h>
 
 @class RZWebServiceRequest;
