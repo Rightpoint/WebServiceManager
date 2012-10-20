@@ -1,15 +1,3 @@
-/** This is the main RZFileManager class. This class simplifies the downloading
- and caching of files hosted on remote servers.
- 
-Files downloaded by the RZFileManager are automatically cached according to the
- deails of RZCacheSchema. A default cacheSchema of type RZFileCacheSchema is created
- for requests if one is not explicitly specified by the client. Custom cache behavior 
- can be specified by providing a RZCacheSchema derived object with its own 
- functionality. See RZCacheSchema for details. 
- 
- 
- 
- */
 #import <Foundation/Foundation.h>
 
 @class RZWebServiceRequest;
@@ -19,8 +7,16 @@ Files downloaded by the RZFileManager are automatically cached according to the
 typedef void (^RZFileManagerDownloadCompletionBlock)(BOOL success, NSURL* downloadedFile, RZWebServiceRequest *request);
 typedef void (^RZFileManagerUploadCompletionBlock)(BOOL success, NSURL* uploadedFile, RZWebServiceRequest *request);
 
+/** RZFileProgressDelegate allows the RZFileManager to communicate download and 
+ upload status to any progress delegates.
+ 
+ */
 @protocol RZFileProgressDelegate <NSObject>
 
+/** Sends the updated progress to delegate
+ 
+ @param progress Value between 0 and 1 indicating progress
+*/
 - (void)setProgress:(float)progress;
 
 @end
@@ -34,6 +30,17 @@ extern NSString* const RZFileManagerFileDownloadCompletedNotification;
 extern NSString* const RZFileManagerFileUploadStartedNotification;
 extern NSString* const RZFileManagerFileUploadCompletedNotification;
 
+
+/** This is the main RZFileManager class. This class simplifies the downloading
+ and caching of files hosted on remote servers.
+ 
+ Files downloaded by the RZFileManager are automatically cached according to the
+ deails of RZCacheSchema. A default cacheSchema of type RZFileCacheSchema is created
+ for requests if one is not explicitly specified by the client. Custom cache behavior
+ can be specified by providing a RZCacheSchema derived object with its own
+ functionality. See RZCacheSchema for details.
+ 
+*/
 @interface RZFileManager : NSObject
 
 // Cache Dir URL - Directory will be created if it does not exist and set to not sync/backup
