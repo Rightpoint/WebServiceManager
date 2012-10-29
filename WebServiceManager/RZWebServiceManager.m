@@ -28,6 +28,8 @@ NSString* const kRZWebserviceCachedCertFingerprints = @"CachedCertFingerprints";
 
 -(RZWebServiceRequest*) makeRequestWithApi:(NSDictionary*)apiInfo forKey:(NSString*)apiKey andTarget:(id)target andParameters:(NSDictionary*)parameters enqueue:(BOOL)enqueue;
 
+-(RZWebServiceRequest*) makeRequestWithApi:(NSDictionary*)apiInfo forKey:(NSString*)apiKey andTarget:(id)target andParameters:(NSDictionary*)parameters enqueue:(BOOL)enqueue completion:(RZWebServiceRequestCompletionBlock)completionBlock;
+
 @end
 
 
@@ -224,17 +226,53 @@ NSString* const kRZWebserviceCachedCertFingerprints = @"CachedCertFingerprints";
     RZWebServiceRequest* request = [[RZWebServiceRequest alloc] initWithApiInfo:apiInfo target:target parameters:parameters];
     
     if (enqueue)
+    {
         [self enqueueRequest:request];
+    }
     
     return request;
 
 }
 
+-(RZWebServiceRequest*) makeRequestWithApi:(NSDictionary*)apiInfo forKey:(NSString*)apiKey andTarget:(id)target andParameters:(NSDictionary*)parameters enqueue:(BOOL)enqueue completion:(RZWebServiceRequestCompletionBlock)completionBlock
+{
+    // if there is a default host or a host specific for this API call, and the host has not been specified
+    // we may need to mutate the URL, which should otherwise be fully formed at this point
+    NSString* apiSpecificHost = [self.apiSpecificHosts valueForKey:apiKey];
+    if(apiSpecificHost || self.defaultHost)
+    {
+        NSString* host = apiSpecificHost ? apiSpecificHost : self.defaultHost;
+        
+        NSString* urlString = [apiInfo objectForKey:kURLkey];
+        NSURL* url = [NSURL URLWithString:urlString];
+        
+        if([url host] == nil)
+        {
+            urlString = [host stringByAppendingString:urlString];
+            NSMutableDictionary* mutableApiInfo = [NSMutableDictionary dictionaryWithDictionary:apiInfo];
+            [mutableApiInfo setValue:urlString forKey:kURLkey];
+            apiInfo = mutableApiInfo;
+        }
+    }
+    
+    RZWebServiceRequest* request = [[RZWebServiceRequest alloc] initWithApiInfo:apiInfo target:target parameters:parameters completion:completionBlock];
+    
+    if (enqueue)
+    {
+        [self enqueueRequest:request];
+    }
+    
+    return request;
+}
+
 -(RZWebServiceRequest*) makeRequestWithURL:(NSURL *)url target:(id)target successCallback:(SEL)success failureCallback:(SEL)failure parameters:(NSDictionary*)parameters enqueue:(BOOL)enqueue 
 {
     RZWebServiceRequest* request = [[RZWebServiceRequest alloc] initWithURL:url httpMethod:@"GET" andTarget:target successCallback:success failureCallback:failure expectedResultType:@"NONE" bodyType:nil andParameters:parameters];
+
     if (enqueue)
+    {
         [self enqueueRequest:request];
+    }
     
     return request;
 }
@@ -357,6 +395,115 @@ NSString* const kRZWebserviceCachedCertFingerprints = @"CachedCertFingerprints";
         NSString* service = [[NSBundle mainBundle] bundleIdentifier];
         [RZWebServiceKeychain removeValueForKey:kRZWebserviceCachedCertFingerprints inService:service];
     }
+}
+
+@end
+
+@implementation RZWebServiceManager (Blocks)
+
+- (RZWebServiceRequest*)requestWithKey:(NSString*)key completion:(RZWebServiceRequestCompletionBlock)completionBlock
+{
+    return [self requestWithKey:key parameters:nil completion:completionBlock];
+}
+
+- (RZWebServiceRequest*)requestWithKey:(NSString*)key parameters:(NSDictionary *)parameters completion:(RZWebServiceRequestCompletionBlock)completionBlock
+{
+    return [self requestWithKey:key parameters:parameters enqueue:YES completion:completionBlock];
+}
+
+- (RZWebServiceRequest*)requestWithKey:(NSString*)key enqueue:(BOOL)enqueue completion:(RZWebServiceRequestCompletionBlock)completionBlock
+{
+    return [self requestWithKey:key parameters:nil enqueue:enqueue completion:completionBlock];
+}
+
+- (RZWebServiceRequest*)requestWithKey:(NSString*)key parameters:(NSDictionary*)parameters enqueue:(BOOL)enqueue completion:(RZWebServiceRequestCompletionBlock)completionBlock
+{
+    NSDictionary* apiCall = [self.apiCalls objectForKey:key];
+    
+    return [self makeRequestWithApi:apiCall forKey:key andTarget:nil andParameters:parameters enqueue:enqueue completion:completionBlock];
+}
+
+- (RZWebServiceRequest*)requestWithCompletion:(RZWebServiceRequestCompletionBlock)completionBlock formatKey:(NSString*)key, ...
+{
+    va_list args;
+    va_start(args, key);
+    
+    RZWebServiceRequest *request = [self requestWithParameters:nil enqueue:YES completion:completionBlock formatKey:key arguments:args];
+    
+    va_end(args);
+    
+    return request;
+}
+
+- (RZWebServiceRequest*)requestWithParameters:(NSDictionary*)parameters completion:(RZWebServiceRequestCompletionBlock)completionBlock andFormatKey:(NSString*)key, ...
+{
+    va_list args;
+    va_start(args, key);
+    
+    RZWebServiceRequest *request = [self requestWithParameters:parameters enqueue:YES completion:completionBlock formatKey:key arguments:args];
+    
+    va_end(args);
+    
+    return request;
+}
+
+- (RZWebServiceRequest*)requestWithCompletion:(RZWebServiceRequestCompletionBlock)completionBlock enqueue:(BOOL)enqueue formatKey:(NSString*)key, ...
+{
+    va_list args;
+    va_start(args, key);
+    
+    RZWebServiceRequest *request = [self requestWithParameters:nil enqueue:enqueue completion:completionBlock formatKey:key arguments:args];
+    
+    va_end(args);
+    
+    return request;
+}
+
+- (RZWebServiceRequest*)requestWithParameters:(NSDictionary*)parameters enqueue:(BOOL)enqueue completion:(RZWebServiceRequestCompletionBlock)completionBlock formatKey:(NSString*)key, ...
+{
+    va_list args;
+    va_start(args, key);
+    
+    RZWebServiceRequest *request = [self requestWithParameters:parameters enqueue:enqueue completion:completionBlock formatKey:key arguments:args];
+    
+    va_end(args);
+    
+    return request;
+}
+
+- (RZWebServiceRequest*)requestWithParameters:(NSDictionary*)parameters enqueue:(BOOL)enqueue completion:(RZWebServiceRequestCompletionBlock)completionBlock formatKey:(NSString*)key arguments:(va_list)args
+{
+    NSDictionary *apiCall = [self.apiCalls objectForKey:key];
+    
+    // Replace URL Format String with completed URL string using passed in args
+    NSMutableDictionary *mutableApiCall = [NSMutableDictionary dictionaryWithDictionary:apiCall];
+    NSString *apiFormatString = [apiCall objectForKey:kURLkey];
+    NSString *apiString = [[NSString alloc] initWithFormat:apiFormatString arguments:args];
+    
+    [mutableApiCall setObject:apiString forKey:kURLkey];
+    
+    return [self makeRequestWithApi:apiCall forKey:key andTarget:nil andParameters:parameters enqueue:enqueue completion:completionBlock];
+}
+
+// create requests for the fileManager
+- (RZWebServiceRequest*)requestWithURL:(NSURL *)url target:(id)target parameters:(NSDictionary*)parameters enqueue:(BOOL)enqueue completion:(RZWebServiceRequestCompletionBlock)completionBlock
+{
+    RZWebServiceRequest* request = [[RZWebServiceRequest alloc] initWithURL:url
+                                                                 httpMethod:@"GET"
+                                                                     target:target
+                                                           preProcessBlocks:nil
+                                                          postProcessBlocks:nil
+                                                         expectedResultType:@"NONE"
+                                                                   bodyType:nil
+                                                                 parameters:parameters
+                                                                 completion:completionBlock];
+
+    if (enqueue)
+    {
+        [self enqueueRequest:request];
+    }
+    
+    return request;
 }
 
 @end
