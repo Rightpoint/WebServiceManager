@@ -151,7 +151,7 @@ expectedResultType:(NSString *)expectedResultType
 @property (copy, nonatomic) NSArray *preProcessBlocks;
 @property (copy, nonatomic) NSArray *postProcessBlocks;
 
-@property (copy, nonatomic) RZWebServiceRequestCompletionBlock completionBlock;
+@property (copy, nonatomic) RZWebServiceRequestCompletionBlock requestCompletionBlock;
 
 @end
 

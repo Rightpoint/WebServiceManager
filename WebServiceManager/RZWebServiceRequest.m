@@ -132,7 +132,7 @@ NSTimeInterval const kDefaultTimeout = 60;
 @synthesize preProcessBlocks = _preProcessBlocks;
 @synthesize postProcessBlocks = _postProcessBlocks;
 
-@synthesize completionBlock = _completionBlock;
+@synthesize requestCompletionBlock = _requestCompletionBlock;
 
 -(id) initWithApiInfo:(NSDictionary *)apiInfo target:(id)target
 {
@@ -224,6 +224,8 @@ expectedResultType:(NSString*)expectedResultType
     
     self.successHandler = successCallback;
     self.failureHandler = failureCallback;
+    
+    return self;
 }
 
 - (id) initWithURL:(NSURL *)url
@@ -279,7 +281,7 @@ expectedResultType:(NSString *)expectedResultType
         self.preProcessBlocks = [[NSArray alloc] initWithArray:preProcessBlocks copyItems:YES];
         self.postProcessBlocks = [[NSArray alloc] initWithArray:postProcessBlocks copyItems:YES];
         
-        self.completionBlock = completionBlock;
+        self.requestCompletionBlock = completionBlock;
     }
     
     return self;
@@ -674,8 +676,10 @@ expectedResultType:(NSString *)expectedResultType
     @synchronized(self){
         [self cancelTimeout];
     
-        if([self.delegate respondsToSelector:@selector(webServiceRequest:failedWithError:)])
-            [self.delegate webServiceRequest:self failedWithError:error];    
+        if (nil != self.requestCompletionBlock)
+        {
+            self.requestCompletionBlock(NO, nil, error, self);
+        }
     }
 }
 
@@ -902,47 +906,64 @@ totalBytesExpectedToWrite:(NSInteger)totalBytesExpectedToWrite
             return;
         }
         
-        if ([self.delegate respondsToSelector:@selector(webServiceRequest:completedWithData:)]) {
+        if(self.targetFileHandle)
+        {
+            [self.targetFileHandle closeFile];
             
-            if(self.targetFileHandle)
-            {
-                [self.targetFileHandle closeFile];
+            NSError* error = nil;
+            
+            // if we are set to copy the file atomically, we've been streaming
+            // to a temporary path. Move the file from the path to the target.
+            if (self.copyToTargetAtomically) {
                 
-                NSError* error = nil;
-                
-                // if we are set to copy the file atomically, we've been streaming
-                // to a temporary path. Move the file from the path to the target.
-                if (self.copyToTargetAtomically) {
-                    
-                    if(![[NSFileManager defaultManager] moveItemAtPath:self.atomicTempTargetPath
-                                                            toPath:[self.targetFileURL path]
-                                                                error:&error])
+                if(![[NSFileManager defaultManager] moveItemAtPath:self.atomicTempTargetPath
+                                                        toPath:[self.targetFileURL path]
+                                                            error:&error])
+                {
+                    if (nil != self.requestCompletionBlock)
                     {
-                        [self.delegate webServiceRequest:self failedWithError:error];
+                        self.requestCompletionBlock(NO, nil, error, self);
                     }
-                    
                 }
                 
+            }
+            
+            
+            if (error == nil)
+            {
+                // ensure the expected file type is set to "File"
+                // In this case, no need to convert
+                self.expectedResultType = @"File";
+                NSString* path = [self.targetFileURL path];
+                self.convertedData = [path dataUsingEncoding:NSUTF8StringEncoding];
                 
-                if (error == nil)
+                if (nil != self.requestCompletionBlock)
                 {
                     // ensure the expected file type is set to "File"
                     // In this case, no need to convert - just pass along file url
                     self.expectedResultType = kRZWebserviceDataTypeFile;
-                    [self.delegate webServiceRequest:self completedWithData:self.targetFileURL];
+                    self.requestCompletionBlock(YES, self.convertedData, nil, self);
                 }
-               
             }
-            else {
+           
+        }
+        else {
+            
+            // attempt to convert data
+            NSError *conversionError = nil;
+            if (![self convertDataToExpectedType:&conversionError]){
+                self.error = conversionError;
                 
-                // attempt to convert data
-                NSError *conversionError = nil;
-                if (![self convertDataToExpectedType:&conversionError]){
-                    self.error = conversionError;
-                    [self.delegate webServiceRequest:self failedWithError:conversionError];
+                if (nil != self.requestCompletionBlock)
+                {
+                    self.requestCompletionBlock(NO, nil, conversionError, self);
                 }
-                else{
-                    [self.delegate webServiceRequest:self completedWithData:self.convertedData];
+            }
+            else{
+                
+                if (nil != self.requestCompletionBlock)
+                {
+                    self.requestCompletionBlock(YES, self.receivedData, nil, self);
                 }
             }
         }
