@@ -507,7 +507,7 @@ expectedResultType:(NSString *)expectedResultType
             // No body type defined, or bodyType == "text", assume it's an NSString
             else if ((!self.bodyType || [self.bodyType isEqualToString:kRZWebserviceDataTypeText]) && [self.requestBody isKindOfClass:[NSString class]])
             {
-                self.requestBody = [(NSString*)self.requestBody dataUsingEncoding:NSUTF8StringEncoding];
+                self.urlRequest.HTTPBody = [(NSString*)self.requestBody dataUsingEncoding:NSUTF8StringEncoding];
             }
             // TODO: More body types... plist? XML?
             else{
