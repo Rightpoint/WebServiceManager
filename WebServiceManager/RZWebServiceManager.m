@@ -482,7 +482,7 @@ NSString* const kRZWebserviceCachedCertFingerprints = @"CachedCertFingerprints";
     
     [mutableApiCall setObject:apiString forKey:kURLkey];
     
-    return [self makeRequestWithApi:apiCall forKey:key andTarget:nil andParameters:parameters enqueue:enqueue completion:completionBlock];
+    return [self makeRequestWithApi:mutableApiCall forKey:key andTarget:nil andParameters:parameters enqueue:enqueue completion:completionBlock];
 }
 
 // create requests for the fileManager
