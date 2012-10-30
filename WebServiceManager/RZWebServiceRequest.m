@@ -963,7 +963,7 @@ totalBytesExpectedToWrite:(NSInteger)totalBytesExpectedToWrite
                 
                 if (nil != self.requestCompletionBlock)
                 {
-                    self.requestCompletionBlock(YES, self.receivedData, nil, self);
+                    self.requestCompletionBlock(YES, self.convertedData, nil, self);
                 }
             }
         }
