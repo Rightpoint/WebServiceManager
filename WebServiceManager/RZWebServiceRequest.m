@@ -518,6 +518,10 @@ expectedResultType:(NSString *)expectedResultType
             if (!self.urlRequest.HTTPBody || bodyError){
                 NSLog(@"[RZWebserviceRequest] Error with request body: %@", bodyError ? [bodyError localizedDescription] : @"failed to convert to NSData");
             }
+            else
+            {
+                [self.urlRequest setValue:[NSString stringWithFormat:@"%u", [self.urlRequest.HTTPBody length]] forHTTPHeaderField:@"Content-Length"];
+            }
         }
         
         if (self.uploadFileURL && [self.uploadFileURL isFileURL])
