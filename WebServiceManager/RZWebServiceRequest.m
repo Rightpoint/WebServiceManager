@@ -86,6 +86,9 @@ NSTimeInterval const kDefaultTimeout = 60;
 -(void) continueChallengeWithCredentials:(NSURLAuthenticationChallenge*) challenge;
 -(void) continueChallengeWithoutCredentials:(NSURLAuthenticationChallenge *)challenge;
 
+// helper method to make sure completionBlock is called on the main thread
+-(void) callCompletionBlockWithSucceeded:(BOOL)succeeded data:(id)data error:(NSError*)error;
+
 @end
 
 
@@ -679,11 +682,8 @@ expectedResultType:(NSString *)expectedResultType
 {
     @synchronized(self){
         [self cancelTimeout];
-    
-        if (nil != self.requestCompletionBlock)
-        {
-            self.requestCompletionBlock(NO, nil, error, self);
-        }
+        
+        [self callCompletionBlockWithSucceeded:NO data:nil error:error];
     }
 }
 
@@ -760,6 +760,16 @@ expectedResultType:(NSString *)expectedResultType
     
     self.convertedData = convertedResult;
     return YES;
+}
+
+-(void) callCompletionBlockWithSucceeded:(BOOL)succeeded data:(id)data error:(NSError*)error
+{
+    if (nil != self.requestCompletionBlock)
+    {
+        dispatch_sync(dispatch_get_main_queue(), ^{
+            self.requestCompletionBlock(succeeded, data, error, self);
+        });
+    }
 }
 
 #pragma mark - NSURLConnectionDelegate
@@ -924,10 +934,7 @@ totalBytesExpectedToWrite:(NSInteger)totalBytesExpectedToWrite
                                                         toPath:[self.targetFileURL path]
                                                             error:&error])
                 {
-                    if (nil != self.requestCompletionBlock)
-                    {
-                        self.requestCompletionBlock(NO, nil, error, self);
-                    }
+                    [self callCompletionBlockWithSucceeded:NO data:nil error:error];
                 }
                 
             }
@@ -937,17 +944,11 @@ totalBytesExpectedToWrite:(NSInteger)totalBytesExpectedToWrite
             {
                 // ensure the expected file type is set to "File"
                 // In this case, no need to convert
-                self.expectedResultType = @"File";
+                self.expectedResultType = kRZWebserviceDataTypeFile;
                 NSString* path = [self.targetFileURL path];
                 self.convertedData = [path dataUsingEncoding:NSUTF8StringEncoding];
                 
-                if (nil != self.requestCompletionBlock)
-                {
-                    // ensure the expected file type is set to "File"
-                    // In this case, no need to convert - just pass along file url
-                    self.expectedResultType = kRZWebserviceDataTypeFile;
-                    self.requestCompletionBlock(YES, self.convertedData, nil, self);
-                }
+                [self callCompletionBlockWithSucceeded:YES data:self.convertedData error:nil];
             }
            
         }
@@ -958,17 +959,11 @@ totalBytesExpectedToWrite:(NSInteger)totalBytesExpectedToWrite
             if (![self convertDataToExpectedType:&conversionError]){
                 self.error = conversionError;
                 
-                if (nil != self.requestCompletionBlock)
-                {
-                    self.requestCompletionBlock(NO, nil, conversionError, self);
-                }
+                [self callCompletionBlockWithSucceeded:NO data:nil error:conversionError];
             }
             else{
                 
-                if (nil != self.requestCompletionBlock)
-                {
-                    self.requestCompletionBlock(YES, self.convertedData, nil, self);
-                }
+                [self callCompletionBlockWithSucceeded:YES data:self.convertedData error:nil];
             }
         }
         
