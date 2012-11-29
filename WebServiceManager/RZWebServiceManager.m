@@ -288,18 +288,16 @@ NSString* const kRZWebserviceDataTypePlist = @"Plist";
 
 }
 
--(void) webServiceRequest:(RZWebServiceRequest *)request completedWithData:(NSData*)data
+-(void) webServiceRequest:(RZWebServiceRequest *)request completedWithData:(id)data
 {
     
     if (nil != request.successHandler && [request.target respondsToSelector:request.successHandler]) {
-        
-            id convertedData = request.convertedData;
         
             NSMethodSignature* signature = [request.target methodSignatureForSelector:request.successHandler];
             NSInvocation* invocation = [NSInvocation invocationWithMethodSignature:signature];
             [invocation setTarget:request.target];
             [invocation setSelector:request.successHandler];
-            [invocation setArgument:&convertedData atIndex:2];
+            [invocation setArgument:&data atIndex:2];
             [invocation retainArguments];
             
             if (signature.numberOfArguments > 3) 

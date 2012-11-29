@@ -543,11 +543,7 @@ expectedResultType:(NSString*)expectedResultType
     // try to convert the data to the expected type.
     id convertedResult = nil;
     
-    if ([dataType isEqualToString:kRZWebserviceDataTypeFile]) {
-        NSString* path = [[NSString alloc] initWithData:self.receivedData encoding:NSUTF8StringEncoding];
-        convertedResult = [NSURL fileURLWithPath:path];
-    }
-    else if([dataType isEqualToString:kRZWebserviceDataTypeImage])
+    if([dataType isEqualToString:kRZWebserviceDataTypeImage])
     {
         convertedResult = [UIImage imageWithData:self.receivedData];
     }
@@ -785,11 +781,9 @@ totalBytesExpectedToWrite:(NSInteger)totalBytesExpectedToWrite
                 if (error == nil)
                 {
                     // ensure the expected file type is set to "File"
-                    // In this case, no need to convert
-                    self.expectedResultType = @"File";
-                    NSString* path = [self.targetFileURL path];
-                    self.convertedData = [path dataUsingEncoding:NSUTF8StringEncoding];
-                    [self.delegate webServiceRequest:self completedWithData:self.convertedData];
+                    // In this case, no need to convert - just pass along file url
+                    self.expectedResultType = kRZWebserviceDataTypeFile;
+                    [self.delegate webServiceRequest:self completedWithData:self.targetFileURL];
                 }
                
             }
@@ -802,7 +796,7 @@ totalBytesExpectedToWrite:(NSInteger)totalBytesExpectedToWrite
                     [self.delegate webServiceRequest:self failedWithError:conversionError];
                 }
                 else{
-                    [self.delegate webServiceRequest:self completedWithData:self.receivedData];
+                    [self.delegate webServiceRequest:self completedWithData:self.convertedData];
                 }
             }
         }
