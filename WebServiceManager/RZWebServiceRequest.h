@@ -25,9 +25,9 @@ typedef void (^RZWebServiceRequestSSLChallengeBlock)(NSURLAuthenticationChalleng
 
 // SSL cert trust type.
 typedef enum {
-    RZWebServiceRequestSSLTrustTypeAll = 0,
-    RZWebServiceRequestSSLTrustTypePrompt,
-    RZWebServiceRequestSSLTrustTypeCA
+    RZWebServiceRequestSSLTrustTypeCA = 0,
+    RZWebServiceRequestSSLTrustTypeAll,
+    RZWebServiceRequestSSLTrustTypePrompt
 } RZWebServiceRequestSSLTrustType;
 
 

@@ -950,8 +950,8 @@ totalBytesExpectedToWrite:(NSInteger)totalBytesExpectedToWrite
                         });
                     } break;
                     default: {
-                        //If we dont set a SSLTrustType we will assume we want to accept it as to not break previous apps.
-                        [challenge.sender useCredential:[NSURLCredential credentialForTrust:challenge.protectionSpace.serverTrust] forAuthenticationChallenge:challenge];
+                        //If we dont set a SSLTrustType we will assume we wont trust self signed certs.
+                        [challenge.sender continueWithoutCredentialForAuthenticationChallenge:challenge];
                     } break;
                 }
             }
