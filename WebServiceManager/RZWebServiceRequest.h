@@ -20,6 +20,17 @@ extern NSTimeInterval const kDefaultTimeout;
 @protocol WebServiceRequestDelegate;
 @class RZWebServiceManager;
 
+typedef void (^RZWebServiceRequestSSLChallengeCompletionBlock)(BOOL allow);
+typedef void (^RZWebServiceRequestSSLChallengeBlock)(NSURLAuthenticationChallenge* challenge, RZWebServiceRequestSSLChallengeCompletionBlock completion);
+
+// SSL cert trust type.
+typedef enum {
+    RZWebServiceRequestSSLTrustTypeCA = 0,
+    RZWebServiceRequestSSLTrustTypeAll,
+    RZWebServiceRequestSSLTrustTypePrompt
+} RZWebServiceRequestSSLTrustType;
+
+
 @interface RZWebServiceRequest : NSOperation <NSURLConnectionDataDelegate>
 {
 @private
@@ -41,6 +52,10 @@ expectedResultType:(NSString*)expectedResultType
 
 // set a request header on the outgoing request
 -(void) setValue:(NSString*)value forHTTPHeaderField:(NSString*)headerField;
+
+// Sets how we handle Authentication challenges with certain Certificate types
+-(void) setSSLCertificateType:(RZWebServiceRequestSSLTrustType)sslCertificateType WithChallengeBlock:(RZWebServiceRequestSSLChallengeBlock)challengeBlock;
+
 
 @property (unsafe_unretained, nonatomic) id target;
 @property (assign, nonatomic) SEL successHandler;

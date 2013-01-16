@@ -44,6 +44,10 @@ NSTimeInterval const kDefaultTimeout = 60;
 @property (assign, nonatomic) BOOL finished;
 @property (assign, nonatomic) BOOL executing;
 
+//Needed for SSL Auth Challenges
+@property (assign, nonatomic) RZWebServiceRequestSSLTrustType sslTrustType;
+@property (nonatomic, copy) RZWebServiceRequestSSLChallengeBlock sslChallengeBlock;
+
 // if the user has chosen to stream to a file, a targetFileHandle will be created
 @property (strong, nonatomic) NSFileHandle* targetFileHandle;
 
@@ -212,6 +216,12 @@ expectedResultType:(NSString*)expectedResultType
 
     return  [NSDictionary dictionaryWithDictionary:_headers];
 }
+
+-(void) setSSLCertificateType:(RZWebServiceRequestSSLTrustType)sslCertificateType WithChallengeBlock:(RZWebServiceRequestSSLChallengeBlock)challengeBlock {
+    self.sslTrustType = sslCertificateType;
+    self.sslChallengeBlock = challengeBlock;
+}
+
 
 - (void)setUploadFileURL:(NSURL *)uploadFileURL
 {
@@ -488,7 +498,9 @@ expectedResultType:(NSString*)expectedResultType
 {
     // TODO: flesh out the userInfo dictionary passed to create the error. 
     NSError* error = [NSError errorWithDomain:NSURLErrorDomain code:NSURLErrorTimedOut userInfo:nil];
-    
+    if (self.isFinished) {
+        return;
+    }
     [self reportError:error];
     
     self.done = YES;
@@ -902,11 +914,45 @@ totalBytesExpectedToWrite:(NSInteger)totalBytesExpectedToWrite
 
 - (void)connection:(NSURLConnection *)connection didReceiveAuthenticationChallenge:(NSURLAuthenticationChallenge *)challenge {
     @synchronized(self){
-        if ([challenge.protectionSpace.authenticationMethod isEqualToString:NSURLAuthenticationMethodServerTrust])
-
-            [challenge.sender useCredential:[NSURLCredential credentialForTrust:challenge.protectionSpace.serverTrust] forAuthenticationChallenge:challenge];
-        
-        [challenge.sender continueWithoutCredentialForAuthenticationChallenge:challenge];
+        if ([challenge.protectionSpace.authenticationMethod isEqualToString:NSURLAuthenticationMethodServerTrust]) {
+            NSURLProtectionSpace *protSpace = [challenge protectionSpace];
+            SecTrustRef currentServerTrust = [protSpace serverTrust];
+            SecTrustResultType trustResult;
+            OSStatus err = SecTrustEvaluate(currentServerTrust, &trustResult);
+            BOOL trusted = (err == noErr) && ((trustResult == kSecTrustResultProceed) || (trustResult == kSecTrustResultUnspecified));
+            if (trusted){
+                //CACert
+                [challenge.sender useCredential:[NSURLCredential credentialForTrust:challenge.protectionSpace.serverTrust] forAuthenticationChallenge:challenge];
+            } else {
+                //We have a self-Signed cert.  Lets see if we know how to handle it.
+                switch (self.sslTrustType) {
+                    case RZWebServiceRequestSSLTrustTypeAll: {
+                        [challenge.sender useCredential:[NSURLCredential credentialForTrust:challenge.protectionSpace.serverTrust] forAuthenticationChallenge:challenge];
+                    }break;
+                    case RZWebServiceRequestSSLTrustTypeCA: {
+                        [challenge.sender continueWithoutCredentialForAuthenticationChallenge:challenge];
+                    }break;
+                    case RZWebServiceRequestSSLTrustTypePrompt: {
+                        [self cancelTimeout];
+                        self.sslChallengeBlock(challenge, ^(BOOL allow) {
+                            if (allow) {
+                                [challenge.sender useCredential:[NSURLCredential credentialForTrust:challenge.protectionSpace.serverTrust] forAuthenticationChallenge:challenge];
+                            } else {
+                                [challenge.sender continueWithoutCredentialForAuthenticationChallenge:challenge];
+                            }
+                            [self scheduleTimeout];
+                        });
+                    } break;
+                    default: {
+                        //If we dont set a SSLTrustType we will assume we wont trust self signed certs.
+                        [challenge.sender continueWithoutCredentialForAuthenticationChallenge:challenge];
+                    } break;
+                }
+            }
+        }
+        else {
+            [challenge.sender continueWithoutCredentialForAuthenticationChallenge:challenge];
+        }
     }
 }
 @end
