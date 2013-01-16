@@ -103,7 +103,7 @@ expectedResultType:(NSString*)expectedResultType
 @protocol WebServiceRequestDelegate <NSObject>
 
 -(void) webServiceRequest:(RZWebServiceRequest*)request failedWithError:(NSError*)error;
--(void) webServiceRequest:(RZWebServiceRequest *)request completedWithData:(NSData*)data;
+-(void) webServiceRequest:(RZWebServiceRequest *)request completedWithData:(id)data;        // type will depend on conversion to expected data type
 
 @end
 
