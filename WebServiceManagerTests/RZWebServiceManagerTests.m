@@ -345,10 +345,64 @@
     
 }
 
+-(void) test20ManuallyAddARequestWithCompletionBlock
+{
+    
+    // sometimes you want to add your own request, without relying on the PList. Create a request, and add it to the queue.
+    RZWebServiceRequest* request = [[RZWebServiceRequest alloc] initWithURL:[NSURL URLWithString:@"http://www.raizlabs.com/cms/wp-content/uploads/2011/06/raizlabs-logo-sheetrock.png"]
+                                                                 httpMethod:@"GET"
+                                                                     target:self
+                                                         expectedResultType:@"Image"
+                                                                   bodyType:@"NONE"
+                                                                 parameters:nil
+                                                                 completion:^(BOOL succeeded, id data, NSError *error, RZWebServiceRequest *request) {
+                                                                     STAssertTrue(succeeded, @"Request failed.");
+                                                                     
+                                                                     if (succeeded)
+                                                                     {
+                                                                         [self logoCompleted:data request:request];
+                                                                     }
+                                                                     else
+                                                                     {
+                                                                         [self logoFailed:error];
+                                                                     }
+                                                                 }];
+    
+    [self.webServiceManager enqueueRequest:request];
+    
+    while (!self.apiCallCompleted) {
+        [[NSRunLoop currentRunLoop] runUntilDate:[NSDate dateWithTimeIntervalSinceNow:1]];
+    }
+    
+}
 
+-(void) test21ExpectErrorRequestWithCompletionBlock
+{
+    
+    // sometimes you want to add your own request, without relying on the PList. Create a request, and add it to the queue.
+    RZWebServiceRequest* request = [[RZWebServiceRequest alloc] initWithURL:[NSURL URLWithString:@"http://localhost:8888/thisfiledoesnotexist"]
+                                                                 httpMethod:@"GET"
+                                                                     target:self
+                                                         expectedResultType:@"JSON"
+                                                                   bodyType:@"NONE"
+                                                                 parameters:nil
+                                                                 completion:^(BOOL succeeded, id data, NSError *error, RZWebServiceRequest *request) {
+                                                                     STAssertFalse(succeeded, @"Request succeeded when it should not have.");
+                                                                     STAssertNotNil(error, @"Failed request should have returned an error.");
+                                                                     
+                                                                     self.apiCallCompleted = YES;
+                                                                 }];
+    
+    [self.webServiceManager enqueueRequest:request];
+    
+    while (!self.apiCallCompleted) {
+        [[NSRunLoop currentRunLoop] runUntilDate:[NSDate dateWithTimeIntervalSinceNow:1]];
+    }
+    
+}
 
 //
-// Image callbacks. 
+// Image callbacks.
 //
 -(void) logoCompleted:(NSObject*)photo request:(RZWebServiceRequest*)request
 {
