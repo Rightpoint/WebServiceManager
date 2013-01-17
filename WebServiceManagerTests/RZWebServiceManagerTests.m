@@ -357,7 +357,6 @@
         UIImage* image = (UIImage*)photo;
         
         NSLog(@"Recieved photo %lf wide by %lf high", image.size.width, image.size.height);
-        self.apiCallCompleted = YES;
         
         STAssertNotNil(image, @"getLogo failed: no image returned");
     }
@@ -370,7 +369,6 @@
         // make sure we can optn the file provided by streaming to disk
         
         NSLog(@"Recieved photo %lf wide by %lf high", image.size.width, image.size.height);
-        self.apiCallCompleted = YES;
         
         STAssertNotNil(image, @"getLogo failed: no image returned");
     }
@@ -379,10 +377,13 @@
         // only requested headers. Make sure data is empty and we have headers
         STAssertTrue(request.data.length == 0, @"Content size should be zero since a HEAD request was performed.");
         STAssertTrue(request.responseHeaders.count != 0, @"Should have received response headers for the HEAD request");
-        
-        self.apiCallCompleted = YES;
     }
- 
+    else
+    {
+        STAssertTrue(NO, @"Invalid class for photo object or not a HEAD request.");
+    }
+    
+    self.apiCallCompleted = YES;
 }
 
 -(void) logoFailed:(NSError*)error
