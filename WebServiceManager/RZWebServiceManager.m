@@ -17,7 +17,7 @@ NSString* const kRZWebserviceDataTypeJSON = @"JSON";
 NSString* const kRZWebserviceDataTypeFile = @"File";
 NSString* const kRZWebserviceDataTypeText = @"Text";
 NSString* const kRZWebserviceDataTypeImage = @"Image";
-NSString* const kRZWebserviceDataTypePlist = @"Plist";
+NSString* const kRZWebserviceDataTypePlist = @"PList";
 
 NSString* const kRZWebserviceCachedCertFingerprints = @"CachedCertFingerprints";
 
