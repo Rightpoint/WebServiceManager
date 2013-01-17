@@ -294,12 +294,13 @@ expectedResultType:(NSString *)expectedResultType
                                                successCallBack:(SEL)successCallback
                                                failureCallback:(SEL)failureCallback
 {
+    __block id blockTarget = target;
     RZWebServiceRequestCompletionBlock compBlock = ^(BOOL succeeded, id data, NSError *error, RZWebServiceRequest *request) {
         if (succeeded)
         {
-            NSMethodSignature* signature = [target methodSignatureForSelector:successCallback];
+            NSMethodSignature* signature = [blockTarget methodSignatureForSelector:successCallback];
             NSInvocation* invocation = [NSInvocation invocationWithMethodSignature:signature];
-            [invocation setTarget:target];
+            [invocation setTarget:blockTarget];
             [invocation setSelector:successCallback];
             [invocation setArgument:&data atIndex:2];
             [invocation retainArguments];
@@ -313,9 +314,9 @@ expectedResultType:(NSString *)expectedResultType
         }
         else
         {
-            NSMethodSignature* signature = [target methodSignatureForSelector:failureCallback];
+            NSMethodSignature* signature = [blockTarget methodSignatureForSelector:failureCallback];
             NSInvocation* invocation = [NSInvocation invocationWithMethodSignature:signature];
-            [invocation setTarget:target];
+            [invocation setTarget:blockTarget];
             [invocation setSelector:failureCallback];
             [invocation setArgument:&error atIndex:2];
             [invocation retainArguments];
