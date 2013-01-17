@@ -990,8 +990,7 @@ totalBytesExpectedToWrite:(NSInteger)totalBytesExpectedToWrite
                 // ensure the expected file type is set to "File"
                 // In this case, no need to convert
                 self.expectedResultType = kRZWebserviceDataTypeFile;
-                NSString* path = [self.targetFileURL path];
-                self.convertedData = [path dataUsingEncoding:NSUTF8StringEncoding];
+                self.convertedData = self.targetFileURL;
                 
                 [self callCompletionBlockWithSucceeded:YES data:self.convertedData error:nil];
             }
