@@ -142,9 +142,11 @@
     // sometimes you want to add your own request, without relying on the PList. Create a request, and add it to the queue.
     RZWebServiceRequest* request = [[RZWebServiceRequest alloc] initWithURL:[NSURL URLWithString:@"http://www.raizlabs.com/cms/wp-content/uploads/2011/06/raizlabs-logo-sheetrock.png"]
                                                                                      httpMethod:@"GET"
-                                                                                      andTarget:self successCallback:@selector(logoCompleted:request:)
+                                                                                      andTarget:self
+                                                                                successCallback:@selector(logoCompleted:request:)
                                                                                 failureCallback:@selector(logoFailed:)
                                                                              expectedResultType:@"Image"
+                                                                                       bodyType:@"NONE"
                                                                                   andParameters:nil];
     
     [self.webServiceManager enqueueRequest:request];

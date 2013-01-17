@@ -44,6 +44,8 @@
 		CBFFEC1A1457936000A003D6 /* RZWebService_NSURL.h in Headers */ = {isa = PBXBuildFile; fileRef = CBFFEC181457936000A003D6 /* RZWebService_NSURL.h */; };
 		CBFFEC1B1457936000A003D6 /* RZWebService_NSURL.m in Sources */ = {isa = PBXBuildFile; fileRef = CBFFEC191457936000A003D6 /* RZWebService_NSURL.m */; };
 		CBFFEC1C1457936000A003D6 /* RZWebService_NSURL.m in Sources */ = {isa = PBXBuildFile; fileRef = CBFFEC191457936000A003D6 /* RZWebService_NSURL.m */; };
+		FEBD24C616A84E1A00DF7BA7 /* Security.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FEBD24C516A84E1A00DF7BA7 /* Security.framework */; };
+		FEBD24C816A84E2500DF7BA7 /* Security.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FEBD24C516A84E1A00DF7BA7 /* Security.framework */; };
 		FEC9669D158F723B00E90A65 /* RZFileManager.h in Headers */ = {isa = PBXBuildFile; fileRef = FEC9669B158F723B00E90A65 /* RZFileManager.h */; };
 		FEC9669E158F723B00E90A65 /* RZFileManager.m in Sources */ = {isa = PBXBuildFile; fileRef = FEC9669C158F723B00E90A65 /* RZFileManager.m */; };
 /* End PBXBuildFile section */
@@ -98,6 +100,7 @@
 		CBFFEB3D14566BDD00A003D6 /* README.md */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = README.md; sourceTree = "<group>"; };
 		CBFFEC181457936000A003D6 /* RZWebService_NSURL.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RZWebService_NSURL.h; sourceTree = "<group>"; };
 		CBFFEC191457936000A003D6 /* RZWebService_NSURL.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RZWebService_NSURL.m; sourceTree = "<group>"; };
+		FEBD24C516A84E1A00DF7BA7 /* Security.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Security.framework; path = System/Library/Frameworks/Security.framework; sourceTree = SDKROOT; };
 		FEC9669B158F723B00E90A65 /* RZFileManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RZFileManager.h; sourceTree = "<group>"; };
 		FEC9669C158F723B00E90A65 /* RZFileManager.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RZFileManager.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -107,6 +110,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				FEBD24C616A84E1A00DF7BA7 /* Security.framework in Frameworks */,
 				CB588CC11453C6730052A336 /* Foundation.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -115,6 +119,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				FEBD24C816A84E2500DF7BA7 /* Security.framework in Frameworks */,
 				CB588CCF1453C6730052A336 /* SenTestingKit.framework in Frameworks */,
 				CB588CD11453C6730052A336 /* UIKit.framework in Frameworks */,
 				CB588CD21453C6730052A336 /* Foundation.framework in Frameworks */,
@@ -152,6 +157,7 @@
 		CB588CB21453C6730052A336 = {
 			isa = PBXGroup;
 			children = (
+				FEBD24C516A84E1A00DF7BA7 /* Security.framework */,
 				CBFFEB3D14566BDD00A003D6 /* README.md */,
 				CB588CC21453C6730052A336 /* WebServiceManager */,
 				CB588CD61453C6730052A336 /* WebServiceManagerTests */,
