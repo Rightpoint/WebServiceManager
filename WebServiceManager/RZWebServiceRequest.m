@@ -45,6 +45,9 @@ NSTimeInterval const kDefaultTimeout = 60;
 @property (assign, nonatomic) BOOL finished;
 @property (assign, nonatomic) BOOL executing;
 
+// Generated Completion Block for target, successHandler, and failureHandler
+@property (nonatomic, copy) RZWebServiceRequestCompletionBlock fallbackCompletionBlock;
+
 //Needed for SSL Auth Challenges
 @property (assign, nonatomic) RZWebServiceRequestSSLTrustType sslTrustType;
 @property (nonatomic, copy) RZWebServiceRequestSSLChallengeBlock sslChallengeBlock;
@@ -137,6 +140,8 @@ NSTimeInterval const kDefaultTimeout = 60;
 
 @synthesize requestCompletionBlock = _requestCompletionBlock;
 
+@synthesize fallbackCompletionBlock = _fallbackCompletionBlock;
+
 -(id) initWithApiInfo:(NSDictionary *)apiInfo target:(id)target
 {
     self = [self initWithApiInfo:apiInfo target:target parameters:nil];
@@ -221,9 +226,7 @@ expectedResultType:(NSString*)expectedResultType
           expectedResultType:expectedResultType
                     bodyType:bodyType
                   parameters:parameters
-                  completion:[RZWebServiceRequest completionBlockForTarget:target
-                                                           successCallBack:successCallback
-                                                           failureCallback:failureCallback]];
+                  completion:nil];
     
     self.successHandler = successCallback;
     self.failureHandler = failureCallback;
@@ -331,6 +334,47 @@ expectedResultType:(NSString *)expectedResultType
     };
     
     return [compBlock copy];
+}
+
+- (RZWebServiceRequestCompletionBlock)requestCompletionBlock
+{
+    if (_requestCompletionBlock == nil && self.target != nil && self.successHandler != nil && self.failureHandler != nil)
+    {
+        return self.fallbackCompletionBlock;
+    }
+    
+    return _requestCompletionBlock;
+}
+
+- (RZWebServiceRequestCompletionBlock)fallbackCompletionBlock
+{
+    if (_fallbackCompletionBlock == nil && self.target != nil && self.successHandler != nil && self.failureHandler != nil)
+    {
+        _fallbackCompletionBlock = [RZWebServiceRequest completionBlockForTarget:self.target successCallBack:self.successHandler failureCallback:self.failureHandler];
+    }
+    
+    return _fallbackCompletionBlock;
+}
+
+- (void)setTarget:(id)target
+{
+    self.fallbackCompletionBlock = nil;
+    
+    _target = target;
+}
+
+- (void)setSuccessHandler:(SEL)successHandler
+{
+    self.fallbackCompletionBlock = nil;
+    
+    _successHandler = successHandler;
+}
+
+- (void)setFailureHandler:(SEL)failureHandler
+{
+    self.fallbackCompletionBlock = nil;
+    
+    _failureHandler = failureHandler;
 }
 
 -(void) setValue:(NSString*)value forHTTPHeaderField:(NSString*)headerField
