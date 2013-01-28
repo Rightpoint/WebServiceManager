@@ -592,7 +592,12 @@ expectedResultType:(NSString*)expectedResultType
         // if we're 5.0 or above, use the build in JSON deserialization
         //
 #else
-        convertedResult = [NSJSONSerialization JSONObjectWithData:self.receivedData options:0 error:&jsonError];
+        @try {
+            convertedResult = [NSJSONSerialization JSONObjectWithData:self.receivedData options:0 error:&jsonError];
+        }
+        @catch (NSException *exception) {
+            NSLog(@"Exception serializing JSON object.  JSONError: %@   -   Exception: %@", jsonError, exception);
+        }
 #endif
         
         
