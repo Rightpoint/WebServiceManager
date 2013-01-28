@@ -26,6 +26,12 @@
 		CB588CEF1453C6B40052A336 /* RZWebServiceRequest.m in Sources */ = {isa = PBXBuildFile; fileRef = CB588CEA1453C6B40052A336 /* RZWebServiceRequest.m */; };
 		CB588CF01453C6B40052A336 /* RZWebServiceRequest.m in Sources */ = {isa = PBXBuildFile; fileRef = CB588CEA1453C6B40052A336 /* RZWebServiceRequest.m */; };
 		CB588CF61453C9730052A336 /* WebServiceManagerCalls.plist in Resources */ = {isa = PBXBuildFile; fileRef = CB588CF51453C9730052A336 /* WebServiceManagerCalls.plist */; };
+		CB81758016B6AD0300D2801F /* NSURLAuthenticationChallenge+Fingerprint.h in Headers */ = {isa = PBXBuildFile; fileRef = CB81757E16B6AD0300D2801F /* NSURLAuthenticationChallenge+Fingerprint.h */; };
+		CB81758116B6AD0300D2801F /* NSURLAuthenticationChallenge+Fingerprint.m in Sources */ = {isa = PBXBuildFile; fileRef = CB81757F16B6AD0300D2801F /* NSURLAuthenticationChallenge+Fingerprint.m */; };
+		CB81758216B6AD0300D2801F /* NSURLAuthenticationChallenge+Fingerprint.m in Sources */ = {isa = PBXBuildFile; fileRef = CB81757F16B6AD0300D2801F /* NSURLAuthenticationChallenge+Fingerprint.m */; };
+		CBA1822416B2E53E00FD09CC /* RZWebServiceKeychain.h in Headers */ = {isa = PBXBuildFile; fileRef = CBA1822216B2E53E00FD09CC /* RZWebServiceKeychain.h */; };
+		CBA1822516B2E53E00FD09CC /* RZWebServiceKeychain.m in Sources */ = {isa = PBXBuildFile; fileRef = CBA1822316B2E53E00FD09CC /* RZWebServiceKeychain.m */; };
+		CBA1822616B2E53E00FD09CC /* RZWebServiceKeychain.m in Sources */ = {isa = PBXBuildFile; fileRef = CBA1822316B2E53E00FD09CC /* RZWebServiceKeychain.m */; };
 		CBD0D69F15F6EFE3009EDF49 /* NSString+RZMD5.h in Headers */ = {isa = PBXBuildFile; fileRef = CBD0D69D15F6EFE3009EDF49 /* NSString+RZMD5.h */; };
 		CBD0D6A015F6EFE3009EDF49 /* NSString+RZMD5.m in Sources */ = {isa = PBXBuildFile; fileRef = CBD0D69E15F6EFE3009EDF49 /* NSString+RZMD5.m */; };
 		CBD0D6A115F6EFE3009EDF49 /* NSString+RZMD5.m in Sources */ = {isa = PBXBuildFile; fileRef = CBD0D69E15F6EFE3009EDF49 /* NSString+RZMD5.m */; };
@@ -75,6 +81,10 @@
 		CB588CE91453C6B40052A336 /* RZWebServiceRequest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RZWebServiceRequest.h; sourceTree = "<group>"; };
 		CB588CEA1453C6B40052A336 /* RZWebServiceRequest.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RZWebServiceRequest.m; sourceTree = "<group>"; };
 		CB588CF51453C9730052A336 /* WebServiceManagerCalls.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = WebServiceManagerCalls.plist; sourceTree = "<group>"; };
+		CB81757E16B6AD0300D2801F /* NSURLAuthenticationChallenge+Fingerprint.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSURLAuthenticationChallenge+Fingerprint.h"; sourceTree = "<group>"; };
+		CB81757F16B6AD0300D2801F /* NSURLAuthenticationChallenge+Fingerprint.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSURLAuthenticationChallenge+Fingerprint.m"; sourceTree = "<group>"; };
+		CBA1822216B2E53E00FD09CC /* RZWebServiceKeychain.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RZWebServiceKeychain.h; sourceTree = "<group>"; };
+		CBA1822316B2E53E00FD09CC /* RZWebServiceKeychain.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RZWebServiceKeychain.m; sourceTree = "<group>"; };
 		CBA1FA8614B4E552005A61B0 /* echoGet.php */ = {isa = PBXFileReference; lastKnownFileType = text.script.php; path = echoGet.php; sourceTree = "<group>"; };
 		CBA1FA8714B4E552005A61B0 /* echoHeaders.php */ = {isa = PBXFileReference; lastKnownFileType = text.script.php; path = echoHeaders.php; sourceTree = "<group>"; };
 		CBA1FA8814B4E552005A61B0 /* echoPost.php */ = {isa = PBXFileReference; lastKnownFileType = text.script.php; path = echoPost.php; sourceTree = "<group>"; };
@@ -133,6 +143,8 @@
 				CBD0D69E15F6EFE3009EDF49 /* NSString+RZMD5.m */,
 				CBFFEC181457936000A003D6 /* RZWebService_NSURL.h */,
 				CBFFEC191457936000A003D6 /* RZWebService_NSURL.m */,
+				CB81757E16B6AD0300D2801F /* NSURLAuthenticationChallenge+Fingerprint.h */,
+				CB81757F16B6AD0300D2801F /* NSURLAuthenticationChallenge+Fingerprint.m */,
 			);
 			name = Categories;
 			sourceTree = "<group>";
@@ -170,6 +182,7 @@
 		CB588CC21453C6730052A336 /* WebServiceManager */ = {
 			isa = PBXGroup;
 			children = (
+				CBA1822016B2E52F00FD09CC /* Keychain */,
 				98216E1815B066510099166B /* CacheSchema */,
 				9885D142159A3DF8003DECDF /* Categories */,
 				CBFFEB2E14565F1E00A003D6 /* JSONKit */,
@@ -213,6 +226,15 @@
 				CB588CD91453C6730052A336 /* InfoPlist.strings */,
 			);
 			name = "Supporting Files";
+			sourceTree = "<group>";
+		};
+		CBA1822016B2E52F00FD09CC /* Keychain */ = {
+			isa = PBXGroup;
+			children = (
+				CBA1822216B2E53E00FD09CC /* RZWebServiceKeychain.h */,
+				CBA1822316B2E53E00FD09CC /* RZWebServiceKeychain.m */,
+			);
+			name = Keychain;
 			sourceTree = "<group>";
 		};
 		CBA1FA8514B4E552005A61B0 /* testScripts */ = {
@@ -261,6 +283,8 @@
 				9885D140159A382A003DECDF /* RZFileCacheSchema.h in Headers */,
 				98216E1515B062940099166B /* RZCacheSchema.h in Headers */,
 				CBD0D69F15F6EFE3009EDF49 /* NSString+RZMD5.h in Headers */,
+				CBA1822416B2E53E00FD09CC /* RZWebServiceKeychain.h in Headers */,
+				CB81758016B6AD0300D2801F /* NSURLAuthenticationChallenge+Fingerprint.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -374,6 +398,8 @@
 				9885D141159A382A003DECDF /* RZFileCacheSchema.m in Sources */,
 				98216E1615B062940099166B /* RZCacheSchema.m in Sources */,
 				CBD0D6A015F6EFE3009EDF49 /* NSString+RZMD5.m in Sources */,
+				CBA1822516B2E53E00FD09CC /* RZWebServiceKeychain.m in Sources */,
+				CB81758116B6AD0300D2801F /* NSURLAuthenticationChallenge+Fingerprint.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -388,6 +414,8 @@
 				CBFFEC1C1457936000A003D6 /* RZWebService_NSURL.m in Sources */,
 				985B2CB81594A2C000FADCCA /* RZFileManagerTests.m in Sources */,
 				CBD0D6A115F6EFE3009EDF49 /* NSString+RZMD5.m in Sources */,
+				CBA1822616B2E53E00FD09CC /* RZWebServiceKeychain.m in Sources */,
+				CB81758216B6AD0300D2801F /* NSURLAuthenticationChallenge+Fingerprint.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

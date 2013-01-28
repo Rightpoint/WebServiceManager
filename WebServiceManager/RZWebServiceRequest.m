@@ -11,6 +11,7 @@
 #import "RZFileManager.h"
 #import "RZWebServiceManager.h"
 #import "NSString+RZMD5.h"
+#import <CommonCrypto/CommonCrypto.h>
 
 #if __IPHONE_OS_VERSION_MIN_REQUIRED < __IPHONE_5_0
 #import "JSONKit.h"
@@ -77,10 +78,15 @@ NSTimeInterval const kDefaultTimeout = 60;
 -(BOOL) convertDataToExpectedType:(NSError**)error;
 -(BOOL) convertDataToType:(NSString*)dataType error:(NSError**)error;
 
+// helper methods to continue an SSL challenged request
+-(void) continueChallengeWithCredentials:(NSURLAuthenticationChallenge*) challenge;
+-(void) continueChallengeWithoutCredentials:(NSURLAuthenticationChallenge *)challenge;
+
 @end
 
 
 @implementation RZWebServiceRequest
+@synthesize manager = _manager;
 @synthesize target = _target;
 @synthesize httpMethod = _httpMethod;
 @synthesize receivedData = _receivedData;
@@ -912,49 +918,124 @@ totalBytesExpectedToWrite:(NSInteger)totalBytesExpectedToWrite
     }
 }
 
-- (void)connection:(NSURLConnection *)connection didReceiveAuthenticationChallenge:(NSURLAuthenticationChallenge *)challenge {
-    @synchronized(self){
+- (void)connection:(NSURLConnection *)connection didReceiveAuthenticationChallenge:(NSURLAuthenticationChallenge *)challenge
+{
+  
+    @synchronized(self)
+    {
+        BOOL shouldContinue = YES;
+        BOOL allow = NO;
+        
         if ([challenge.protectionSpace.authenticationMethod isEqualToString:NSURLAuthenticationMethodServerTrust]) {
             NSURLProtectionSpace *protSpace = [challenge protectionSpace];
             SecTrustRef currentServerTrust = [protSpace serverTrust];
             SecTrustResultType trustResult;
             OSStatus err = SecTrustEvaluate(currentServerTrust, &trustResult);
             BOOL trusted = (err == noErr) && ((trustResult == kSecTrustResultProceed) || (trustResult == kSecTrustResultUnspecified));
-            if (trusted){
-                //CACert
-                [challenge.sender useCredential:[NSURLCredential credentialForTrust:challenge.protectionSpace.serverTrust] forAuthenticationChallenge:challenge];
-            } else {
-                //We have a self-Signed cert.  Lets see if we know how to handle it.
-                switch (self.sslTrustType) {
-                    case RZWebServiceRequestSSLTrustTypeAll: {
-                        [challenge.sender useCredential:[NSURLCredential credentialForTrust:challenge.protectionSpace.serverTrust] forAuthenticationChallenge:challenge];
-                    }break;
-                    case RZWebServiceRequestSSLTrustTypeCA: {
-                        [challenge.sender continueWithoutCredentialForAuthenticationChallenge:challenge];
-                    }break;
-                    case RZWebServiceRequestSSLTrustTypePrompt: {
+          
+         
+            if (trusted)
+            {
+                allow = YES;
+            }
+            else
+            {
+              
+              
+                //We have an invalid cert, which may be self-signed, expired, or have another error. Lets see if we know how to handle it.
+                switch (self.sslTrustType)
+                {
+                    case RZWebServiceRequestSSLTrustTypeAll:
+                      allow = YES;
+                      break;
+                    
+                  case RZWebServiceRequestSSLTrustTypeCA:
+                      allow = NO;
+                      break;
+                    
+                  // TODO: add a case that looks up by cache.
+                  case RZWebServiceRequestSSLTrustTypePromptAndCache:
+                  {
+                    // determine if the challenge leaf certificate's certificate has been
+                    // cached. If so, we're allowed to continue.
+                    if ([self.manager sslCachePermits:challenge]) {
+                      allow = YES;
+                      break;
+                    }
+                    
+                    // if it hasn't been cached, this will pass through to the prompt case below.
+
+                  }
+                  
+                  case RZWebServiceRequestSSLTrustTypePrompt:
+                    {
+                        // do not continue in this context, since the request will be continued as a result of the block executing.
+                        shouldContinue = NO;
+                     
                         [self cancelTimeout];
-                        self.sslChallengeBlock(challenge, ^(BOOL allow) {
-                            if (allow) {
-                                [challenge.sender useCredential:[NSURLCredential credentialForTrust:challenge.protectionSpace.serverTrust] forAuthenticationChallenge:challenge];
-                            } else {
-                                [challenge.sender continueWithoutCredentialForAuthenticationChallenge:challenge];
+                      
+                        self.sslChallengeBlock(challenge, ^(BOOL blockAllow) {
+                          
+                            if (blockAllow) {
+                              
+                                // user has allowed the authentication challenege. If the type is set to PromptAndCache, perform caching now.
+                                if (self.sslTrustType == RZWebServiceRequestSSLTrustTypePromptAndCache) {
+                                    [self.manager cacheAllowedChallenge:challenge];
+                                }
+                                
+                                [self continueChallengeWithCredentials:challenge];
+                              
                             }
+                            else
+                            {
+                                [self continueChallengeWithoutCredentials:challenge];
+                            }
+
                             [self scheduleTimeout];
                         });
-                    } break;
-                    default: {
+                    }
+                        
+                    break;
+                    
+                    default:
+                    {
                         //If we dont set a SSLTrustType we will assume we wont trust self signed certs.
-                        [challenge.sender continueWithoutCredentialForAuthenticationChallenge:challenge];
-                    } break;
+                        allow = NO;
+                    }
+                    break;
                 }
             }
         }
-        else {
-            [challenge.sender continueWithoutCredentialForAuthenticationChallenge:challenge];
+        else
+        {
+            allow = NO;
+        }
+        
+        // if the request should continue and will not be continued by another block
+        if(shouldContinue)
+        {
+            if(allow)
+            {
+                [self continueChallengeWithCredentials:challenge];
+            }
+            else
+            {
+                [self continueChallengeWithoutCredentials:challenge];
+            }
         }
     }
 }
+
+-(void) continueChallengeWithCredentials:(NSURLAuthenticationChallenge*) challenge
+{
+    [challenge.sender useCredential:[NSURLCredential credentialForTrust:challenge.protectionSpace.serverTrust] forAuthenticationChallenge:challenge];
+}
+
+-(void) continueChallengeWithoutCredentials:(NSURLAuthenticationChallenge *)challenge
+{
+    [challenge.sender continueWithoutCredentialForAuthenticationChallenge:challenge];
+}
+
 @end
 
 

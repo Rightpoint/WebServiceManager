@@ -10,12 +10,16 @@
 #if __IPHONE_OS_VERSION_MIN_REQUIRED < __IPHONE_5_0
 #import "JSONKit.h"
 #endif
+#import "RZWebServiceKeychain.h"
+#import "NSURLAuthenticationChallenge+Fingerprint.h"
 
 NSString* const kRZWebserviceDataTypeJSON = @"JSON";
 NSString* const kRZWebserviceDataTypeFile = @"File";
 NSString* const kRZWebserviceDataTypeText = @"Text";
 NSString* const kRZWebserviceDataTypeImage = @"Image";
 NSString* const kRZWebserviceDataTypePlist = @"Plist";
+
+NSString* const kRZWebserviceCachedCertFingerprints = @"CachedCertFingerprints";
 
 @interface RZWebServiceManager()
 
@@ -82,6 +86,8 @@ NSString* const kRZWebserviceDataTypePlist = @"Plist";
 -(void) enqueueRequest:(RZWebServiceRequest *)request inQueue:(NSOperationQueue*)queue
 {
     request.delegate = self;
+    request.manager = self;
+  
     [queue addOperation:request];
 }
 
@@ -307,6 +313,50 @@ NSString* const kRZWebserviceDataTypePlist = @"Plist";
         
     }
     
+}
+
+#pragma mark - Certificate Cache
+-(BOOL) sslCachePermits:(NSURLAuthenticationChallenge*)challenege
+{
+    NSNumber* permits = nil;
+    
+    @synchronized(self)
+    {
+        NSString* service = [[NSBundle mainBundle] bundleIdentifier];
+    
+        NSDictionary* cachedCertFingerprints = [RZWebServiceKeychain valueForKey:kRZWebserviceCachedCertFingerprints inService:service];
+
+        permits = [cachedCertFingerprints objectForKey:[challenege sha1Fingerprint]];
+    }
+    
+    return [permits boolValue];
+}
+
+-(void) cacheAllowedChallenge:(NSURLAuthenticationChallenge*)challenge
+{
+    @synchronized(self)
+    {
+        NSString* service = [[NSBundle mainBundle] bundleIdentifier];
+        
+        NSMutableDictionary* cachedCertFingerprints = [[RZWebServiceKeychain valueForKey:kRZWebserviceCachedCertFingerprints inService:service] mutableCopy];
+        
+        if(nil == cachedCertFingerprints) {
+            cachedCertFingerprints = [NSMutableDictionary dictionary];
+        }
+        
+        [cachedCertFingerprints setObject:[NSNumber numberWithBool:YES] forKey:[challenge sha1Fingerprint]];
+        
+        [RZWebServiceKeychain setValue:cachedCertFingerprints forKey:kRZWebserviceCachedCertFingerprints inService:service];
+    }
+}
+
+-(void) clearSSLCache
+{
+    @synchronized(self)
+    {
+        NSString* service = [[NSBundle mainBundle] bundleIdentifier];
+        [RZWebServiceKeychain removeValueForKey:kRZWebserviceCachedCertFingerprints inService:service];
+    }
 }
 
 @end
