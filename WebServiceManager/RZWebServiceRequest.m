@@ -953,7 +953,6 @@ totalBytesExpectedToWrite:(NSInteger)totalBytesExpectedToWrite
                       allow = NO;
                       break;
                     
-                  // TODO: add a case that looks up by cache.
                   case RZWebServiceRequestSSLTrustTypePromptAndCache:
                   {
                     // determine if the challenge leaf certificate's certificate has been
