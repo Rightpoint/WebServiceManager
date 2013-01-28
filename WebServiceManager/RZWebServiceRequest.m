@@ -998,9 +998,12 @@ totalBytesExpectedToWrite:(NSInteger)totalBytesExpectedToWrite
                     
                     default:
                     {
-                        //If we dont set a SSLTrustType we will assume we wont trust self signed certs.
-                        allow = NO;
+                        // If we dont set a SSLTrustType we will assume we wont trust self signed certs, unless they have
+                        // been previously added to the cache.
+                        
+                        allow = [self.manager sslCachePermits:challenge];
                     }
+                        
                     break;
                 }
             }
