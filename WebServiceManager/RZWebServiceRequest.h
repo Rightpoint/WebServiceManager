@@ -25,9 +25,10 @@ typedef void (^RZWebServiceRequestSSLChallengeBlock)(NSURLAuthenticationChalleng
 
 // SSL cert trust type.
 typedef enum {
-    RZWebServiceRequestSSLTrustTypeCA = 0,
-    RZWebServiceRequestSSLTrustTypeAll,
-    RZWebServiceRequestSSLTrustTypePrompt
+    RZWebServiceRequestSSLTrustTypeCA = 0, // Trust only valid certificates
+    RZWebServiceRequestSSLTrustTypeAll,    // trust all certificates, despite validation issues
+    RZWebServiceRequestSSLTrustTypePrompt,  // prompt the user on invalid certificates
+    RZWebServiceRequestSSLTrustTypePromptAndCache  // prompt the user on invalid certificates, and cache those they have allowed.
 } RZWebServiceRequestSSLTrustType;
 
 
@@ -56,6 +57,8 @@ expectedResultType:(NSString*)expectedResultType
 // Sets how we handle Authentication challenges with certain Certificate types
 -(void) setSSLCertificateType:(RZWebServiceRequestSSLTrustType)sslCertificateType WithChallengeBlock:(RZWebServiceRequestSSLChallengeBlock)challengeBlock;
 
+// the WebServiceManager that has queued this request. 
+@property (unsafe_unretained, nonatomic) RZWebServiceManager* manager;
 
 @property (unsafe_unretained, nonatomic) id target;
 @property (assign, nonatomic) SEL successHandler;
