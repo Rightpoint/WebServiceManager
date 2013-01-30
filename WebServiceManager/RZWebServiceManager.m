@@ -34,6 +34,8 @@ NSString* const kRZWebserviceCachedCertFingerprints = @"CachedCertFingerprints";
 // been specified using either a default host or a host specific for this API call
 - (NSDictionary*)apiInfoWithDefaultHostUsingAPIInfo:(NSDictionary*)apiInfo andKey:(NSString*)apiKey;
 
+- (NSDictionary*)apiInfoWithExpandedFormatURLUsingAPIInfo:(NSDictionary*)apiInfo andArgs:(va_list)args;
+
 @end
 
 
@@ -194,20 +196,14 @@ NSString* const kRZWebserviceCachedCertFingerprints = @"CachedCertFingerprints";
 -(RZWebServiceRequest*) makeRequestWithTarget:(id)target andParameters:(NSDictionary*)parameters enqueue:(BOOL)enqueue andFormatKey:(NSString*)key arguments:(va_list)args
 {
     NSDictionary *apiCall = [self.apiCalls objectForKey:key];
+    apiCall = [self apiInfoWithExpandedFormatURLUsingAPIInfo:apiCall andArgs:args];
     
-    // Replace URL Format String with completed URL string using passed in args
-    NSMutableDictionary *mutableApiCall = [NSMutableDictionary dictionaryWithDictionary:apiCall];
-    NSString *apiFormatString = [apiCall objectForKey:kURLkey];
-    NSString *apiString = [[NSString alloc] initWithFormat:apiFormatString arguments:args];
-    
-    [mutableApiCall setObject:apiString forKey:kURLkey];
-    
-    return [self makeRequestWithApi:mutableApiCall forKey:key andTarget:target andParameters:parameters enqueue:enqueue];
+    return [self makeRequestWithApi:apiCall forKey:key andTarget:target andParameters:parameters enqueue:enqueue];
 }
 
 -(RZWebServiceRequest*) makeRequestWithApi:(NSDictionary*)apiInfo forKey:(NSString*)apiKey andTarget:(id)target andParameters:(NSDictionary*)parameters enqueue:(BOOL)enqueue
 {
-    NSDictionary *transformedApiInfo = [self transformedApi:apiInfo forKey:apiKey];
+    NSDictionary *transformedApiInfo = [self apiInfoWithDefaultHostUsingAPIInfo:apiInfo andKey:apiKey];
     
     RZWebServiceRequest* request = [[RZWebServiceRequest alloc] initWithApiInfo:transformedApiInfo target:target parameters:parameters];
     
@@ -222,7 +218,7 @@ NSString* const kRZWebserviceCachedCertFingerprints = @"CachedCertFingerprints";
 
 -(RZWebServiceRequest*) makeRequestWithApi:(NSDictionary*)apiInfo forKey:(NSString*)apiKey andTarget:(id)target andParameters:(NSDictionary*)parameters enqueue:(BOOL)enqueue completion:(RZWebServiceRequestCompletionBlock)completionBlock
 {
-    NSDictionary *transformedApiInfo = [self transformedApi:apiInfo forKey:apiKey];
+    NSDictionary *transformedApiInfo = [self apiInfoWithDefaultHostUsingAPIInfo:apiInfo andKey:apiKey];
     
     RZWebServiceRequest* request = [[RZWebServiceRequest alloc] initWithApiInfo:transformedApiInfo target:target parameters:parameters completion:completionBlock];
     
@@ -285,7 +281,17 @@ NSString* const kRZWebserviceCachedCertFingerprints = @"CachedCertFingerprints";
     return apiInfo;
 }
 
-
+- (NSDictionary*)apiInfoWithExpandedFormatURLUsingAPIInfo:(NSDictionary*)apiInfo andArgs:(va_list)args
+{
+    // Replace URL Format String with completed URL string using passed in args
+    NSMutableDictionary *mutableApiCall = [NSMutableDictionary dictionaryWithDictionary:apiInfo];
+    NSString *apiFormatString = [apiInfo objectForKey:kURLkey];
+    NSString *apiString = [[NSString alloc] initWithFormat:apiFormatString arguments:args];
+    
+    [mutableApiCall setObject:apiString forKey:kURLkey];
+    
+    return mutableApiCall;
+}
 
 #pragma mark - WebServiceRequestDelegate
 -(void) webServiceRequest:(RZWebServiceRequest*)request failedWithError:(NSError*)error
@@ -450,15 +456,9 @@ NSString* const kRZWebserviceCachedCertFingerprints = @"CachedCertFingerprints";
 - (RZWebServiceRequest*)requestWithParameters:(NSDictionary*)parameters enqueue:(BOOL)enqueue completion:(RZWebServiceRequestCompletionBlock)completionBlock formatKey:(NSString*)key arguments:(va_list)args
 {
     NSDictionary *apiCall = [self.apiCalls objectForKey:key];
+    apiCall = [self apiInfoWithExpandedFormatURLUsingAPIInfo:apiCall andArgs:args];
     
-    // Replace URL Format String with completed URL string using passed in args
-    NSMutableDictionary *mutableApiCall = [NSMutableDictionary dictionaryWithDictionary:apiCall];
-    NSString *apiFormatString = [apiCall objectForKey:kURLkey];
-    NSString *apiString = [[NSString alloc] initWithFormat:apiFormatString arguments:args];
-    
-    [mutableApiCall setObject:apiString forKey:kURLkey];
-    
-    return [self makeRequestWithApi:mutableApiCall forKey:key andTarget:nil andParameters:parameters enqueue:enqueue completion:completionBlock];
+    return [self makeRequestWithApi:apiCall forKey:key andTarget:nil andParameters:parameters enqueue:enqueue completion:completionBlock];
 }
 
 // create requests for the fileManager
