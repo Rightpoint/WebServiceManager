@@ -149,6 +149,7 @@ expectedResultType:(NSString *)expectedResultType
 
 @property (assign, nonatomic) BOOL ignoreCertificateValidity;
 
+// Note: These pre/post process blocks are not used at the moment.
 @property (copy, nonatomic) NSArray *preProcessBlocks;
 @property (copy, nonatomic) NSArray *postProcessBlocks;
 
