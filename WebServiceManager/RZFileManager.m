@@ -536,12 +536,10 @@ NSString* const RZFileManagerFileUploadCompletedNotification = @"RZFileManagerFi
     id delegateSet = [request.userInfo objectForKey:kProgressDelegateKey];
     if ([delegateSet isKindOfClass:[NSSet class]]) {
         NSSet* delegates = (NSSet *)delegateSet;
-        dispatch_sync(dispatch_get_main_queue(), ^{
-            [delegates enumerateObjectsUsingBlock:^(id obj, BOOL *stop) {
-                id<RZFileProgressDelegate> delegate = (id<RZFileProgressDelegate>)obj;
-                [delegate setProgress:progress];
-            }];
-        });
+        [delegates enumerateObjectsUsingBlock:^(id obj, BOOL *stop) {
+            id<RZFileProgressDelegate> delegate = (id<RZFileProgressDelegate>)obj;
+            [delegate setProgress:progress];
+        }];
     }
 }
 

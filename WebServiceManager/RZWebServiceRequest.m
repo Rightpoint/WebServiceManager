@@ -451,7 +451,7 @@ expectedResultType:(NSString *)expectedResultType
 - (void)updateProgressObserversWithProgress:(float)progress
 {
     __block RZWebServiceRequest *requestSelf = self;
-    dispatch_sync(dispatch_get_main_queue(), ^{
+    dispatch_async(dispatch_get_main_queue(), ^{
         [self.progressObservers enumerateObjectsUsingBlock:^(NSValue *obj, BOOL *stop) {
             id<RZWebServiceRequestProgressObserver> observer = obj.nonretainedObjectValue;
             [observer webServiceRequest:requestSelf setProgress:progress];
