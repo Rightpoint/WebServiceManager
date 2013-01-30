@@ -46,6 +46,7 @@ NSTimeInterval const kDefaultTimeout = 60;
 @property (assign, nonatomic) BOOL executing;
 
 // Generated Completion Block for target, successHandler, and failureHandler
+// Note: This is used for backward compatability with the old success/failure callback paradigm
 @property (nonatomic, copy) RZWebServiceRequestCompletionBlock fallbackCompletionBlock;
 
 //Needed for SSL Auth Challenges

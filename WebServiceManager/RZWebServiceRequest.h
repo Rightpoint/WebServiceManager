@@ -95,8 +95,8 @@ expectedResultType:(NSString *)expectedResultType
 @property (unsafe_unretained, nonatomic) RZWebServiceManager* manager;
 
 @property (unsafe_unretained, nonatomic) id target;
-@property (assign, nonatomic) SEL successHandler;
-@property (assign, nonatomic) SEL failureHandler;
+@property (assign, nonatomic) SEL successHandler;   // Deprecated - Use CompletionBlocks instead
+@property (assign, nonatomic) SEL failureHandler;   // Deprecated - Use CompletionBlocks instead
 @property (strong, nonatomic) NSMutableURLRequest* urlRequest;
 @property (strong, nonatomic) NSURL* url;
 
@@ -153,6 +153,7 @@ expectedResultType:(NSString *)expectedResultType
 @property (copy, nonatomic) NSArray *preProcessBlocks;
 @property (copy, nonatomic) NSArray *postProcessBlocks;
 
+// Note: Completion Blocks take precidence over success/failure callbacks
 @property (copy, nonatomic) RZWebServiceRequestCompletionBlock requestCompletionBlock;
 
 @end
