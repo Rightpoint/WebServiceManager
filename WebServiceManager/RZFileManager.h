@@ -95,9 +95,6 @@ extern NSString* const RZFileManagerFileUploadCompletedNotification;
 - (void)deleteFileFromCacheWithRemoteURL:(NSURL *)remoteURL;
 - (void)deleteFileFromCacheWithURL:(NSURL *)localURL;
 
-- (void)setProgress:(float)progress withRequest:(RZWebServiceRequest *)request;
-
-
 - (NSSet*)requestsWithDownloadURL:(NSURL*)downloadURL;
 - (NSSet*)requestsWithUploadURL:(NSURL*)uploadURL;
 

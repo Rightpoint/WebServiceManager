@@ -15,7 +15,7 @@ extern NSString* const kRZWebserviceDataTypeText;
 extern NSString* const kRZWebserviceDataTypeImage;
 extern NSString* const kRZWebserviceDataTypePlist;
 
-@interface RZWebServiceManager : NSObject <WebServiceRequestDelegate>
+@interface RZWebServiceManager : NSObject
 
 @property (strong, nonatomic) NSDictionary* apiCalls;
 @property (strong, nonatomic) NSString* defaultHost;
@@ -87,6 +87,6 @@ extern NSString* const kRZWebserviceDataTypePlist;
 - (RZWebServiceRequest*)requestWithParameters:(NSDictionary*)parameters enqueue:(BOOL)enqueue completion:(RZWebServiceRequestCompletionBlock)completionBlock formatKey:(NSString*)key arguments:(va_list)args;
 
 // create requests for the fileManager
-- (RZWebServiceRequest*)requestWithURL:(NSURL *)url target:(id)target parameters:(NSDictionary*)parameters enqueue:(BOOL)enqueue completion:(RZWebServiceRequestCompletionBlock)completionBlock;
+- (RZWebServiceRequest*)requestWithURL:(NSURL *)url parameters:(NSDictionary*)parameters enqueue:(BOOL)enqueue completion:(RZWebServiceRequestCompletionBlock)completionBlock;
 
 @end

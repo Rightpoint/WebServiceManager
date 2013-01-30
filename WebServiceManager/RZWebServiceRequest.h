@@ -19,12 +19,11 @@ extern NSTimeInterval const kDefaultTimeout;
 
 @class RZWebServiceRequest;
 @class RZWebServiceManager;
+@protocol RZWebServiceRequestProgressObserver;
 
 typedef void (^RZWebServiceRequestCompletionBlock)(BOOL succeeded, id data, NSError *error, RZWebServiceRequest *request);
 typedef void (^RZWebServiceRequestPreProcessBlock)(RZWebServiceRequest *request);
 typedef id (^RZWebServiceRequestPostProcessBlock)(RZWebServiceRequest *request, id data);
-
-@protocol WebServiceRequestDelegate;
 
 typedef void (^RZWebServiceRequestSSLChallengeCompletionBlock)(BOOL allow);
 typedef void (^RZWebServiceRequestSSLChallengeBlock)(NSURLAuthenticationChallenge* challenge, RZWebServiceRequestSSLChallengeCompletionBlock completion);
@@ -47,11 +46,10 @@ typedef enum {
 -(id) initWithApiInfo:(NSDictionary*)apiInfo target:(id)target;
 -(id) initWithApiInfo:(NSDictionary *)apiInfo target:(id)target parameters:(NSDictionary*)parameters;
 
-- (id)initWithApiInfo:(NSDictionary*)apiInfo target:(id)target completion:(RZWebServiceRequestCompletionBlock)completionBlock;
-- (id)initWithApiInfo:(NSDictionary*)apiInfo target:(id)target parameters:(NSDictionary*)parameters completion:(RZWebServiceRequestCompletionBlock)completionBlock;
+- (id)initWithApiInfo:(NSDictionary*)apiInfo completion:(RZWebServiceRequestCompletionBlock)completionBlock;
+- (id)initWithApiInfo:(NSDictionary*)apiInfo parameters:(NSDictionary*)parameters completion:(RZWebServiceRequestCompletionBlock)completionBlock;
 
 - (id)initWithApiInfo:(NSDictionary*)apiInfo
-               target:(id)target
            parameters:(NSDictionary*)parameters
      preProcessBlocks:(NSArray*)preProcessBlocks
     postProcessBlocks:(NSArray*)postProcessBlocks
@@ -69,7 +67,6 @@ expectedResultType:(NSString*)expectedResultType
 
 - (id) initWithURL:(NSURL *)url
         httpMethod:(NSString *)httpMethod
-            target:(id)target
 expectedResultType:(NSString *)expectedResultType
           bodyType:(NSString *)bodyType
         parameters:(NSDictionary *)parameters
@@ -77,7 +74,6 @@ expectedResultType:(NSString *)expectedResultType
 
 - (id) initWithURL:(NSURL *)url
         httpMethod:(NSString *)httpMethod
-            target:(id)target
   preProcessBlocks:(NSArray*)preProcessBlocks
  postProcessBlocks:(NSArray*)postProcessBlocks
 expectedResultType:(NSString *)expectedResultType
@@ -91,10 +87,15 @@ expectedResultType:(NSString *)expectedResultType
 // Sets how we handle Authentication challenges with certain Certificate types
 -(void) setSSLCertificateType:(RZWebServiceRequestSSLTrustType)sslCertificateType WithChallengeBlock:(RZWebServiceRequestSSLChallengeBlock)challengeBlock;
 
+// add/remove progress observer for upload/download progress
+- (void)addProgressObserver:(id<RZWebServiceRequestProgressObserver>)observer;
+- (void)removeProgressObserver:(id<RZWebServiceRequestProgressObserver>)observer;
+- (void)removeAllProgressObservers;
+
 // the WebServiceManager that has queued this request. 
 @property (unsafe_unretained, nonatomic) RZWebServiceManager* manager;
 
-@property (unsafe_unretained, nonatomic) id target;
+@property (unsafe_unretained, nonatomic) id target; // Deprecated - Use CompletionBlocks instead
 @property (assign, nonatomic) SEL successHandler;   // Deprecated - Use CompletionBlocks instead
 @property (assign, nonatomic) SEL failureHandler;   // Deprecated - Use CompletionBlocks instead
 @property (strong, nonatomic) NSMutableURLRequest* urlRequest;
@@ -141,8 +142,6 @@ expectedResultType:(NSString *)expectedResultType
 // request headers to be sent with the request. Only use dictionaries of string/string key value pairs
 @property (strong, nonatomic) NSDictionary* headers;
 
-@property (unsafe_unretained, nonatomic) id<WebServiceRequestDelegate> delegate;
-
 // response info
 @property (strong, readonly, nonatomic) NSDictionary* responseHeaders;
 @property (assign, readonly, nonatomic) NSInteger statusCode;
@@ -159,10 +158,9 @@ expectedResultType:(NSString *)expectedResultType
 @end
 
 
-@protocol WebServiceRequestDelegate <NSObject>
+@protocol RZWebServiceRequestProgressObserver <NSObject>
 
--(void) webServiceRequest:(RZWebServiceRequest*)request failedWithError:(NSError*)error;
--(void) webServiceRequest:(RZWebServiceRequest *)request completedWithData:(id)data;        // type will depend on conversion to expected data type
+- (void)webServiceRequest:(RZWebServiceRequest*)request setProgress:(float)progress;
 
 @end
 

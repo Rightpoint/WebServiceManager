@@ -28,7 +28,7 @@ NSString* const kRZWebserviceCachedCertFingerprints = @"CachedCertFingerprints";
 
 -(RZWebServiceRequest*) makeRequestWithApi:(NSDictionary*)apiInfo forKey:(NSString*)apiKey andTarget:(id)target andParameters:(NSDictionary*)parameters enqueue:(BOOL)enqueue;
 
--(RZWebServiceRequest*) makeRequestWithApi:(NSDictionary*)apiInfo forKey:(NSString*)apiKey andTarget:(id)target andParameters:(NSDictionary*)parameters enqueue:(BOOL)enqueue completion:(RZWebServiceRequestCompletionBlock)completionBlock;
+-(RZWebServiceRequest*) makeRequestWithApi:(NSDictionary*)apiInfo forKey:(NSString*)apiKey andParameters:(NSDictionary*)parameters enqueue:(BOOL)enqueue completion:(RZWebServiceRequestCompletionBlock)completionBlock;
 
 // this method returns the API Info with a fully formed URL if the host has not
 // been specified using either a default host or a host specific for this API call
@@ -93,7 +93,6 @@ NSString* const kRZWebserviceCachedCertFingerprints = @"CachedCertFingerprints";
 
 -(void) enqueueRequest:(RZWebServiceRequest *)request inQueue:(NSOperationQueue*)queue
 {
-    request.delegate = self;
     request.manager = self;
   
     [queue addOperation:request];
@@ -216,11 +215,11 @@ NSString* const kRZWebserviceCachedCertFingerprints = @"CachedCertFingerprints";
 
 }
 
--(RZWebServiceRequest*) makeRequestWithApi:(NSDictionary*)apiInfo forKey:(NSString*)apiKey andTarget:(id)target andParameters:(NSDictionary*)parameters enqueue:(BOOL)enqueue completion:(RZWebServiceRequestCompletionBlock)completionBlock
+-(RZWebServiceRequest*) makeRequestWithApi:(NSDictionary*)apiInfo forKey:(NSString*)apiKey andParameters:(NSDictionary*)parameters enqueue:(BOOL)enqueue completion:(RZWebServiceRequestCompletionBlock)completionBlock
 {
     NSDictionary *transformedApiInfo = [self apiInfoWithDefaultHostUsingAPIInfo:apiInfo andKey:apiKey];
     
-    RZWebServiceRequest* request = [[RZWebServiceRequest alloc] initWithApiInfo:transformedApiInfo target:target parameters:parameters completion:completionBlock];
+    RZWebServiceRequest* request = [[RZWebServiceRequest alloc] initWithApiInfo:transformedApiInfo parameters:parameters completion:completionBlock];
     
     if (enqueue)
     {
@@ -293,48 +292,6 @@ NSString* const kRZWebserviceCachedCertFingerprints = @"CachedCertFingerprints";
     return mutableApiCall;
 }
 
-#pragma mark - WebServiceRequestDelegate
--(void) webServiceRequest:(RZWebServiceRequest*)request failedWithError:(NSError*)error
-{
-    
-    if(nil != request.failureHandler && [request.target respondsToSelector:request.failureHandler])
-    {        
-        NSMethodSignature* signature = [request.target methodSignatureForSelector:request.failureHandler];
-        NSInvocation* invocation = [NSInvocation invocationWithMethodSignature:signature];
-        [invocation setTarget:request.target];
-        [invocation setSelector:request.failureHandler];
-        [invocation setArgument:&error atIndex:2];
-        
-        if (signature.numberOfArguments > 3) 
-            [invocation setArgument:&request atIndex:3];  
-        
-        [invocation retainArguments];
-        [invocation performSelectorOnMainThread:@selector(invoke) withObject:nil waitUntilDone:NO];
-    }
-
-}
-
--(void) webServiceRequest:(RZWebServiceRequest *)request completedWithData:(id)data
-{
-    
-    if (nil != request.successHandler && [request.target respondsToSelector:request.successHandler]) {
-        
-            NSMethodSignature* signature = [request.target methodSignatureForSelector:request.successHandler];
-            NSInvocation* invocation = [NSInvocation invocationWithMethodSignature:signature];
-            [invocation setTarget:request.target];
-            [invocation setSelector:request.successHandler];
-            [invocation setArgument:&data atIndex:2];
-            [invocation retainArguments];
-            
-            if (signature.numberOfArguments > 3) 
-                [invocation setArgument:&request atIndex:3];            
-    
-            [invocation performSelectorOnMainThread:@selector(invoke) withObject:nil waitUntilDone:NO];
-        
-    }
-    
-}
-
 #pragma mark - Certificate Cache
 -(BOOL) sslCachePermits:(NSURLAuthenticationChallenge*)challenege
 {
@@ -402,7 +359,7 @@ NSString* const kRZWebserviceCachedCertFingerprints = @"CachedCertFingerprints";
 {
     NSDictionary* apiCall = [self.apiCalls objectForKey:key];
     
-    return [self makeRequestWithApi:apiCall forKey:key andTarget:nil andParameters:parameters enqueue:enqueue completion:completionBlock];
+    return [self makeRequestWithApi:apiCall forKey:key andParameters:parameters enqueue:enqueue completion:completionBlock];
 }
 
 - (RZWebServiceRequest*)requestWithCompletion:(RZWebServiceRequestCompletionBlock)completionBlock formatKey:(NSString*)key, ...
@@ -458,15 +415,14 @@ NSString* const kRZWebserviceCachedCertFingerprints = @"CachedCertFingerprints";
     NSDictionary *apiCall = [self.apiCalls objectForKey:key];
     apiCall = [self apiInfoWithExpandedFormatURLUsingAPIInfo:apiCall andArgs:args];
     
-    return [self makeRequestWithApi:apiCall forKey:key andTarget:nil andParameters:parameters enqueue:enqueue completion:completionBlock];
+    return [self makeRequestWithApi:apiCall forKey:key andParameters:parameters enqueue:enqueue completion:completionBlock];
 }
 
 // create requests for the fileManager
-- (RZWebServiceRequest*)requestWithURL:(NSURL *)url target:(id)target parameters:(NSDictionary*)parameters enqueue:(BOOL)enqueue completion:(RZWebServiceRequestCompletionBlock)completionBlock
+- (RZWebServiceRequest*)requestWithURL:(NSURL *)url parameters:(NSDictionary*)parameters enqueue:(BOOL)enqueue completion:(RZWebServiceRequestCompletionBlock)completionBlock
 {
     RZWebServiceRequest* request = [[RZWebServiceRequest alloc] initWithURL:url
                                                                  httpMethod:@"GET"
-                                                                     target:target
                                                            preProcessBlocks:nil
                                                           postProcessBlocks:nil
                                                          expectedResultType:@"NONE"

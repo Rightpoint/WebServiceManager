@@ -351,7 +351,6 @@
     // sometimes you want to add your own request, without relying on the PList. Create a request, and add it to the queue.
     RZWebServiceRequest* request = [[RZWebServiceRequest alloc] initWithURL:[NSURL URLWithString:@"http://www.raizlabs.com/cms/wp-content/uploads/2011/06/raizlabs-logo-sheetrock.png"]
                                                                  httpMethod:@"GET"
-                                                                     target:self
                                                          expectedResultType:@"Image"
                                                                    bodyType:@"NONE"
                                                                  parameters:nil
@@ -382,7 +381,6 @@
     // sometimes you want to add your own request, without relying on the PList. Create a request, and add it to the queue.
     RZWebServiceRequest* request = [[RZWebServiceRequest alloc] initWithURL:[NSURL URLWithString:@"http://localhost:8888/thisfiledoesnotexist"]
                                                                  httpMethod:@"GET"
-                                                                     target:self
                                                          expectedResultType:@"JSON"
                                                                    bodyType:@"NONE"
                                                                  parameters:nil
