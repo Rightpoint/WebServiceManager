@@ -92,7 +92,7 @@ NSString* const RZFileManagerFileUploadCompletedNotification = @"RZFileManagerFi
         if (![[NSFileManager defaultManager] fileExistsAtPath:fullPath])
         {
             [[NSFileManager defaultManager] createDirectoryAtPath:fullPath
-                                      withIntermediateDirectories:NO
+                                      withIntermediateDirectories:YES
                                                        attributes:nil
                                                             error:&error];
             if (error != nil)
