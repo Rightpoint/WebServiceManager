@@ -30,6 +30,10 @@ NSString* const kRZWebserviceCachedCertFingerprints = @"CachedCertFingerprints";
 
 -(RZWebServiceRequest*) makeRequestWithApi:(NSDictionary*)apiInfo forKey:(NSString*)apiKey andTarget:(id)target andParameters:(NSDictionary*)parameters enqueue:(BOOL)enqueue completion:(RZWebServiceRequestCompletionBlock)completionBlock;
 
+// this method returns the API Info with a fully formed URL if the host has not
+// been specified using either a default host or a host specific for this API call
+- (NSDictionary*)apiInfoWithDefaultHostUsingAPIInfo:(NSDictionary*)apiInfo andKey:(NSString*)apiKey;
+
 @end
 
 
@@ -203,27 +207,9 @@ NSString* const kRZWebserviceCachedCertFingerprints = @"CachedCertFingerprints";
 
 -(RZWebServiceRequest*) makeRequestWithApi:(NSDictionary*)apiInfo forKey:(NSString*)apiKey andTarget:(id)target andParameters:(NSDictionary*)parameters enqueue:(BOOL)enqueue
 {
+    NSDictionary *transformedApiInfo = [self transformedApi:apiInfo forKey:apiKey];
     
-    // if there is a default host or a host specific for this API call, and the host has not been specified
-    // we may need to mutate the URL, which should otherwise be fully formed at this point 
-    NSString* apiSpecificHost = [self.apiSpecificHosts valueForKey:apiKey];
-    if(apiSpecificHost || self.defaultHost)
-    {
-        NSString* host = apiSpecificHost ? apiSpecificHost : self.defaultHost;
-        
-        NSString* urlString = [apiInfo objectForKey:kURLkey];
-        NSURL* url = [NSURL URLWithString:urlString];
-        
-        if([url host] == nil)
-        {
-            urlString = [host stringByAppendingString:urlString];
-            NSMutableDictionary* mutableApiInfo = [NSMutableDictionary dictionaryWithDictionary:apiInfo];
-            [mutableApiInfo setValue:urlString forKey:kURLkey];
-            apiInfo = mutableApiInfo;
-        }
-    }
-    
-    RZWebServiceRequest* request = [[RZWebServiceRequest alloc] initWithApiInfo:apiInfo target:target parameters:parameters];
+    RZWebServiceRequest* request = [[RZWebServiceRequest alloc] initWithApiInfo:transformedApiInfo target:target parameters:parameters];
     
     if (enqueue)
     {
@@ -236,26 +222,9 @@ NSString* const kRZWebserviceCachedCertFingerprints = @"CachedCertFingerprints";
 
 -(RZWebServiceRequest*) makeRequestWithApi:(NSDictionary*)apiInfo forKey:(NSString*)apiKey andTarget:(id)target andParameters:(NSDictionary*)parameters enqueue:(BOOL)enqueue completion:(RZWebServiceRequestCompletionBlock)completionBlock
 {
-    // if there is a default host or a host specific for this API call, and the host has not been specified
-    // we may need to mutate the URL, which should otherwise be fully formed at this point
-    NSString* apiSpecificHost = [self.apiSpecificHosts valueForKey:apiKey];
-    if(apiSpecificHost || self.defaultHost)
-    {
-        NSString* host = apiSpecificHost ? apiSpecificHost : self.defaultHost;
-        
-        NSString* urlString = [apiInfo objectForKey:kURLkey];
-        NSURL* url = [NSURL URLWithString:urlString];
-        
-        if([url host] == nil)
-        {
-            urlString = [host stringByAppendingString:urlString];
-            NSMutableDictionary* mutableApiInfo = [NSMutableDictionary dictionaryWithDictionary:apiInfo];
-            [mutableApiInfo setValue:urlString forKey:kURLkey];
-            apiInfo = mutableApiInfo;
-        }
-    }
+    NSDictionary *transformedApiInfo = [self transformedApi:apiInfo forKey:apiKey];
     
-    RZWebServiceRequest* request = [[RZWebServiceRequest alloc] initWithApiInfo:apiInfo target:target parameters:parameters completion:completionBlock];
+    RZWebServiceRequest* request = [[RZWebServiceRequest alloc] initWithApiInfo:transformedApiInfo target:target parameters:parameters completion:completionBlock];
     
     if (enqueue)
     {
@@ -292,22 +261,29 @@ NSString* const kRZWebserviceCachedCertFingerprints = @"CachedCertFingerprints";
     [self.requests cancelAllOperations];
 }
 
-/*
--(void) startNextRequest
+- (NSDictionary*)apiInfoWithDefaultHostUsingAPIInfo:(NSDictionary *)apiInfo andKey:(NSString *)apiKey
 {
-    if(!self.requestInProcess) {
-        if (self.requests.count > 0) {
-            self.requestInProcess = YES;
-            RZWebServiceRequest* request = [self.requests objectAtIndex:0];
-            [request start];
-        }
-        else
+    // if there is a default host or a host specific for this API call, and the host has not been specified
+    // we may need to mutate the URL, which should otherwise be fully formed at this point
+    NSString* apiSpecificHost = [self.apiSpecificHosts valueForKey:apiKey];
+    if(apiSpecificHost || self.defaultHost)
+    {
+        NSString* host = apiSpecificHost ? apiSpecificHost : self.defaultHost;
+        
+        NSString* urlString = [apiInfo objectForKey:kURLkey];
+        NSURL* url = [NSURL URLWithString:urlString];
+        
+        if([url host] == nil)
         {
-            self.requestInProcess = NO;
+            urlString = [host stringByAppendingString:urlString];
+            NSMutableDictionary* mutableApiInfo = [NSMutableDictionary dictionaryWithDictionary:apiInfo];
+            [mutableApiInfo setValue:urlString forKey:kURLkey];
+            apiInfo = mutableApiInfo;
         }
     }
+    
+    return apiInfo;
 }
- */
 
 
 
