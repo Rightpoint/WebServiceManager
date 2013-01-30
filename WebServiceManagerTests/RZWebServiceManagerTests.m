@@ -142,9 +142,11 @@
     // sometimes you want to add your own request, without relying on the PList. Create a request, and add it to the queue.
     RZWebServiceRequest* request = [[RZWebServiceRequest alloc] initWithURL:[NSURL URLWithString:@"http://www.raizlabs.com/cms/wp-content/uploads/2011/06/raizlabs-logo-sheetrock.png"]
                                                                                      httpMethod:@"GET"
-                                                                                      andTarget:self successCallback:@selector(logoCompleted:request:)
+                                                                                      andTarget:self
+                                                                                successCallback:@selector(logoCompleted:request:)
                                                                                 failureCallback:@selector(logoFailed:)
                                                                              expectedResultType:@"Image"
+                                                                                       bodyType:@"NONE"
                                                                                   andParameters:nil];
     
     [self.webServiceManager enqueueRequest:request];
@@ -343,10 +345,62 @@
     
 }
 
+-(void) test20ManuallyAddARequestWithCompletionBlock
+{
+    
+    // sometimes you want to add your own request, without relying on the PList. Create a request, and add it to the queue.
+    RZWebServiceRequest* request = [[RZWebServiceRequest alloc] initWithURL:[NSURL URLWithString:@"http://www.raizlabs.com/cms/wp-content/uploads/2011/06/raizlabs-logo-sheetrock.png"]
+                                                                 httpMethod:@"GET"
+                                                         expectedResultType:@"Image"
+                                                                   bodyType:@"NONE"
+                                                                 parameters:nil
+                                                                 completion:^(BOOL succeeded, id data, NSError *error, RZWebServiceRequest *request) {
+                                                                     STAssertTrue(succeeded, @"Request failed.");
+                                                                     
+                                                                     if (succeeded)
+                                                                     {
+                                                                         [self logoCompleted:data request:request];
+                                                                     }
+                                                                     else
+                                                                     {
+                                                                         [self logoFailed:error];
+                                                                     }
+                                                                 }];
+    
+    [self.webServiceManager enqueueRequest:request];
+    
+    while (!self.apiCallCompleted) {
+        [[NSRunLoop currentRunLoop] runUntilDate:[NSDate dateWithTimeIntervalSinceNow:1]];
+    }
+    
+}
 
+-(void) test21ExpectErrorRequestWithCompletionBlock
+{
+    
+    // sometimes you want to add your own request, without relying on the PList. Create a request, and add it to the queue.
+    RZWebServiceRequest* request = [[RZWebServiceRequest alloc] initWithURL:[NSURL URLWithString:@"http://localhost:8888/thisfiledoesnotexist"]
+                                                                 httpMethod:@"GET"
+                                                         expectedResultType:@"JSON"
+                                                                   bodyType:@"NONE"
+                                                                 parameters:nil
+                                                                 completion:^(BOOL succeeded, id data, NSError *error, RZWebServiceRequest *request) {
+                                                                     STAssertFalse(succeeded, @"Request succeeded when it should not have.");
+                                                                     STAssertNotNil(error, @"Failed request should have returned an error.");
+                                                                     
+                                                                     self.apiCallCompleted = YES;
+                                                                 }];
+    
+    [self.webServiceManager enqueueRequest:request];
+    
+    while (!self.apiCallCompleted) {
+        [[NSRunLoop currentRunLoop] runUntilDate:[NSDate dateWithTimeIntervalSinceNow:1]];
+    }
+    
+}
 
 //
-// Image callbacks. 
+// Image callbacks.
 //
 -(void) logoCompleted:(NSObject*)photo request:(RZWebServiceRequest*)request
 {
@@ -355,7 +409,6 @@
         UIImage* image = (UIImage*)photo;
         
         NSLog(@"Recieved photo %lf wide by %lf high", image.size.width, image.size.height);
-        self.apiCallCompleted = YES;
         
         STAssertNotNil(image, @"getLogo failed: no image returned");
     }
@@ -368,7 +421,6 @@
         // make sure we can optn the file provided by streaming to disk
         
         NSLog(@"Recieved photo %lf wide by %lf high", image.size.width, image.size.height);
-        self.apiCallCompleted = YES;
         
         STAssertNotNil(image, @"getLogo failed: no image returned");
     }
@@ -377,10 +429,13 @@
         // only requested headers. Make sure data is empty and we have headers
         STAssertTrue(request.data.length == 0, @"Content size should be zero since a HEAD request was performed.");
         STAssertTrue(request.responseHeaders.count != 0, @"Should have received response headers for the HEAD request");
-        
-        self.apiCallCompleted = YES;
     }
- 
+    else
+    {
+        STAssertTrue(NO, @"Invalid class for photo object or not a HEAD request.");
+    }
+    
+    self.apiCallCompleted = YES;
 }
 
 -(void) logoFailed:(NSError*)error
