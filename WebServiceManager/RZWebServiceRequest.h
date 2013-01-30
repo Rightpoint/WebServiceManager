@@ -18,6 +18,7 @@ extern NSString* const kTimeoutKey;
 extern NSTimeInterval const kDefaultTimeout;
 
 @class RZWebServiceRequest;
+@class RZWebServiceManager;
 
 typedef void (^RZWebServiceRequestCompletionBlock)(BOOL succeeded, id data, NSError *error, RZWebServiceRequest *request);
 typedef void (^RZWebServiceRequestPreProcessBlock)(RZWebServiceRequest *request);

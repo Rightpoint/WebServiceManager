@@ -58,9 +58,6 @@ extern NSString* const kRZWebserviceDataTypePlist;
 // Allow for multiple requests to execute concurrently.
 -(void) setMaximumConcurrentRequests:(NSInteger)maxRequests;
 
-// returns the cacheable SHA1 fingerprint of the leaf certificate in the authentication challenge
-+(NSString*)challengeFingerprint:(NSURLAuthenticationChallenge*)challenge;
-
 #pragma mark - SSL Certificate Cache
 -(BOOL) sslCachePermits:(NSURLAuthenticationChallenge*)challenege;
 -(void) cacheAllowedChallenge:(NSURLAuthenticationChallenge*)challenge;
