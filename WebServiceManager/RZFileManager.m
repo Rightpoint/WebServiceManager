@@ -11,7 +11,7 @@
 #import "RZWebServiceRequest.h"
 #import "RZFileCacheSchema.h"
 
-@interface RZFileManager ()
+@interface RZFileManager () <RZWebServiceRequestProgressObserver>
 
 @property (strong, nonatomic, readonly) NSMutableSet *downloadRequests;
 @property (strong, nonatomic, readonly) NSMutableSet *uploadRequests;
@@ -92,7 +92,7 @@ NSString* const RZFileManagerFileUploadCompletedNotification = @"RZFileManagerFi
         if (![[NSFileManager defaultManager] fileExistsAtPath:fullPath])
         {
             [[NSFileManager defaultManager] createDirectoryAtPath:fullPath
-                                      withIntermediateDirectories:NO
+                                      withIntermediateDirectories:YES
                                                        attributes:nil
                                                             error:&error];
             if (error != nil)
@@ -187,6 +187,7 @@ NSString* const RZFileManagerFileUploadCompletedNotification = @"RZFileManagerFi
     [self putObject:progressDelegate inRequest:request atKey:kProgressDelegateKey];
     [self addBlock:completionBlock toRequest:request atKey:kCompletionBlockKey];
     request.targetFileURL = cacheURL;
+    [request addProgressObserver:self];
     
     [self.downloadRequests addObject:request];
     
@@ -243,6 +244,7 @@ NSString* const RZFileManagerFileUploadCompletedNotification = @"RZFileManagerFi
     [self putBlock:completionBlock inRequest:request atKey:kCompletionBlockKey];
     request.httpMethod = @"PUT";
     request.uploadFileURL = localFile;
+    [request addProgressObserver:self];
     
     [self.uploadRequests addObject:request];
     
@@ -529,16 +531,15 @@ NSString* const RZFileManagerFileUploadCompletedNotification = @"RZFileManagerFi
 
 #pragma mark - Progress Delegate Helper Methods
 
-- (void)setProgress:(float)progress withRequest:(RZWebServiceRequest *)request {
+- (void)webServiceRequest:(RZWebServiceRequest *)request setProgress:(float)progress
+{
     id delegateSet = [request.userInfo objectForKey:kProgressDelegateKey];
     if ([delegateSet isKindOfClass:[NSSet class]]) {
         NSSet* delegates = (NSSet *)delegateSet;
-        dispatch_sync(dispatch_get_main_queue(), ^{
-            [delegates enumerateObjectsUsingBlock:^(id obj, BOOL *stop) {
-                id<RZFileProgressDelegate> delegate = (id<RZFileProgressDelegate>)obj;
-                [delegate setProgress:progress];
-            }];
-        });
+        [delegates enumerateObjectsUsingBlock:^(id obj, BOOL *stop) {
+            id<RZFileProgressDelegate> delegate = (id<RZFileProgressDelegate>)obj;
+            [delegate setProgress:progress];
+        }];
     }
 }
 

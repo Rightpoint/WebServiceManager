@@ -45,6 +45,10 @@ NSTimeInterval const kDefaultTimeout = 60;
 @property (assign, nonatomic) BOOL finished;
 @property (assign, nonatomic) BOOL executing;
 
+// Generated Completion Block for target, successHandler, and failureHandler
+// Note: This is used for backward compatability with the old success/failure callback paradigm
+@property (nonatomic, copy) RZWebServiceRequestCompletionBlock fallbackCompletionBlock;
+
 //Needed for SSL Auth Challenges
 @property (assign, nonatomic) RZWebServiceRequestSSLTrustType sslTrustType;
 @property (nonatomic, copy) RZWebServiceRequestSSLChallengeBlock sslChallengeBlock;
@@ -61,6 +65,13 @@ NSTimeInterval const kDefaultTimeout = 60;
 
 // over-ride the read only redirectedURL property so we can write to it internally 
 @property (strong, nonatomic) NSURL* redirectedURL;
+
+// Progress Observers
+@property (strong, nonatomic) NSMutableSet *progressObservers;
+
++ (RZWebServiceRequestCompletionBlock)completionBlockForTarget:(id)target
+                                               successCallBack:(SEL)successCallback
+                                               failureCallback:(SEL)failureCallback;
 
 -(void) beginOperation;
 -(void) cancelOperation;
@@ -82,6 +93,9 @@ NSTimeInterval const kDefaultTimeout = 60;
 -(void) continueChallengeWithCredentials:(NSURLAuthenticationChallenge*) challenge;
 -(void) continueChallengeWithoutCredentials:(NSURLAuthenticationChallenge *)challenge;
 
+// helper method to make sure completionBlock is called on the main thread
+-(void) callCompletionBlockWithSucceeded:(BOOL)succeeded data:(id)data error:(NSError*)error;
+
 @end
 
 
@@ -96,7 +110,6 @@ NSTimeInterval const kDefaultTimeout = 60;
 @synthesize backgroundTaskId = _backgroundTaskId;
 @synthesize url = _url;
 @synthesize redirectedURL = _redirectedURL;
-@synthesize delegate  = _delegate;
 @synthesize successHandler = _successHandler;
 @synthesize failureHandler = _failureHandler;
 @synthesize parameters = _parameters;
@@ -124,6 +137,14 @@ NSTimeInterval const kDefaultTimeout = 60;
 @synthesize finished = _finished;
 @synthesize executing = _executing;
 @synthesize ignoreCertificateValidity = _ignoreCertificateValidity;
+@synthesize progressObservers = _progressObservers;
+
+@synthesize preProcessBlocks = _preProcessBlocks;
+@synthesize postProcessBlocks = _postProcessBlocks;
+
+@synthesize requestCompletionBlock = _requestCompletionBlock;
+
+@synthesize fallbackCompletionBlock = _fallbackCompletionBlock;
 
 -(id) initWithApiInfo:(NSDictionary *)apiInfo target:(id)target
 {
@@ -155,6 +176,41 @@ NSTimeInterval const kDefaultTimeout = 60;
     return self;
 }
 
+- (id)initWithApiInfo:(NSDictionary*)apiInfo completion:(RZWebServiceRequestCompletionBlock)completionBlock
+{
+    return [self initWithApiInfo:apiInfo parameters:nil completion:completionBlock];
+}
+
+- (id)initWithApiInfo:(NSDictionary*)apiInfo parameters:(NSDictionary*)parameters completion:(RZWebServiceRequestCompletionBlock)completionBlock
+{
+    return [self initWithApiInfo:apiInfo parameters:parameters preProcessBlocks:nil postProcessBlocks:nil completion:completionBlock];
+}
+
+- (id)initWithApiInfo:(NSDictionary*)apiInfo
+           parameters:(NSDictionary*)parameters
+     preProcessBlocks:(NSArray*)preProcessBlocks
+    postProcessBlocks:(NSArray*)postProcessBlocks
+           completion:(RZWebServiceRequestCompletionBlock)completionBlock
+{
+    NSURL* url = [NSURL URLWithString:[apiInfo objectForKey:kURLkey]];
+    NSString* httpMethod = [apiInfo objectForKey:kHTTPMethodKey];
+    NSString* expectedResultType = [apiInfo objectForKey:kExpectedResultTypeKey];
+    NSString* bodyType = [apiInfo objectForKey:kBodyTypeKey];
+    
+    self = [self initWithURL:url
+           httpMethod:httpMethod
+     preProcessBlocks:preProcessBlocks
+    postProcessBlocks:postProcessBlocks
+   expectedResultType:expectedResultType
+             bodyType:bodyType
+           parameters:parameters
+           completion:completionBlock];
+    
+    self.timeoutInterval = [[apiInfo objectForKey:kTimeoutKey] doubleValue];
+    
+    return self;
+}
+
 -(id) initWithURL:(NSURL*)url 
        httpMethod:(NSString*)httpMethod
         andTarget:(id)target 
@@ -164,6 +220,41 @@ expectedResultType:(NSString*)expectedResultType
          bodyType:(NSString*)bodyType
     andParameters:(NSDictionary*)parameters
 {
+    self = [self initWithURL:url
+                  httpMethod:httpMethod
+            preProcessBlocks:nil
+           postProcessBlocks:nil
+          expectedResultType:expectedResultType
+                    bodyType:bodyType
+                  parameters:parameters
+                  completion:nil];
+    
+    self.target = target;
+    self.successHandler = successCallback;
+    self.failureHandler = failureCallback;
+    
+    return self;
+}
+
+- (id) initWithURL:(NSURL *)url
+        httpMethod:(NSString *)httpMethod
+expectedResultType:(NSString *)expectedResultType
+          bodyType:(NSString *)bodyType
+        parameters:(NSDictionary *)parameters
+        completion:(RZWebServiceRequestCompletionBlock)completionBlock
+{
+    return [self initWithURL:url httpMethod:httpMethod preProcessBlocks:nil postProcessBlocks:nil expectedResultType:expectedResultType bodyType:bodyType parameters:parameters completion:completionBlock];
+}
+
+- (id) initWithURL:(NSURL *)url
+        httpMethod:(NSString *)httpMethod
+  preProcessBlocks:(NSArray*)preProcessBlocks
+ postProcessBlocks:(NSArray*)postProcessBlocks
+expectedResultType:(NSString *)expectedResultType
+          bodyType:(NSString *)bodyType
+        parameters:(NSDictionary *)parameters
+        completion:(RZWebServiceRequestCompletionBlock)completionBlock
+{
     self = [super init];
     
     if (nil != self) {
@@ -172,9 +263,6 @@ expectedResultType:(NSString*)expectedResultType
         
         self.url = url;
         self.httpMethod = httpMethod;
-        self.target = target;
-        self.successHandler = successCallback;
-        self.failureHandler = failureCallback;
         self.expectedResultType = expectedResultType;
         self.bodyType = bodyType;
         self.copyToTargetAtomically = NO;
@@ -182,7 +270,7 @@ expectedResultType:(NSString*)expectedResultType
         // convert the parameters to a sorted array of parameter objects
         NSArray* sortedKeys = [[parameters allKeys] sortedArrayUsingSelector:@selector(compare:)];
         self.parameters = [NSMutableArray arrayWithCapacity:sortedKeys.count];
-
+        
         for (NSString* key in sortedKeys) {
             id value = [parameters objectForKey:key];
             RZWebServiceRequestParameterType type = RZWebServiceRequestParamterTypeQueryString;
@@ -192,12 +280,115 @@ expectedResultType:(NSString*)expectedResultType
             RZWebServiceRequestParamter* parameter = [RZWebServiceRequestParamter parameterWithName:key value:value type:type];
             [self.parameters addObject:parameter];
         }
- 
+        
         self.urlRequest = [[NSMutableURLRequest alloc] initWithURL:self.url];
+        
+        self.preProcessBlocks = [[NSArray alloc] initWithArray:preProcessBlocks copyItems:YES];
+        self.postProcessBlocks = [[NSArray alloc] initWithArray:postProcessBlocks copyItems:YES];
+        
+        self.requestCompletionBlock = completionBlock;
     }
     
     return self;
 }
+
++ (RZWebServiceRequestCompletionBlock)completionBlockForTarget:(id)target
+                                               successCallBack:(SEL)successCallback
+                                               failureCallback:(SEL)failureCallback
+{
+    __block id blockTarget = target;
+    RZWebServiceRequestCompletionBlock compBlock = ^(BOOL succeeded, id data, NSError *error, RZWebServiceRequest *request) {
+        if (succeeded)
+        {
+            NSMethodSignature* signature = [blockTarget methodSignatureForSelector:successCallback];
+            NSInvocation* invocation = [NSInvocation invocationWithMethodSignature:signature];
+            [invocation setTarget:blockTarget];
+            [invocation setSelector:successCallback];
+            [invocation setArgument:&data atIndex:2];
+            [invocation retainArguments];
+            
+            if (signature.numberOfArguments > 3)
+            {
+                [invocation setArgument:&request atIndex:3];
+            }
+            
+            [invocation performSelectorOnMainThread:@selector(invoke) withObject:nil waitUntilDone:YES];
+        }
+        else
+        {
+            NSMethodSignature* signature = [blockTarget methodSignatureForSelector:failureCallback];
+            NSInvocation* invocation = [NSInvocation invocationWithMethodSignature:signature];
+            [invocation setTarget:blockTarget];
+            [invocation setSelector:failureCallback];
+            [invocation setArgument:&error atIndex:2];
+            [invocation retainArguments];
+            
+            if (signature.numberOfArguments > 3)
+            {
+                [invocation setArgument:&request atIndex:3];
+            }
+            
+            [invocation performSelectorOnMainThread:@selector(invoke) withObject:nil waitUntilDone:YES];
+        }
+    };
+    
+    return [compBlock copy];
+}
+
+- (RZWebServiceRequestCompletionBlock)requestCompletionBlock
+{
+    if (_requestCompletionBlock == nil && self.target != nil && self.successHandler != nil && self.failureHandler != nil)
+    {
+        return self.fallbackCompletionBlock;
+    }
+    
+    return _requestCompletionBlock;
+}
+
+- (RZWebServiceRequestCompletionBlock)fallbackCompletionBlock
+{
+    if (_fallbackCompletionBlock == nil && self.target != nil && self.successHandler != nil && self.failureHandler != nil)
+    {
+        _fallbackCompletionBlock = [RZWebServiceRequest completionBlockForTarget:self.target successCallBack:self.successHandler failureCallback:self.failureHandler];
+    }
+    
+    return _fallbackCompletionBlock;
+}
+
+#pragma mark - Property Overrides
+
+- (void)setTarget:(id)target
+{
+    self.fallbackCompletionBlock = nil;
+    
+    _target = target;
+}
+
+- (void)setSuccessHandler:(SEL)successHandler
+{
+    self.fallbackCompletionBlock = nil;
+    
+    _successHandler = successHandler;
+}
+
+- (void)setFailureHandler:(SEL)failureHandler
+{
+    self.fallbackCompletionBlock = nil;
+    
+    _failureHandler = failureHandler;
+}
+
+- (NSMutableSet*)progressObservers
+{
+    if (nil == _progressObservers)
+    {
+        _progressObservers = [NSMutableSet set];
+    }
+    
+    return _progressObservers;
+}
+
+#pragma mark - Header Manipulation Methods
 
 -(void) setValue:(NSString*)value forHTTPHeaderField:(NSString*)headerField
 {
@@ -223,11 +414,52 @@ expectedResultType:(NSString*)expectedResultType
     return  [NSDictionary dictionaryWithDictionary:_headers];
 }
 
+#pragma mark - SSL Authentication/Certificate Methods
+
 -(void) setSSLCertificateType:(RZWebServiceRequestSSLTrustType)sslCertificateType WithChallengeBlock:(RZWebServiceRequestSSLChallengeBlock)challengeBlock {
     self.sslTrustType = sslCertificateType;
     self.sslChallengeBlock = challengeBlock;
 }
 
+#pragma mark - Progress Observer Methods
+
+- (void)addProgressObserver:(id<RZWebServiceRequestProgressObserver>)observer
+{
+    NSSet *filteredSet = [self.progressObservers filteredSetUsingPredicate:[NSPredicate predicateWithBlock:^BOOL(NSValue *evaluatedObject, NSDictionary *bindings) {
+        return observer == evaluatedObject.nonretainedObjectValue;
+    }]];
+    
+    if (filteredSet.count == 0)
+    {
+        NSValue *nonretainedObserver = [NSValue valueWithNonretainedObject:observer];
+        [self.progressObservers addObject:nonretainedObserver];
+    }
+}
+
+- (void)removeProgressObserver:(id<RZWebServiceRequestProgressObserver>)observer
+{
+    [self.progressObservers filterUsingPredicate:[NSPredicate predicateWithBlock:^BOOL(NSValue *evaluatedObject, NSDictionary *bindings) {
+        return observer != evaluatedObject.nonretainedObjectValue;
+    }]];
+}
+
+- (void)removeAllProgressObservers
+{
+    [self.progressObservers removeAllObjects];
+}
+
+- (void)updateProgressObserversWithProgress:(float)progress
+{
+    __block RZWebServiceRequest *requestSelf = self;
+    dispatch_async(dispatch_get_main_queue(), ^{
+        [self.progressObservers enumerateObjectsUsingBlock:^(NSValue *obj, BOOL *stop) {
+            id<RZWebServiceRequestProgressObserver> observer = obj.nonretainedObjectValue;
+            [observer webServiceRequest:requestSelf setProgress:progress];
+        }];
+    });
+}
+
+#pragma mark - File Upload Methods
 
 - (void)setUploadFileURL:(NSURL *)uploadFileURL
 {
@@ -249,6 +481,8 @@ expectedResultType:(NSString*)expectedResultType
     
     _uploadFileURL = uploadFileURL;
 }
+
+#pragma mark - NSOperation Methods
 
 -(void) start
 {
@@ -377,7 +611,7 @@ expectedResultType:(NSString*)expectedResultType
             // No body type defined, or bodyType == "text", assume it's an NSString
             else if ((!self.bodyType || [self.bodyType isEqualToString:kRZWebserviceDataTypeText]) && [self.requestBody isKindOfClass:[NSString class]])
             {
-                self.requestBody = [(NSString*)self.requestBody dataUsingEncoding:NSUTF8StringEncoding];
+                self.urlRequest.HTTPBody = [(NSString*)self.requestBody dataUsingEncoding:NSUTF8StringEncoding];
             }
             // TODO: More body types... plist? XML?
             else{
@@ -387,6 +621,10 @@ expectedResultType:(NSString*)expectedResultType
             
             if (!self.urlRequest.HTTPBody || bodyError){
                 NSLog(@"[RZWebserviceRequest] Error with request body: %@", bodyError ? [bodyError localizedDescription] : @"failed to convert to NSData");
+            }
+            else
+            {
+                [self.urlRequest setValue:[NSString stringWithFormat:@"%u", [self.urlRequest.HTTPBody length]] forHTTPHeaderField:@"Content-Length"];
             }
         }
         
@@ -545,9 +783,8 @@ expectedResultType:(NSString*)expectedResultType
 {
     @synchronized(self){
         [self cancelTimeout];
-    
-        if([self.delegate respondsToSelector:@selector(webServiceRequest:failedWithError:)])
-            [self.delegate webServiceRequest:self failedWithError:error];    
+        
+        [self callCompletionBlockWithSucceeded:NO data:nil error:error];
     }
 }
 
@@ -624,6 +861,16 @@ expectedResultType:(NSString*)expectedResultType
     
     self.convertedData = convertedResult;
     return YES;
+}
+
+-(void) callCompletionBlockWithSucceeded:(BOOL)succeeded data:(id)data error:(NSError*)error
+{
+    if (nil != self.requestCompletionBlock)
+    {
+        dispatch_sync(dispatch_get_main_queue(), ^{
+            self.requestCompletionBlock(succeeded, data, error, self);
+        });
+    }
 }
 
 #pragma mark - NSURLConnectionDelegate
@@ -711,15 +958,7 @@ expectedResultType:(NSString*)expectedResultType
         {
             float progress = self.bytesReceived / self.responseSize;
             
-            if ([self.target respondsToSelector:@selector(setProgress:animated:)]) {
-                [self.target setProgress:progress animated:YES];
-            } else if ([self.target respondsToSelector:@selector(setProgress:withRequest:)]) {
-                [self.target setProgress:progress withRequest:self];
-            } else if ([self.target respondsToSelector:@selector(setProgress:)])  {
-                [self.target setProgress:progress];
-            } 
-
-            
+            [self updateProgressObserversWithProgress:progress];
         }
     }
 }
@@ -742,13 +981,7 @@ totalBytesExpectedToWrite:(NSInteger)totalBytesExpectedToWrite
     
     if (progress >= 0.0)
     {
-        if ([self.target respondsToSelector:@selector(setProgress:animated:)]) {
-            [self.target setProgress:progress animated:YES];
-        } else if ([self.target respondsToSelector:@selector(setProgress:withRequest:)]) {
-            [self.target setProgress:progress withRequest:self];
-        } else if ([self.target respondsToSelector:@selector(setProgress:)])  {
-            [self.target setProgress:progress];
-        }
+        [self updateProgressObserversWithProgress:progress];
     }
 }
 
@@ -774,48 +1007,49 @@ totalBytesExpectedToWrite:(NSInteger)totalBytesExpectedToWrite
             return;
         }
         
-        if ([self.delegate respondsToSelector:@selector(webServiceRequest:completedWithData:)]) {
+        if(self.targetFileHandle)
+        {
+            [self.targetFileHandle closeFile];
             
-            if(self.targetFileHandle)
-            {
-                [self.targetFileHandle closeFile];
+            NSError* error = nil;
+            
+            // if we are set to copy the file atomically, we've been streaming
+            // to a temporary path. Move the file from the path to the target.
+            if (self.copyToTargetAtomically) {
                 
-                NSError* error = nil;
-                
-                // if we are set to copy the file atomically, we've been streaming
-                // to a temporary path. Move the file from the path to the target.
-                if (self.copyToTargetAtomically) {
-                    
-                    if(![[NSFileManager defaultManager] moveItemAtPath:self.atomicTempTargetPath
-                                                            toPath:[self.targetFileURL path]
-                                                                error:&error])
-                    {
-                        [self.delegate webServiceRequest:self failedWithError:error];
-                    }
-                    
-                }
-                
-                
-                if (error == nil)
+                if(![[NSFileManager defaultManager] moveItemAtPath:self.atomicTempTargetPath
+                                                        toPath:[self.targetFileURL path]
+                                                            error:&error])
                 {
-                    // ensure the expected file type is set to "File"
-                    // In this case, no need to convert - just pass along file url
-                    self.expectedResultType = kRZWebserviceDataTypeFile;
-                    [self.delegate webServiceRequest:self completedWithData:self.targetFileURL];
+                    [self callCompletionBlockWithSucceeded:NO data:nil error:error];
                 }
-               
-            }
-            else {
                 
-                // attempt to convert data
-                NSError *conversionError = nil;
-                if (![self convertDataToExpectedType:&conversionError]){
-                    self.error = conversionError;
-                    [self.delegate webServiceRequest:self failedWithError:conversionError];
-                }
-                else{
-                    [self.delegate webServiceRequest:self completedWithData:self.convertedData];
-                }
+            }
+            
+            
+            if (error == nil)
+            {
+                // ensure the expected file type is set to "File"
+                // In this case, no need to convert
+                self.expectedResultType = kRZWebserviceDataTypeFile;
+                self.convertedData = self.targetFileURL;
+                
+                [self callCompletionBlockWithSucceeded:YES data:self.convertedData error:nil];
+            }
+           
+        }
+        else {
+            
+            // attempt to convert data
+            NSError *conversionError = nil;
+            if (![self convertDataToExpectedType:&conversionError]){
+                self.error = conversionError;
+                
+                [self callCompletionBlockWithSucceeded:NO data:nil error:conversionError];
+            }
+            else{
+                
+                [self callCompletionBlockWithSucceeded:YES data:self.convertedData error:nil];
             }
         }
         

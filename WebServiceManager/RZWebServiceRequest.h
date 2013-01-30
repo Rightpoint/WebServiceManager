@@ -15,10 +15,15 @@ extern NSString* const kFailureHandlerKey;
 extern NSString* const kSuccessHandlerKey;
 extern NSString* const kTimeoutKey;
 
-extern NSTimeInterval const kDefaultTimeout; 
+extern NSTimeInterval const kDefaultTimeout;
 
-@protocol WebServiceRequestDelegate;
+@class RZWebServiceRequest;
 @class RZWebServiceManager;
+@protocol RZWebServiceRequestProgressObserver;
+
+typedef void (^RZWebServiceRequestCompletionBlock)(BOOL succeeded, id data, NSError *error, RZWebServiceRequest *request);
+typedef void (^RZWebServiceRequestPreProcessBlock)(RZWebServiceRequest *request);
+typedef id (^RZWebServiceRequestPostProcessBlock)(RZWebServiceRequest *request, id data);
 
 typedef void (^RZWebServiceRequestSSLChallengeCompletionBlock)(BOOL allow);
 typedef void (^RZWebServiceRequestSSLChallengeBlock)(NSURLAuthenticationChallenge* challenge, RZWebServiceRequestSSLChallengeCompletionBlock completion);
@@ -41,6 +46,15 @@ typedef enum {
 -(id) initWithApiInfo:(NSDictionary*)apiInfo target:(id)target;
 -(id) initWithApiInfo:(NSDictionary *)apiInfo target:(id)target parameters:(NSDictionary*)parameters;
 
+- (id)initWithApiInfo:(NSDictionary*)apiInfo completion:(RZWebServiceRequestCompletionBlock)completionBlock;
+- (id)initWithApiInfo:(NSDictionary*)apiInfo parameters:(NSDictionary*)parameters completion:(RZWebServiceRequestCompletionBlock)completionBlock;
+
+- (id)initWithApiInfo:(NSDictionary*)apiInfo
+           parameters:(NSDictionary*)parameters
+     preProcessBlocks:(NSArray*)preProcessBlocks
+    postProcessBlocks:(NSArray*)postProcessBlocks
+           completion:(RZWebServiceRequestCompletionBlock)completionBlock;
+
 // create a request
 -(id) initWithURL:(NSURL*)url 
        httpMethod:(NSString*)httpMethod
@@ -51,18 +65,39 @@ expectedResultType:(NSString*)expectedResultType
          bodyType:(NSString*)bodyType
     andParameters:(NSDictionary*)parameters;
 
+- (id) initWithURL:(NSURL *)url
+        httpMethod:(NSString *)httpMethod
+expectedResultType:(NSString *)expectedResultType
+          bodyType:(NSString *)bodyType
+        parameters:(NSDictionary *)parameters
+        completion:(RZWebServiceRequestCompletionBlock)completionBlock;
+
+- (id) initWithURL:(NSURL *)url
+        httpMethod:(NSString *)httpMethod
+  preProcessBlocks:(NSArray*)preProcessBlocks
+ postProcessBlocks:(NSArray*)postProcessBlocks
+expectedResultType:(NSString *)expectedResultType
+          bodyType:(NSString *)bodyType
+        parameters:(NSDictionary *)parameters
+        completion:(RZWebServiceRequestCompletionBlock)completionBlock;
+
 // set a request header on the outgoing request
 -(void) setValue:(NSString*)value forHTTPHeaderField:(NSString*)headerField;
 
 // Sets how we handle Authentication challenges with certain Certificate types
 -(void) setSSLCertificateType:(RZWebServiceRequestSSLTrustType)sslCertificateType WithChallengeBlock:(RZWebServiceRequestSSLChallengeBlock)challengeBlock;
 
+// add/remove progress observer for upload/download progress
+- (void)addProgressObserver:(id<RZWebServiceRequestProgressObserver>)observer;
+- (void)removeProgressObserver:(id<RZWebServiceRequestProgressObserver>)observer;
+- (void)removeAllProgressObservers;
+
 // the WebServiceManager that has queued this request. 
 @property (unsafe_unretained, nonatomic) RZWebServiceManager* manager;
 
-@property (unsafe_unretained, nonatomic) id target;
-@property (assign, nonatomic) SEL successHandler;
-@property (assign, nonatomic) SEL failureHandler;
+@property (unsafe_unretained, nonatomic) id target; // Deprecated - Use CompletionBlocks instead
+@property (assign, nonatomic) SEL successHandler;   // Deprecated - Use CompletionBlocks instead
+@property (assign, nonatomic) SEL failureHandler;   // Deprecated - Use CompletionBlocks instead
 @property (strong, nonatomic) NSMutableURLRequest* urlRequest;
 @property (strong, nonatomic) NSURL* url;
 
@@ -107,21 +142,25 @@ expectedResultType:(NSString*)expectedResultType
 // request headers to be sent with the request. Only use dictionaries of string/string key value pairs
 @property (strong, nonatomic) NSDictionary* headers;
 
-@property (unsafe_unretained, nonatomic) id<WebServiceRequestDelegate> delegate;
-
 // response info
 @property (strong, readonly, nonatomic) NSDictionary* responseHeaders;
 @property (assign, readonly, nonatomic) NSInteger statusCode;
 
 @property (assign, nonatomic) BOOL ignoreCertificateValidity;
 
+// Note: These pre/post process blocks are not used at the moment.
+@property (copy, nonatomic) NSArray *preProcessBlocks;
+@property (copy, nonatomic) NSArray *postProcessBlocks;
+
+// Note: Completion Blocks take precidence over success/failure callbacks
+@property (copy, nonatomic) RZWebServiceRequestCompletionBlock requestCompletionBlock;
+
 @end
 
 
-@protocol WebServiceRequestDelegate <NSObject>
+@protocol RZWebServiceRequestProgressObserver <NSObject>
 
--(void) webServiceRequest:(RZWebServiceRequest*)request failedWithError:(NSError*)error;
--(void) webServiceRequest:(RZWebServiceRequest *)request completedWithData:(id)data;        // type will depend on conversion to expected data type
+- (void)webServiceRequest:(RZWebServiceRequest*)request setProgress:(float)progress;
 
 @end
 
