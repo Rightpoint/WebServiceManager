@@ -24,7 +24,7 @@
     // sort the keys using default string comparison
     for (NSUInteger parameterIdx = 0; parameterIdx < queryParameters.count; parameterIdx++) {
         
-        RZWebServiceRequestParamter* parameter = [queryParameters objectAtIndex:parameterIdx];
+        RZWebServiceRequestParameter* parameter = [queryParameters objectAtIndex:parameterIdx];
         NSString *key = parameter.parameterName;
         id value = parameter.parameterValue;
         

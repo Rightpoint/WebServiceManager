@@ -174,14 +174,18 @@ typedef enum {
 
 
 // Parameter object for WebService Requests
-@interface RZWebServiceRequestParamter : NSObject
+@interface RZWebServiceRequestParameter : NSObject
 
-@property (strong, nonatomic) NSString *parameterName;
-@property (strong, nonatomic) id parameterValue;
-@property (assign, nonatomic) RZWebServiceRequestParameterType parameterType;
+@property (strong, nonatomic)    NSString*                        parameterName;
+@property (strong, nonatomic)    id                               parameterValue;
+@property (readonly, nonatomic)  NSInputStream*                   parameterReadStream;
+@property (readonly, nonatomic)  NSData*                          parameterHeaderData;
+@property (assign, nonatomic)    RZWebServiceRequestParameterType parameterType;
 
 + (id)parameterWithName:(NSString*)name value:(id)value type:(RZWebServiceRequestParameterType)type;
 
 - (id)initWithName:(NSString*)name value:(id)value type:(RZWebServiceRequestParameterType)type;
+- (NSString*)headerString;
+- (unsigned long long)contentLength;
 
 @end
