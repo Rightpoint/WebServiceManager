@@ -21,7 +21,7 @@
 	CFStreamClientContext copiedContext;
 	CFOptionFlags requestedEvents;
 }
-@property (nonatomic) unsigned long long readOffset;
+@property (nonatomic) NSUInteger readOffset;
 
 - (NSInteger)readData:(NSData *)data intoBuffer:(uint8_t *)buffer maxLength:(NSUInteger)length;
 
@@ -166,22 +166,19 @@
     return [NSString stringWithFormat:@"--%@\r\n", self.stringBoundary];    
 }
 
-// TODO: refactor and rename
-- (NSInteger)readData:(NSData *)data
-           intoBuffer:(uint8_t *)buffer
-            maxLength:(NSUInteger)length
+- (NSInteger)readData:(NSData *)data intoBuffer:(uint8_t *)buffer maxLength:(NSUInteger)length
 {
-    NSRange range = NSMakeRange((NSUInteger)self.readOffset, MIN([data length] - ((NSUInteger)self.readOffset), length));
-    [data getBytes:buffer range:range];
+    NSRange dataRange = NSMakeRange(self.readOffset, MIN(data.length - (self.readOffset), length));
+    [data getBytes:buffer range:dataRange];
     
-    self.readOffset += range.length;
+    self.readOffset += dataRange.length;
     
     // If we're done streaming this data
-    if (((NSUInteger)self.readOffset) >= [data length]) {
+    if ((self.readOffset) >= data.length) {
         [self completeStreamStage];
     }
     
-    return (NSInteger)range.length;
+    return (NSInteger)dataRange.length;
 }
 
 - (void)completeStreamStage
@@ -244,24 +241,25 @@
         switch (self.currentStreamStage) {
             case RZWebServiceMultipartStreamStageInit:
                 
-                NSLog(@"Item Boundary Streamed: %@", self.beginPOSTBoundary);
+                if (DEBUG) {
+                    NSLog(@"Item Boundary Streamed: %@", self.beginPOSTBoundary);
+                }
+                
                 bytesRead += [self readData:[self.beginPOSTBoundary dataUsingEncoding:NSUTF8StringEncoding] intoBuffer:&buffer[bytesRead] maxLength:(length - (NSUInteger)bytesRead)];
                 break;
-                
-                // TODO: what do I need to init?
-                [self completeStreamStage];
-                
-                break;
+    
             case RZWebServiceMultipartStreamStageHeaders:
                 
-                NSLog(@"Item Header Streamed: %@", [self.currentStreamingParameter headerString]);
+                if (DEBUG) {
+                    NSLog(@"Item Header Streamed: %@", [self.currentStreamingParameter headerString]);
+                }
                 
                 bytesRead += [self readData:self.currentStreamingParameter.parameterHeaderData intoBuffer:&buffer[bytesRead] maxLength:(length - (NSUInteger)bytesRead)];
                 break;
                 
             case RZWebServiceMultipartStreamStageBody:
                 
-                if (self.currentStreamingParameter.parameterType == RZWebServiceRequestParamterTypeQueryString) {
+                if (self.currentStreamingParameter.parameterType == RZWebServiceRequestParamterTypeQueryString && DEBUG) {
                     NSLog(@"Item Value Streamed: %@", self.currentStreamingParameter.parameterValue);
                 }
                 
@@ -276,7 +274,9 @@
                 
             case RZWebServiceMultipartStreamStageWrapup:
                 
-                NSLog(@"Item Boundary Streamed: %@", self.endItemBoundary);
+                if (DEBUG) {
+                    NSLog(@"Item Boundary Streamed: %@", self.endItemBoundary);
+                }
                 
                 // Stream itemboundary if not last item
                 bytesRead += [self readData:[self.endItemBoundary dataUsingEncoding:NSUTF8StringEncoding] intoBuffer:&buffer[bytesRead] maxLength:(length - (NSUInteger)bytesRead)];
@@ -284,19 +284,20 @@
                 
             case RZWebServiceMultipartStreamStageFinal:
                 
-                NSLog(@"POST Boundary Streamed: %@", self.endPOSTBoundary);
+                if (DEBUG) {
+                    NSLog(@"POST Boundary Streamed: %@", self.endPOSTBoundary);
+                }
                 
                 // Stream Final Boundary
                 bytesRead += [self readData:[self.endPOSTBoundary dataUsingEncoding:NSUTF8StringEncoding] intoBuffer:&buffer[bytesRead] maxLength:(length - (NSUInteger)bytesRead)];
-                [self completeStreamStage];
+                break;
+                
             default:
             case RZWebServiceMultipartStreamStageDone:
                 done = YES;
                 break;
         }
     }
-    
-    // TODO: determine if readData is done reading
 	
 	return bytesRead;
 }

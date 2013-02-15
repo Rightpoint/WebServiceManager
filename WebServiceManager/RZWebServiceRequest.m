@@ -276,7 +276,6 @@ expectedResultType:(NSString *)expectedResultType
             id value = [parameters objectForKey:key];
             RZWebServiceRequestParameterType type = RZWebServiceRequestParamterTypeQueryString;
             
-            // TODO: Check value's class and change parameter type accordingly
             if ([value isKindOfClass:[NSString class]]) {
                 type = RZWebServiceRequestParamterTypeQueryString;
             }
@@ -538,7 +537,7 @@ expectedResultType:(NSString *)expectedResultType
         }
 
         
-        // keep track of the current thread
+        // Keep track of the current thread
         self.connectionThread = [NSThread currentThread];
         
         self.bytesReceived = 0;
@@ -549,7 +548,7 @@ expectedResultType:(NSString *)expectedResultType
         self.urlRequest.HTTPMethod = self.httpMethod;
         
         
-        // if this is a get request and there are parameters, format them as part of the URL, and reset the URL on the request. 
+        // If this is a get request and there are parameters, format them as part of the URL, and reset the URL on the request. 
         if(self.parameters && self.parameters.count > 0)
         {
             if ([self.httpMethod isEqualToString:@"GET"] || [self.httpMethod isEqualToString:@"PUT"] || [self.httpMethod isEqualToString:@"DELETE"]) {
@@ -557,16 +556,16 @@ expectedResultType:(NSString *)expectedResultType
             }
             else if(!self.requestBody && ([self.httpMethod isEqualToString:@"POST"] ))
             {
-                // set the post body to the formatted parameters, but not if we already have a body set
-                if (![self.bodyType isEqualToString:kRZWebserviceDataTypeMultipart]) { // TODO: double check -SB
+                // Set the post body to the formatted parameters, but not if we already have a body set and the data is not multipart
+                if (![self.bodyType isEqualToString:kRZWebserviceDataTypeMultipart]) {
                     self.urlRequest.HTTPBody = [[NSURL URLQueryStringFromParameters:self.parameters] dataUsingEncoding:NSUTF8StringEncoding];
                 }
+                // If the data is multipart, set the bodystream
                 else {
                     RZMultipartStream* bodyStream = [[RZMultipartStream alloc] initWithParameterArray:[NSArray arrayWithArray:self.parameters]];
                     self.urlRequest.HTTPBodyStream = bodyStream;
                     
                     [self.urlRequest setValue: [NSString stringWithFormat:@"multipart/form-data; boundary=%@", bodyStream.stringBoundary] forHTTPHeaderField:@"Content-Type"];
-                    //[self.urlRequest setValue: [NSString stringWithFormat:@"%lld", bodyStream.contentLength] forHTTPHeaderField:@"Content-Length"];
                 }
             }
             
@@ -587,7 +586,7 @@ expectedResultType:(NSString *)expectedResultType
                     self.bodyType = kRZWebserviceDataTypeText;
                 }
                 
-                // TODO: check parameters for NSURLs to assume Multipart form post -SB
+                // TODO: check parameters for NSURLs and assume Multipart form post -SB
                 
                 if (self.bodyType){
                     NSLog(@"[RZWebserviceRequest] No body type specified, assuming %@", self.bodyType);
@@ -1348,21 +1347,26 @@ totalBytesExpectedToWrite:(NSInteger)totalBytesExpectedToWrite
     return _parameterHeaderData;
 }
 
-// TODO - Finish MIME Type for Files
 - (NSString*)headerString
 {
     NSString* headerString = @"";
-
+    
     switch (self.parameterType) {
         case RZWebServiceRequestParamterTypeQueryString:
-            headerString = [NSString stringWithFormat:@"Content-Disposition: form-data; name=\"%@\"\r\nContent-Type: text/plain\r\n\r\n", self.parameterName];
+            headerString = [NSString stringWithFormat:@"Content-Disposition: form-data; name=\"%@\"\r\nContent-Type: text/plain\r\n\r\n",
+                                self.parameterName];
             break;
         case RZWebServiceRequestParamterTypeFile:
-            // TODO: determine MIME type for Content-Type
-            headerString = [NSString stringWithFormat:@"Content-Disposition: form-data; name=\"%@\"; filename=\"%@\"\r\nContent-Type: image/jpeg\r\n\r\n", self.parameterName, [(NSURL*)self.parameterValue lastPathComponent]];
+            // Determine MIME Type
+            headerString = [NSString stringWithFormat:@"Content-Disposition: form-data; name=\"%@\"; filename=\"%@\"\r\nContent-Type: %@\r\n\r\n",
+                                self.parameterName,
+                                [(NSURL*)self.parameterValue lastPathComponent],
+                                [RZFileManager mimeTypeForFileURL:(NSURL *)self.parameterValue]];
             break;
         case RZWebServiceRequestParamterTypeBinaryData:
-            headerString = [NSString stringWithFormat:@"Content-Disposition: form-data; name=\"%@\"; filename=\"%@\"\r\nContent-Type: application/octet-stream\r\n\r\n", self.parameterName, [(NSURL*)self.parameterValue lastPathComponent]];
+            headerString = [NSString stringWithFormat:@"Content-Disposition: form-data; name=\"%@\"; filename=\"%@\"\r\nContent-Type: application/octet-stream\r\n\r\n",
+                                self.parameterName,
+                                [(NSURL*)self.parameterValue lastPathComponent]];
             break;
         default:
             break;
