@@ -538,35 +538,56 @@ expectedResultType:(NSString *)expectedResultType
         
         _executing = YES;
         [self didChangeValueForKey:@"isExecuting"];    
+                
+        
+        // --------------- Headers ----------------
         
         self.urlRequest.HTTPMethod = self.httpMethod;
         
-        
-        // Assign parameters to the appropriate location based on the parameter mode
-        if(self.parameters && self.parameters.count > 0)
-        {
-    
-            if (self.parameterMode == RZWebserviceRequestParameterModeDefault){
-                if ([self.httpMethod isEqualToString:@"GET"] || [self.httpMethod isEqualToString:@"PUT"] || [self.httpMethod isEqualToString:@"DELETE"]) {
-                    self.urlRequest.URL = [self.url URLByAddingParameters:self.parameters];
-                }
-                else if (self.requestBody == nil && [self.httpMethod isEqualToString:@"POST"])
-                {
-                    self.urlRequest.HTTPBody = [[NSURL URLQueryStringFromParameters:self.parameters] dataUsingEncoding:NSUTF8StringEncoding];
-                }
-            }
-            else if (self.parameterMode == RZWebServiceRequestParameterModeURL){
-                self.urlRequest.URL = [self.url URLByAddingParameters:self.parameters];
-            }
-            else if (self.parameterMode == RZWebServiceRequestParameterModeBody && self.requestBody == nil){
-                self.urlRequest.HTTPBody = [[NSURL URLQueryStringFromParameters:self.parameters] dataUsingEncoding:NSUTF8StringEncoding];
+        // add the string/string pairs as headers.
+        for (id key in self.headers) {
+            id value = [self.headers objectForKey:key];
+            if ([key isKindOfClass:[NSString class]] && [value isKindOfClass:[NSString class]]) {
+                [self.urlRequest setValue:value forHTTPHeaderField:key];
             }
             
         }
         
-        // If there is a request body, try to serialize to type defined in bodyType
-        if (self.requestBody && !self.urlRequest.HTTPBody)
+        // if the expected type is JSON, we should add a header declaring we accept that type.
+        if ([[self.expectedResultType uppercaseString] isEqualToString:@"JSON"]) {
+            [self.urlRequest setValue:@"application/json" forHTTPHeaderField:@"Accept"];
+        }
+        
+        
+        // ------------ URL Parameters --------------
+        
+        
+        // Put parameters in the URL if the method supports it or if the mode has been overridden
+        BOOL hasParameters = (self.parameters && self.parameters.count > 0);
+        
+        if (hasParameters)
         {
+            BOOL methodSupportsURLParams = ([self.httpMethod isEqualToString:@"GET"] || [self.httpMethod isEqualToString:@"PUT"] || [self.httpMethod isEqualToString:@"DELETE"]);
+            if ((self.parameterMode == RZWebserviceRequestParameterModeDefault && methodSupportsURLParams) || self.parameterMode == RZWebServiceRequestParameterModeURL) {
+                    self.urlRequest.URL = [self.url URLByAddingParameters:self.parameters];
+            }
+            
+        }
+    
+    
+        // --------------- Request Body ----------------
+    
+    
+        // If there is a request body, try to serialize to type defined in bodyType
+        if (self.requestBody != nil)
+        {
+    
+            // If this is a POST request and there are parameters, put them in the URL. There is a body already defined so we don't want to blow it away.
+            // This use case will not likely come up often, and should be well documented in order to be understood.
+            if (hasParameters && self.parameterMode == RZWebserviceRequestParameterModeDefault && [self.httpMethod isEqualToString:@"POST"]){
+                self.urlRequest.URL = [self.url URLByAddingParameters:self.parameters];
+            }
+            
             // If no body type is specified, can we make an assumption?
             if (!self.bodyType)
             {
@@ -637,27 +658,28 @@ expectedResultType:(NSString *)expectedResultType
             {
                 [self.urlRequest setValue:[NSString stringWithFormat:@"%u", [self.urlRequest.HTTPBody length]] forHTTPHeaderField:@"Content-Length"];
             }
+            
+        }
+        else if (hasParameters && (self.parameterMode == RZWebServiceRequestParameterModeBody || (self.parameterMode == RZWebserviceRequestParameterModeDefault && [self.httpMethod isEqualToString:@"POST"]))){
+            // If the parameter mode is Body and no requestBody has been set, OR if the parameter mode is default and the HTTP method is POST, add the parameters to the body
+            // Currently only support for encoding as URLEncoded parameters - may want to handle serializing to JSON from parameter dict as well
+            self.urlRequest.HTTPBody = [[NSURL URLQueryStringFromParameters:self.parameters] dataUsingEncoding:NSUTF8StringEncoding];
+            [self.urlRequest setValue:@"application/x-www-form-urlencoded" forHTTPHeaderField:@"Content-Type"];
         }
         
+        
+        // ---------------- File URL stream ---------------
+    
+    
         if (self.uploadFileURL && [self.uploadFileURL isFileURL])
         {
             NSInputStream *fileStream = [NSInputStream inputStreamWithURL:self.uploadFileURL];
             self.urlRequest.HTTPBodyStream = fileStream;
         }
         
-        // add the string/string pairs as headers.
-        for (id key in self.headers) {
-            id value = [self.headers objectForKey:key];
-            if ([key isKindOfClass:[NSString class]] && [value isKindOfClass:[NSString class]]) {
-                [self.urlRequest setValue:value forHTTPHeaderField:key];
-            }
-
-        }
+    
+        // ------------ Start the HTTP Connection ---------------
         
-        // if the expected type is JSON, we should add a header declaring we accept that type. 
-        if ([[self.expectedResultType uppercaseString] isEqualToString:@"JSON"]) {
-            [self.urlRequest setValue:@"application/json" forHTTPHeaderField:@"Accept"];
-        }
         
         // create and start the connection.
         self.connection = [[NSURLConnection alloc] initWithRequest:self.urlRequest delegate:self startImmediately:YES];
@@ -690,8 +712,8 @@ expectedResultType:(NSString *)expectedResultType
             [self didChangeValueForKey:@"isExecuting"];
             [self didChangeValueForKey:@"isFinished"];
         }
-
-    }
+        
+    } // @autoreleasepool
 }
 
 - (BOOL)isConcurrent {
