@@ -183,14 +183,14 @@ expectedResultType:(NSString *)expectedResultType
 
 // Parameter Type Enum
 typedef enum {
-    RZWebServiceRequestParamterTypeQueryString,                                 // For String and Number parameters that can go in the query string of a URL
-    RZWebServiceRequestParamterTypeFile,                                        // For File URL parameters in multi-part form posts
-    RZWebServiceRequestParamterTypeBinaryData                                   // For images and other binary data parameters in multi-part form posts
+    RZWebServiceRequestParameterTypeQueryString,                                 // For String and Number parameters that can go in the query string of a URL
+    RZWebServiceRequestParameterTypeFile,                                        // For File URL parameters in multi-part form posts
+    RZWebServiceRequestParameterTypeBinaryData                                   // For images and other binary data parameters in multi-part form posts
 } RZWebServiceRequestParameterType;
 
 
 // Parameter object for WebService Requests
-@interface RZWebServiceRequestParamter : NSObject
+@interface RZWebServiceRequestParameter : NSObject
 
 @property (strong, nonatomic) NSString *parameterName;
 @property (strong, nonatomic) id parameterValue;

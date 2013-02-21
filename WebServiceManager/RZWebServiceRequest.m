@@ -274,13 +274,13 @@ expectedResultType:(NSString *)expectedResultType
         
         for (NSString* key in sortedKeys) {
             id value = [parameters objectForKey:key];
-            RZWebServiceRequestParameterType type = RZWebServiceRequestParamterTypeQueryString;
+            RZWebServiceRequestParameterType type = RZWebServiceRequestParameterTypeQueryString;
             
             // TODO: Check value's class and change parameter type accordingly
             // ???: Will these types of parameters still be used for multipart form posts? I thought there was a new pull request for that.
             // If not, we can probably do away with the "type" specifier altogether.
             
-            RZWebServiceRequestParamter* parameter = [RZWebServiceRequestParamter parameterWithName:key value:value type:type];
+            RZWebServiceRequestParameter* parameter = [RZWebServiceRequestParameter parameterWithName:key value:value type:type];
             [self.parameters addObject:parameter];
         }
         
@@ -1311,7 +1311,7 @@ totalBytesExpectedToWrite:(NSInteger)totalBytesExpectedToWrite
 @end
 
 
-@implementation RZWebServiceRequestParamter
+@implementation RZWebServiceRequestParameter
 
 @synthesize parameterName = _parameterName;
 @synthesize parameterValue = _parameterValue;
@@ -1319,7 +1319,7 @@ totalBytesExpectedToWrite:(NSInteger)totalBytesExpectedToWrite
 
 + (id)parameterWithName:(NSString*)name value:(id)value type:(RZWebServiceRequestParameterType)type
 {
-    return [[RZWebServiceRequestParamter alloc] initWithName:name value:value type:type];
+    return [[RZWebServiceRequestParameter alloc] initWithName:name value:value type:type];
 }
 
 - (id)initWithName:(NSString*)name value:(id)value type:(RZWebServiceRequestParameterType)type
