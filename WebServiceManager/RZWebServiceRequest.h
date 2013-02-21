@@ -36,6 +36,12 @@ typedef enum {
     RZWebServiceRequestSSLTrustTypePromptAndCache  // prompt the user on invalid certificates, and cache those they have allowed.
 } RZWebServiceRequestSSLTrustType;
 
+// Parameter mode
+typedef enum {
+    RZWebserviceRequestParameterModeDefault = 0,
+    RZWebServiceRequestParameterModeURL,
+    RZWebServiceRequestParameterModeBody
+} RZWebServiceRequestParameterMode;
 
 @interface RZWebServiceRequest : NSOperation <NSURLConnectionDataDelegate>
 {
@@ -92,7 +98,16 @@ expectedResultType:(NSString *)expectedResultType
 - (void)removeProgressObserver:(id<RZWebServiceRequestProgressObserver>)observer;
 - (void)removeAllProgressObservers;
 
-// the WebServiceManager that has queued this request. 
+//! Parameter mode override
+/*
+    If the mode is the default (RZWebserviceRequestParameterModeDefault), the HTTP method
+    will determine whether the parameters are added to the URL or to the reqest body, based
+    on HTTP standards (GET, PUT, DELETE go in the URL, POST goes in the body). Otherwise,
+    the override is obeyed regardless of HTTP method.
+*/
+@property (assign, nonatomic) RZWebServiceRequestParameterMode parameterMode;
+
+// the WebServiceManager that has queued this request.
 @property (unsafe_unretained, nonatomic) RZWebServiceManager* manager;
 
 @property (unsafe_unretained, nonatomic) id target; // Deprecated - Use CompletionBlocks instead
@@ -111,6 +126,7 @@ expectedResultType:(NSString *)expectedResultType
 @property (strong, nonatomic) NSObject* requestBody;
 @property (strong, nonatomic) NSString* bodyType;
 @property (strong, nonatomic) NSDictionary* userInfo;
+
 
 // these properties will be populated when the request completes
 // error will remain nil if there is no error

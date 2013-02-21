@@ -266,6 +266,7 @@ expectedResultType:(NSString *)expectedResultType
         self.expectedResultType = expectedResultType;
         self.bodyType = bodyType;
         self.copyToTargetAtomically = NO;
+        self.parameterMode = RZWebserviceRequestParameterModeDefault;
         
         // convert the parameters to a sorted array of parameter objects
         NSArray* sortedKeys = [[parameters allKeys] sortedArrayUsingSelector:@selector(compare:)];
@@ -276,6 +277,8 @@ expectedResultType:(NSString *)expectedResultType
             RZWebServiceRequestParameterType type = RZWebServiceRequestParamterTypeQueryString;
             
             // TODO: Check value's class and change parameter type accordingly
+            // ???: Will these types of parameters still be used for multipart form posts? I thought there was a new pull request for that.
+            // If not, we can probably do away with the "type" specifier altogether.
             
             RZWebServiceRequestParamter* parameter = [RZWebServiceRequestParamter parameterWithName:key value:value type:type];
             [self.parameters addObject:parameter];
@@ -539,15 +542,23 @@ expectedResultType:(NSString *)expectedResultType
         self.urlRequest.HTTPMethod = self.httpMethod;
         
         
-        // if this is a get request and there are parameters, format them as part of the URL, and reset the URL on the request. 
+        // Assign parameters to the appropriate location based on the parameter mode
         if(self.parameters && self.parameters.count > 0)
         {
-            if ([self.httpMethod isEqualToString:@"GET"] || [self.httpMethod isEqualToString:@"PUT"] || [self.httpMethod isEqualToString:@"DELETE"]) {
+    
+            if (self.parameterMode == RZWebserviceRequestParameterModeDefault){
+                if ([self.httpMethod isEqualToString:@"GET"] || [self.httpMethod isEqualToString:@"PUT"] || [self.httpMethod isEqualToString:@"DELETE"]) {
+                    self.urlRequest.URL = [self.url URLByAddingParameters:self.parameters];
+                }
+                else if (self.requestBody == nil && [self.httpMethod isEqualToString:@"POST"])
+                {
+                    self.urlRequest.HTTPBody = [[NSURL URLQueryStringFromParameters:self.parameters] dataUsingEncoding:NSUTF8StringEncoding];
+                }
+            }
+            else if (self.parameterMode == RZWebServiceRequestParameterModeURL){
                 self.urlRequest.URL = [self.url URLByAddingParameters:self.parameters];
             }
-            else if(!self.requestBody && ([self.httpMethod isEqualToString:@"POST"] ))
-            {
-                // set the post body to the formatted parameters, but not if we already have a body set
+            else if (self.parameterMode == RZWebServiceRequestParameterModeBody && self.requestBody == nil){
                 self.urlRequest.HTTPBody = [[NSURL URLQueryStringFromParameters:self.parameters] dataUsingEncoding:NSUTF8StringEncoding];
             }
             
@@ -1092,6 +1103,8 @@ totalBytesExpectedToWrite:(NSInteger)totalBytesExpectedToWrite
         }
     }
 }
+
+// ???: Can this be deleted?
 /*
 - (BOOL)connection:(NSURLConnection *)connection canAuthenticateAgainstProtectionSpace:(NSURLProtectionSpace *)protectionSpace {
     return [protectionSpace.authenticationMethod isEqualToString:NSURLAuthenticationMethodServerTrust];
@@ -1146,6 +1159,7 @@ totalBytesExpectedToWrite:(NSInteger)totalBytesExpectedToWrite
                
     }
 }*/
+
 - (BOOL)connection:(NSURLConnection *)connection canAuthenticateAgainstProtectionSpace:(NSURLProtectionSpace *)protectionSpace {
     @synchronized(self){
         return [protectionSpace.authenticationMethod isEqualToString:NSURLAuthenticationMethodServerTrust];
