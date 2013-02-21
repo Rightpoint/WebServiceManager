@@ -20,6 +20,9 @@ extern NSString* const kRZWebserviceDataTypePlist;
 @property (strong, nonatomic) NSDictionary* apiCalls;
 @property (strong, nonatomic) NSString* defaultHost;
 
+// gives the ability to set a default timeout for all requests.
+@property (assign, nonatomic) NSTimeInterval defaultRequestTimeoutInterval;
+
 -(id) initWithCallsPath:(NSString*)callsPath;
 -(id) initWithCalls:(NSDictionary*)apiCalls;
 

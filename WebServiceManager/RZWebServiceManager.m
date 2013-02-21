@@ -44,6 +44,7 @@ NSString* const kRZWebserviceCachedCertFingerprints = @"CachedCertFingerprints";
 @synthesize apiCalls = _apiCalls;
 @synthesize defaultHost = _defaultHost;
 @synthesize apiSpecificHosts = _apiSpecificHosts;
+@synthesize defaultRequestTimeoutInterval = _defaultRequestTimeoutInterval;
 
 -(id)init{
     if (self = [super init]){
@@ -102,6 +103,15 @@ NSString* const kRZWebserviceCachedCertFingerprints = @"CachedCertFingerprints";
 {
     self.requests.maxConcurrentOperationCount = maxRequests;
 }
+-(void)setDefaultRequestTimeoutInterval:(NSTimeInterval)defaultRequestTimeoutInterval {
+    _defaultRequestTimeoutInterval = defaultRequestTimeoutInterval;
+}
+- (NSTimeInterval)defaultRequestTimeoutInterval {
+    if (_defaultRequestTimeoutInterval > 0) {
+        return _defaultRequestTimeoutInterval;
+    }
+    return kDefaultTimeout;
+}
 
 -(void) setHost:(NSString*)host forApiKeys:(NSArray*)keys
 {
@@ -150,7 +160,8 @@ NSString* const kRZWebserviceCachedCertFingerprints = @"CachedCertFingerprints";
     va_start(args, key);
     
     RZWebServiceRequest *request = [self makeRequestWithTarget:target andParameters:nil enqueue:YES andFormatKey:key arguments:args];
-    
+    request.timeoutInterval = self.defaultRequestTimeoutInterval;
+
     va_end(args);
     
     return request;
@@ -162,7 +173,8 @@ NSString* const kRZWebserviceCachedCertFingerprints = @"CachedCertFingerprints";
     va_start(args, key);
     
     RZWebServiceRequest *request = [self makeRequestWithTarget:target andParameters:parameters enqueue:YES andFormatKey:key arguments:args];
-    
+    request.timeoutInterval = self.defaultRequestTimeoutInterval;
+
     va_end(args);
     
     return request;
@@ -174,7 +186,8 @@ NSString* const kRZWebserviceCachedCertFingerprints = @"CachedCertFingerprints";
     va_start(args, key);
     
     RZWebServiceRequest *request = [self makeRequestWithTarget:target andParameters:nil enqueue:enqueue andFormatKey:key arguments:args];
-    
+    request.timeoutInterval = self.defaultRequestTimeoutInterval;
+
     va_end(args);
     
     return request;
@@ -186,7 +199,8 @@ NSString* const kRZWebserviceCachedCertFingerprints = @"CachedCertFingerprints";
     va_start(args, key);
     
     RZWebServiceRequest *request = [self makeRequestWithTarget:target andParameters:parameters enqueue:enqueue andFormatKey:key arguments:args];
-    
+    request.timeoutInterval = self.defaultRequestTimeoutInterval;
+
     va_end(args);
     
     return request;
@@ -205,7 +219,8 @@ NSString* const kRZWebserviceCachedCertFingerprints = @"CachedCertFingerprints";
     NSDictionary *transformedApiInfo = [self apiInfoWithDefaultHostUsingAPIInfo:apiInfo andKey:apiKey];
     
     RZWebServiceRequest* request = [[RZWebServiceRequest alloc] initWithApiInfo:transformedApiInfo target:target parameters:parameters];
-    
+    request.timeoutInterval = self.defaultRequestTimeoutInterval;
+
     if (enqueue)
     {
         [self enqueueRequest:request];
@@ -220,7 +235,7 @@ NSString* const kRZWebserviceCachedCertFingerprints = @"CachedCertFingerprints";
     NSDictionary *transformedApiInfo = [self apiInfoWithDefaultHostUsingAPIInfo:apiInfo andKey:apiKey];
     
     RZWebServiceRequest* request = [[RZWebServiceRequest alloc] initWithApiInfo:transformedApiInfo parameters:parameters completion:completionBlock];
-    
+    request.timeoutInterval = self.defaultRequestTimeoutInterval;
     if (enqueue)
     {
         [self enqueueRequest:request];
@@ -232,6 +247,7 @@ NSString* const kRZWebserviceCachedCertFingerprints = @"CachedCertFingerprints";
 -(RZWebServiceRequest*) makeRequestWithURL:(NSURL *)url target:(id)target successCallback:(SEL)success failureCallback:(SEL)failure parameters:(NSDictionary*)parameters enqueue:(BOOL)enqueue 
 {
     RZWebServiceRequest* request = [[RZWebServiceRequest alloc] initWithURL:url httpMethod:@"GET" andTarget:target successCallback:success failureCallback:failure expectedResultType:@"NONE" bodyType:nil andParameters:parameters];
+    request.timeoutInterval = self.defaultRequestTimeoutInterval;
 
     if (enqueue)
     {
@@ -429,6 +445,8 @@ NSString* const kRZWebserviceCachedCertFingerprints = @"CachedCertFingerprints";
                                                                    bodyType:nil
                                                                  parameters:parameters
                                                                  completion:completionBlock];
+
+    request.timeoutInterval = self.defaultRequestTimeoutInterval;
 
     if (enqueue)
     {
