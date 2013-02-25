@@ -215,7 +215,9 @@ NSString* const kRZWebserviceCachedCertFingerprints = @"CachedCertFingerprints";
 
 -(RZWebServiceRequest*) makeRequestWithApi:(NSDictionary*)apiInfo forKey:(NSString*)apiKey andTarget:(id)target andParameters:(NSDictionary*)parameters enqueue:(BOOL)enqueue
 {
-    NSDictionary *transformedApiInfo = [self apiInfoWithDefaultHostUsingAPIInfo:apiInfo andKey:apiKey];
+    NSDictionary *addedHostApiInfo = [self apiInfoWithDefaultHostUsingAPIInfo:apiInfo andKey:apiKey];
+    
+    NSDictionary *transformedApiInfo = [self apiInfoWithDefaultTimeoutUsingAPIInfo:addedHostApiInfo andKey:apiKey];
     
     RZWebServiceRequest* request = [[RZWebServiceRequest alloc] initWithApiInfo:transformedApiInfo target:target parameters:parameters];
 
@@ -230,7 +232,9 @@ NSString* const kRZWebserviceCachedCertFingerprints = @"CachedCertFingerprints";
 
 -(RZWebServiceRequest*) makeRequestWithApi:(NSDictionary*)apiInfo forKey:(NSString*)apiKey andParameters:(NSDictionary*)parameters enqueue:(BOOL)enqueue completion:(RZWebServiceRequestCompletionBlock)completionBlock
 {
-    NSDictionary *transformedApiInfo = [self apiInfoWithDefaultHostUsingAPIInfo:apiInfo andKey:apiKey];
+    NSDictionary *addedHostApiInfo = [self apiInfoWithDefaultHostUsingAPIInfo:apiInfo andKey:apiKey];
+    
+    NSDictionary *transformedApiInfo = [self apiInfoWithDefaultTimeoutUsingAPIInfo:addedHostApiInfo andKey:apiKey];
     
     RZWebServiceRequest* request = [[RZWebServiceRequest alloc] initWithApiInfo:transformedApiInfo parameters:parameters completion:completionBlock];
     if (enqueue)
@@ -245,6 +249,7 @@ NSString* const kRZWebserviceCachedCertFingerprints = @"CachedCertFingerprints";
 {
     RZWebServiceRequest* request = [[RZWebServiceRequest alloc] initWithURL:url httpMethod:@"GET" andTarget:target successCallback:success failureCallback:failure expectedResultType:@"NONE" bodyType:nil andParameters:parameters];
 
+    request.timeoutInterval = self.defaultRequestTimeoutInterval;
     if (enqueue)
     {
         [self enqueueRequest:request];
@@ -289,7 +294,7 @@ NSString* const kRZWebserviceCachedCertFingerprints = @"CachedCertFingerprints";
         }
     }
     
-    return [self apiInfoWithDefaultTimeoutUsingAPIInfo:apiInfo andKey:apiKey];
+    return apiInfo;
 }
 
 - (NSDictionary*)apiInfoWithDefaultTimeoutUsingAPIInfo:(NSDictionary*)apiInfo andKey:(NSString *)apiKey
