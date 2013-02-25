@@ -10,6 +10,7 @@
 #import "RZWebServiceRequest.h"
 
 extern NSString* const kRZWebserviceDataTypeJSON;
+extern NSString* const kRZWebserviceDataTypeURLEncoded;
 extern NSString* const kRZWebserviceDataTypeFile;
 extern NSString* const kRZWebserviceDataTypeText;
 extern NSString* const kRZWebserviceDataTypeImage;

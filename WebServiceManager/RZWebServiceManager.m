@@ -14,6 +14,7 @@
 #import "NSURLAuthenticationChallenge+Fingerprint.h"
 
 NSString* const kRZWebserviceDataTypeJSON = @"JSON";
+NSString* const kRZWebserviceDataTypeURLEncoded = @"URLEncoded";
 NSString* const kRZWebserviceDataTypeFile = @"File";
 NSString* const kRZWebserviceDataTypeText = @"Text";
 NSString* const kRZWebserviceDataTypeImage = @"Image";

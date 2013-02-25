@@ -197,7 +197,12 @@ typedef enum {
 @property (assign, nonatomic) RZWebServiceRequestParameterType parameterType;
 
 + (id)parameterWithName:(NSString*)name value:(id)value type:(RZWebServiceRequestParameterType)type;
-
 - (id)initWithName:(NSString*)name value:(id)value type:(RZWebServiceRequestParameterType)type;
+
+@end
+
+@interface NSDictionary (RZWebServiceRequestParameters)
+
+- (NSMutableArray*)convertToURLEncodedParameters;
 
 @end

@@ -269,20 +269,9 @@ expectedResultType:(NSString *)expectedResultType
         self.parameterMode = RZWebserviceRequestParameterModeDefault;
         
         // convert the parameters to a sorted array of parameter objects
-        NSArray* sortedKeys = [[parameters allKeys] sortedArrayUsingSelector:@selector(compare:)];
-        self.parameters = [NSMutableArray arrayWithCapacity:sortedKeys.count];
-        
-        for (NSString* key in sortedKeys) {
-            id value = [parameters objectForKey:key];
-            RZWebServiceRequestParameterType type = RZWebServiceRequestParameterTypeQueryString;
-            
-            // TODO: Check value's class and change parameter type accordingly
-            // ???: Will these types of parameters still be used for multipart form posts? I thought there was a new pull request for that.
-            // If not, we can probably do away with the "type" specifier altogether.
-            
-            RZWebServiceRequestParameter* parameter = [RZWebServiceRequestParameter parameterWithName:key value:value type:type];
-            [self.parameters addObject:parameter];
-        }
+        // TODO: Check value's class and change parameter type accordingly
+        // ???: Will these types of parameters ever be used for multipart form posts?
+        self.parameters = [parameters convertToURLEncodedParameters];
         
         self.urlRequest = [[NSMutableURLRequest alloc] initWithURL:self.url];
         
@@ -618,6 +607,13 @@ expectedResultType:(NSString *)expectedResultType
             if ([self.requestBody isKindOfClass:[NSData class]])
             {
                 self.urlRequest.HTTPBody = (NSData*)self.requestBody;
+            }
+            else if ([self.bodyType isEqualToString:kRZWebserviceDataTypeURLEncoded] && [self.requestBody isKindOfClass:[NSDictionary class]]){
+                // convert to URL-encoded parameter string
+                NSArray *bodyParameters = [(NSDictionary*)self.requestBody convertToURLEncodedParameters];
+                self.urlRequest.HTTPBody = [[NSURL URLQueryStringFromParameters:bodyParameters] dataUsingEncoding:NSUTF8StringEncoding];
+                [self.urlRequest setValue:@"application/x-www-form-urlencoded" forHTTPHeaderField:@"Content-Type"];
+                
             }
             else if ([self.bodyType isEqualToString:kRZWebserviceDataTypeJSON])
             {
@@ -1271,6 +1267,27 @@ totalBytesExpectedToWrite:(NSInteger)totalBytesExpectedToWrite
     }
     
     return self;
+}
+
+@end
+
+@implementation NSDictionary (RZWebServiceRequestParameters)
+
+- (NSMutableArray*)convertToURLEncodedParameters{
+
+    NSArray* sortedKeys = [[self allKeys] sortedArrayUsingSelector:@selector(compare:)];
+    NSMutableArray *parameters = [NSMutableArray arrayWithCapacity:sortedKeys.count];
+    
+    RZWebServiceRequestParameterType type = RZWebServiceRequestParameterTypeQueryString;
+    
+    for (NSString* key in sortedKeys) {
+        
+        id value = [self objectForKey:key];
+        RZWebServiceRequestParameter* parameter = [RZWebServiceRequestParameter parameterWithName:key value:value type:type];
+        [parameters addObject:parameter];
+    }
+    
+    return parameters;
 }
 
 @end
