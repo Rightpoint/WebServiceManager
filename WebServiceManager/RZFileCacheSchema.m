@@ -25,7 +25,7 @@
 }
 
 - (NSURL *)cacheURLFromRemoteURL:(NSURL *)remoteURL {
-    NSString* cacheName = (NSString*)[remoteURL absoluteString];
+    NSString* cacheName = [remoteURL absoluteString];
     NSString* fileFormat = [[(NSString *)[remoteURL.pathComponents lastObject] componentsSeparatedByString:@"."] lastObject];
     NSURL* cachePath = [[self downloadCacheDirectory] URLByAppendingPathComponent:[NSString stringWithFormat:@"%d.%@",[cacheName hash],fileFormat]];
     return cachePath;
