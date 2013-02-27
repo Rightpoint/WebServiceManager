@@ -259,9 +259,11 @@
                 
             case RZWebServiceMultipartStreamStageBody:
                 
-                if (self.currentStreamingParameter.parameterType == RZWebServiceRequestParamterTypeQueryString && DEBUG) {
+                #ifdef DEBUG
+                if (self.currentStreamingParameter.parameterType == RZWebServiceRequestParamterTypeQueryString) {
                     NSLog(@"Item Value Streamed: %@", self.currentStreamingParameter.parameterValue);
                 }
+                #endif
                 
                 // Stream content from the current paramater's parameterReadStream for the body
                 if ([self.currentStreamingParameter.parameterReadStream hasBytesAvailable]) {
