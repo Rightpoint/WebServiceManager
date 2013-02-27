@@ -241,18 +241,18 @@
         switch (self.currentStreamStage) {
             case RZWebServiceMultipartStreamStageInit:
                 
-                if (DEBUG) {
+                #ifdef DEBUG
                     NSLog(@"Item Boundary Streamed: %@", self.beginPOSTBoundary);
-                }
+                #endif
                 
                 bytesRead += [self readData:[self.beginPOSTBoundary dataUsingEncoding:NSUTF8StringEncoding] intoBuffer:&buffer[bytesRead] maxLength:(length - (NSUInteger)bytesRead)];
                 break;
     
             case RZWebServiceMultipartStreamStageHeaders:
                 
-                if (DEBUG) {
+                #ifdef DEBUG
                     NSLog(@"Item Header Streamed: %@", [self.currentStreamingParameter headerString]);
-                }
+                #endif
                 
                 bytesRead += [self readData:self.currentStreamingParameter.parameterHeaderData intoBuffer:&buffer[bytesRead] maxLength:(length - (NSUInteger)bytesRead)];
                 break;
@@ -274,9 +274,9 @@
                 
             case RZWebServiceMultipartStreamStageWrapup:
                 
-                if (DEBUG) {
+                #ifdef DEBUG
                     NSLog(@"Item Boundary Streamed: %@", self.endItemBoundary);
-                }
+                #endif
                 
                 // Stream itemboundary if not last item
                 bytesRead += [self readData:[self.endItemBoundary dataUsingEncoding:NSUTF8StringEncoding] intoBuffer:&buffer[bytesRead] maxLength:(length - (NSUInteger)bytesRead)];
@@ -284,9 +284,9 @@
                 
             case RZWebServiceMultipartStreamStageFinal:
                 
-                if (DEBUG) {
+                #ifdef DEBUG
                     NSLog(@"POST Boundary Streamed: %@", self.endPOSTBoundary);
-                }
+                #endif
                 
                 // Stream Final Boundary
                 bytesRead += [self readData:[self.endPOSTBoundary dataUsingEncoding:NSUTF8StringEncoding] intoBuffer:&buffer[bytesRead] maxLength:(length - (NSUInteger)bytesRead)];
