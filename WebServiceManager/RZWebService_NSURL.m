@@ -11,12 +11,12 @@
 
 @implementation NSURL (RZWebService_NSURL)
 
-+(NSString*)URLQueryStringFromParameters:(NSArray*)parameters
++(NSString*)URLQueryStringFromParameters:(NSArray*)parameters arrayDelimiter:(NSString*)arrayDelimiter;
 {
-    return [self URLQueryStringFromParameters:parameters encode:YES];
+    return [self URLQueryStringFromParameters:parameters arrayDelimiter:arrayDelimiter encode:YES];
 }
 
-+(NSString*)URLQueryStringFromParameters:(NSArray *)parameters encode:(BOOL)encode
++(NSString*)URLQueryStringFromParameters:(NSArray *)parameters arrayDelimiter:(NSString*)arrayDelimiter encode:(BOOL)encode
 {
     NSMutableString* queryString = [NSMutableString stringWithCapacity:100];
     NSArray *queryParameters = [parameters filteredArrayUsingPredicate:[NSPredicate predicateWithFormat:@"parameterType == %d", RZWebServiceRequestParameterTypeQueryString]];
@@ -28,13 +28,38 @@
         NSString *key = parameter.parameterName;
         id value = parameter.parameterValue;
         
-        if(encode && [value isKindOfClass:[NSString class]])
-        {
-            value = (__bridge_transfer NSString * )CFURLCreateStringByAddingPercentEscapes(kCFAllocatorDefault, 
-                                                                                           (__bridge CFStringRef)parameter.parameterValue,
-                                                                                           NULL, 
-                                                                                           CFSTR(":/?#[]@!$&’()*+,;="),
-                                                                                           kCFStringEncodingUTF8);
+        if(encode){
+            if([value isKindOfClass:[NSString class]])
+            {
+                value = (__bridge_transfer NSString * )CFURLCreateStringByAddingPercentEscapes(kCFAllocatorDefault, 
+                                                                                               (__bridge CFStringRef)parameter.parameterValue,
+                                                                                               NULL, 
+                                                                                               CFSTR(":/?#[]@!$&’()*+,;="),
+                                                                                               kCFStringEncodingUTF8);
+            }
+            else if ([value isKindOfClass:[NSArray class]]){
+                
+                NSMutableString *valueString = [NSMutableString stringWithCapacity:64];
+                for (NSUInteger subValueIdx=0; subValueIdx < [(NSArray*)value count]; subValueIdx++){
+                    
+                    id subValue = [value objectAtIndex:subValueIdx];
+                    
+                    if ([subValue isKindOfClass:[NSString class]]){
+                        subValue = (__bridge_transfer NSString * )CFURLCreateStringByAddingPercentEscapes(kCFAllocatorDefault,
+                                                                                                          (__bridge CFStringRef)subValue,
+                                                                                                          NULL,
+                                                                                                          CFSTR(":/?#[]@!$&’()*+,;="),
+                                                                                                          kCFStringEncodingUTF8);
+                    }
+                    
+                    [valueString appendFormat:@"%@", subValue];
+                    if (subValueIdx != [(NSArray*)value count] - 1){
+                        [valueString appendString:arrayDelimiter];
+                    }
+                }
+                
+                value = valueString;
+            }
         }
         
         [queryString appendFormat:@"%@=%@", key, value];
@@ -47,9 +72,9 @@
     return queryString;
 }
 
-- (NSURL *)URLByAddingParameters:(NSArray *)parameters {
+- (NSURL *)URLByAddingParameters:(NSArray *)parameters arrayDelimiter:(NSString *)arrayDelimiter {
     
-    NSString *parameterString = [NSURL URLQueryStringFromParameters:parameters];
+    NSString *parameterString = [NSURL URLQueryStringFromParameters:parameters arrayDelimiter:arrayDelimiter];
     
     NSMutableString *urlString = [NSMutableString stringWithString:[self absoluteString]];
     

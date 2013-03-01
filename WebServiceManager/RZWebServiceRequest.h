@@ -131,6 +131,8 @@ expectedResultType:(NSString *)expectedResultType
 @property (strong, nonatomic) NSString* bodyType;
 @property (strong, nonatomic) NSDictionary* userInfo;
 
+// This is the delimiter that will be used for parameters with an array of values
+@property (strong, nonatomic) NSString* parameterArrayDelimiter;
 
 // these properties will be populated when the request completes
 // error will remain nil if there is no error
