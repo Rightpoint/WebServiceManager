@@ -36,6 +36,12 @@ typedef enum {
     RZWebServiceRequestSSLTrustTypePromptAndCache  // prompt the user on invalid certificates, and cache those they have allowed.
 } RZWebServiceRequestSSLTrustType;
 
+// Parameter mode
+typedef enum {
+    RZWebserviceRequestParameterModeDefault = 0,
+    RZWebServiceRequestParameterModeURL,
+    RZWebServiceRequestParameterModeBody
+} RZWebServiceRequestParameterMode;
 
 @interface RZWebServiceRequest : NSOperation <NSURLConnectionDataDelegate>
 {
@@ -92,7 +98,16 @@ expectedResultType:(NSString *)expectedResultType
 - (void)removeProgressObserver:(id<RZWebServiceRequestProgressObserver>)observer;
 - (void)removeAllProgressObservers;
 
-// the WebServiceManager that has queued this request. 
+//! Parameter mode override
+/*
+    If the mode is the default (RZWebserviceRequestParameterModeDefault), the HTTP method
+    will determine whether the parameters are added to the URL or to the reqest body, based
+    on HTTP standards (GET, PUT, DELETE go in the URL, POST goes in the body). Otherwise,
+    the override is obeyed regardless of HTTP method.
+*/
+@property (assign, nonatomic) RZWebServiceRequestParameterMode parameterMode;
+
+// the WebServiceManager that has queued this request.
 @property (unsafe_unretained, nonatomic) RZWebServiceManager* manager;
 
 @property (unsafe_unretained, nonatomic) id target; // Deprecated - Use CompletionBlocks instead
@@ -111,6 +126,7 @@ expectedResultType:(NSString *)expectedResultType
 @property (strong, nonatomic) NSObject* requestBody;
 @property (strong, nonatomic) NSString* bodyType;
 @property (strong, nonatomic) NSDictionary* userInfo;
+
 
 // these properties will be populated when the request completes
 // error will remain nil if there is no error
@@ -167,21 +183,26 @@ expectedResultType:(NSString *)expectedResultType
 
 // Parameter Type Enum
 typedef enum {
-    RZWebServiceRequestParamterTypeQueryString,                                 // For String and Number parameters that can go in the query string of a URL
-    RZWebServiceRequestParamterTypeFile,                                        // For File URL parameters in multi-part form posts
-    RZWebServiceRequestParamterTypeBinaryData                                   // For images and other binary data parameters in multi-part form posts
+    RZWebServiceRequestParameterTypeQueryString,                                 // For String and Number parameters that can go in the query string of a URL
+    RZWebServiceRequestParameterTypeFile,                                        // For File URL parameters in multi-part form posts
+    RZWebServiceRequestParameterTypeBinaryData                                   // For images and other binary data parameters in multi-part form posts
 } RZWebServiceRequestParameterType;
 
 
 // Parameter object for WebService Requests
-@interface RZWebServiceRequestParamter : NSObject
+@interface RZWebServiceRequestParameter : NSObject
 
 @property (strong, nonatomic) NSString *parameterName;
 @property (strong, nonatomic) id parameterValue;
 @property (assign, nonatomic) RZWebServiceRequestParameterType parameterType;
 
 + (id)parameterWithName:(NSString*)name value:(id)value type:(RZWebServiceRequestParameterType)type;
-
 - (id)initWithName:(NSString*)name value:(id)value type:(RZWebServiceRequestParameterType)type;
+
+@end
+
+@interface NSDictionary (RZWebServiceRequestParameters)
+
+- (NSMutableArray*)convertToURLEncodedParameters;
 
 @end
