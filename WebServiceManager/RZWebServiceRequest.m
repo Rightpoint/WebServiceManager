@@ -347,6 +347,20 @@ expectedResultType:(NSString *)expectedResultType
     return _fallbackCompletionBlock;
 }
 
+- (void)addPreProcessingBlock:(RZWebServiceRequestPreProcessBlock)block
+{
+    NSMutableArray *preBlocks = [self.preProcessBlocks mutableCopy];
+    [preBlocks addObject:[block copy]];
+    self.preProcessBlocks = preBlocks;
+}
+
+- (void)addPostProcessingBlock:(RZWebServiceRequestPostProcessBlock)block
+{
+    NSMutableArray *postBlocks = [self.postProcessBlocks mutableCopy];
+    [postBlocks addObject:[block copy]];
+    self.postProcessBlocks = postBlocks;
+}
+
 #pragma mark - Property Overrides
 
 - (void)setTarget:(id)target
@@ -668,6 +682,12 @@ expectedResultType:(NSString *)expectedResultType
             self.urlRequest.HTTPBody = [[NSURL URLQueryStringFromParameters:self.parameters] dataUsingEncoding:NSUTF8StringEncoding];
             [self.urlRequest setValue:@"application/x-www-form-urlencoded" forHTTPHeaderField:@"Content-Type"];
         }
+        
+        // ------------ Perform preprocessing blocks ------------
+        
+        for (RZWebServiceRequestPreProcessBlock block in self.preProcessBlocks){
+            block(self);
+        };
     
         // ------------ Start the HTTP Connection ---------------
         
@@ -889,6 +909,13 @@ expectedResultType:(NSString *)expectedResultType
 
 -(void) callCompletionBlockWithSucceeded:(BOOL)succeeded data:(id)data error:(NSError*)error
 {
+    // Call postprocessing blocks.
+    for (RZWebServiceRequestPostProcessBlock block in self.postProcessBlocks)
+    {
+        block(self, &data, &succeeded, &error);
+    }
+    
+    // Call completion block
     if (nil != self.requestCompletionBlock)
     {
         dispatch_sync(dispatch_get_main_queue(), ^{
