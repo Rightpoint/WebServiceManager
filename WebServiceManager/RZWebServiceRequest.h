@@ -23,7 +23,7 @@ extern NSTimeInterval const kDefaultTimeout;
 
 typedef void (^RZWebServiceRequestCompletionBlock)(BOOL succeeded, id data, NSError *error, RZWebServiceRequest *request);
 typedef void (^RZWebServiceRequestPreProcessBlock)(RZWebServiceRequest *request);
-typedef id (^RZWebServiceRequestPostProcessBlock)(RZWebServiceRequest *request, id data);
+typedef void (^RZWebServiceRequestPostProcessBlock)(RZWebServiceRequest *request, __autoreleasing id* data, BOOL* succeeded, __autoreleasing NSError** error);
 
 typedef void (^RZWebServiceRequestSSLChallengeCompletionBlock)(BOOL allow);
 typedef void (^RZWebServiceRequestSSLChallengeBlock)(NSURLAuthenticationChallenge* challenge, RZWebServiceRequestSSLChallengeCompletionBlock completion);
@@ -86,6 +86,10 @@ expectedResultType:(NSString *)expectedResultType
           bodyType:(NSString *)bodyType
         parameters:(NSDictionary *)parameters
         completion:(RZWebServiceRequestCompletionBlock)completionBlock;
+
+// add pre or post processing blocks
+- (void)addPreProcessingBlock:(RZWebServiceRequestPreProcessBlock)block;
+- (void)addPostProcessingBlock:(RZWebServiceRequestPostProcessBlock)block;
 
 // set a request header on the outgoing request
 -(void) setValue:(NSString*)value forHTTPHeaderField:(NSString*)headerField;

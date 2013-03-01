@@ -70,7 +70,7 @@
 
 -(void) test03GetPlist
 {
-    [self.webServiceManager makeRequestWithKey:@"getPList" andTarget:self];
+    [[self.webServiceManager makeRequestWithKey:@"getPList" andTarget:self] setSSLCertificateType:RZWebServiceRequestSSLTrustTypeAll WithChallengeBlock:nil];
     while (!self.apiCallCompleted) {
         [[NSRunLoop currentRunLoop] runUntilDate:[NSDate dateWithTimeIntervalSinceNow:1]];
     }
@@ -78,7 +78,7 @@
 
 -(void) test04GetJSON
 {
-    [self.webServiceManager makeRequestWithKey:@"getJSON" andTarget:self];
+    [[self.webServiceManager makeRequestWithKey:@"getJSON" andTarget:self] setSSLCertificateType:RZWebServiceRequestSSLTrustTypeAll WithChallengeBlock:nil];
     while (!self.apiCallCompleted) {
         [[NSRunLoop currentRunLoop] runUntilDate:[NSDate dateWithTimeIntervalSinceNow:1]];
     }
@@ -93,8 +93,14 @@
     
     [[self.webServiceManager makeRequestWithKey:@"getLogo" andTarget:self] setSuccessHandler:callback];
     [[self.webServiceManager makeRequestWithKey:@"getContent" andTarget:self] setSuccessHandler:callback];
-    [[self.webServiceManager makeRequestWithKey:@"getPList" andTarget:self] setSuccessHandler:callback];
-    [[self.webServiceManager makeRequestWithKey:@"getJSON" andTarget:self] setSuccessHandler:callback];   
+    
+    RZWebServiceRequest *plistRequest = [self.webServiceManager makeRequestWithKey:@"getPList" andTarget:self];
+    [plistRequest setSSLCertificateType:RZWebServiceRequestSSLTrustTypeAll WithChallengeBlock:nil];
+    [plistRequest setSuccessHandler:callback];
+    
+    RZWebServiceRequest *jsonRequest = [self.webServiceManager makeRequestWithKey:@"getJSON" andTarget:self];
+    [jsonRequest setSSLCertificateType:RZWebServiceRequestSSLTrustTypeAll WithChallengeBlock:nil];
+    [jsonRequest setSuccessHandler:callback];
     
     while (!self.apiCallCompleted) {
         [[NSRunLoop currentRunLoop] runUntilDate:[NSDate dateWithTimeIntervalSinceNow:1]];
@@ -293,7 +299,8 @@
     
 -(void) test16GetContentWithDynamicPath
 {
-    [self.webServiceManager makeRequestWithTarget:self andFormatKey:@"getContentWithDynamicPath", @"TestData.json"];
+    RZWebServiceRequest *request = [self.webServiceManager makeRequestWithTarget:self andFormatKey:@"getContentWithDynamicPath", @"TestData.json"];
+    [request setSSLCertificateType:RZWebServiceRequestSSLTrustTypeAll WithChallengeBlock:nil];
     
     while (!self.apiCallCompleted) {
         [[NSRunLoop currentRunLoop] runUntilDate:[NSDate dateWithTimeIntervalSinceNow:1]];
@@ -307,7 +314,8 @@
     
     [self.webServiceManager setHost:@"https://raw.github.com" forApiKey:apiKey];
 
-    [self.webServiceManager makeRequestWithTarget:self andFormatKey:apiKey, @"TestData.json"];
+    RZWebServiceRequest  *request = [self.webServiceManager makeRequestWithTarget:self andFormatKey:apiKey, @"TestData.json"];
+    [request setSSLCertificateType:RZWebServiceRequestSSLTrustTypeAll WithChallengeBlock:nil];
     
     while (!self.apiCallCompleted) {
         [[NSRunLoop currentRunLoop] runUntilDate:[NSDate dateWithTimeIntervalSinceNow:1]];
@@ -322,7 +330,8 @@
     [self.webServiceManager setHost:nil forApiKey:apiKey];
     [self.webServiceManager setDefaultHost:@"https://raw.github.com"];
     
-    [self.webServiceManager makeRequestWithTarget:self andFormatKey:apiKey, @"TestData.json"];
+    RZWebServiceRequest *request = [self.webServiceManager makeRequestWithTarget:self andFormatKey:apiKey, @"TestData.json"];
+    [request setSSLCertificateType:RZWebServiceRequestSSLTrustTypeAll WithChallengeBlock:nil];
     
     while (!self.apiCallCompleted) {
         [[NSRunLoop currentRunLoop] runUntilDate:[NSDate dateWithTimeIntervalSinceNow:1]];
@@ -397,6 +406,73 @@
         [[NSRunLoop currentRunLoop] runUntilDate:[NSDate dateWithTimeIntervalSinceNow:1]];
     }
     
+}
+
+-(void) test22PreProcessingBlock
+{
+    // Download JSON - first create request with bogus path, then change the URL in the preprocess block
+    NSURL *plistURL = [NSURL URLWithString:@"https://thiswillfail"];
+        
+    RZWebServiceRequest *request = [[RZWebServiceRequest alloc] initWithURL:plistURL
+                                                                 httpMethod:@"GET"
+                                                         expectedResultType:kRZWebserviceDataTypeJSON
+                                                                   bodyType:@"NONE"
+                                                                 parameters:nil
+                                                                 completion:^(BOOL succeeded, id data, NSError *error, RZWebServiceRequest *request) {
+                                                                     STAssertTrue(succeeded, @"Request failed - preprocess block did not succeed");
+                                                                     self.apiCallCompleted = YES;
+                                                                 }];
+    
+    // need to trust all certificates
+    [request setSSLCertificateType:RZWebServiceRequestSSLTrustTypeAll WithChallengeBlock:nil];
+    
+    // Change the url to another url
+    [request addPreProcessingBlock:^(RZWebServiceRequest *request) {
+        request.url = [NSURL URLWithString:@"http://raw.github.com/Raizlabs/WebServiceManager/master/WebServiceManagerTests/TestData.json"];
+        request.urlRequest.URL = request.url;
+    }];
+    
+    [self.webServiceManager enqueueRequest:request];
+    
+    while (!self.apiCallCompleted){
+        [[NSRunLoop currentRunLoop] runUntilDate:[NSDate dateWithTimeIntervalSinceNow:1]];
+    }
+}
+
+-(void)test23PostProcessingBlock
+{
+    NSURL *plistURL = [NSURL URLWithString:@"http://raw.github.com/Raizlabs/WebServiceManager/master/WebServiceManagerTests/TestData.json"];
+    
+    RZWebServiceRequest *request = [[RZWebServiceRequest alloc] initWithURL:plistURL
+                                                                 httpMethod:@"GET"
+                                                         expectedResultType:kRZWebserviceDataTypeJSON
+                                                                   bodyType:@"NONE"
+                                                                 parameters:nil
+                                                                 completion:^(BOOL succeeded, id data, NSError *error, RZWebServiceRequest *request) {
+                                                                     
+                                                                     STAssertFalse(succeeded, @"Post process block did not override success");
+                                                                     STAssertEqualObjects(error.domain, @"TestErrorDomain", @"Post process block did not modify error");
+                                                                     self.apiCallCompleted = YES;
+                                                                     
+                                                                 }];
+    // need to trust all certificates
+    [request setSSLCertificateType:RZWebServiceRequestSSLTrustTypeAll WithChallengeBlock:nil];
+    
+    // Change the succes status to fail and create an error
+    [request addPostProcessingBlock:^(RZWebServiceRequest *request, __autoreleasing id *data, BOOL *succeeded, NSError *__autoreleasing *error) {
+        
+        STAssertTrue(*succeeded, @"The request should have succeeded when we hit post processing block");
+        
+        *succeeded = NO;
+        *error = [NSError errorWithDomain:@"TestErrorDomain" code:100 userInfo:nil];
+        
+    }];
+    
+    [self.webServiceManager enqueueRequest:request];
+    
+    while (!self.apiCallCompleted){
+        [[NSRunLoop currentRunLoop] runUntilDate:[NSDate dateWithTimeIntervalSinceNow:1]];
+    }
 }
 
 //
