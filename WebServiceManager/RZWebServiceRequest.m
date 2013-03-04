@@ -394,6 +394,15 @@ expectedResultType:(NSString *)expectedResultType
     return _progressObservers;
 }
 
+// Lazy load default delimiter of +
+- (NSString*)parameterArrayDelimiter
+{
+    if (_parameterArrayDelimiter == nil){
+        _parameterArrayDelimiter = @"+";
+    }
+    return _parameterArrayDelimiter;
+}
+
 #pragma mark - Header Manipulation Methods
 
 -(void) setValue:(NSString*)value forHTTPHeaderField:(NSString*)headerField
@@ -572,7 +581,7 @@ expectedResultType:(NSString *)expectedResultType
         {
             BOOL methodSupportsURLParams = ([self.httpMethod isEqualToString:@"GET"] || [self.httpMethod isEqualToString:@"PUT"] || [self.httpMethod isEqualToString:@"DELETE"]);
             if ((self.parameterMode == RZWebserviceRequestParameterModeDefault && methodSupportsURLParams) || self.parameterMode == RZWebServiceRequestParameterModeURL) {
-                    self.urlRequest.URL = [self.url URLByAddingParameters:self.parameters];
+                    self.urlRequest.URL = [self.url URLByAddingParameters:self.parameters arrayDelimiter:self.parameterArrayDelimiter];
             }
             
         }
@@ -594,7 +603,7 @@ expectedResultType:(NSString *)expectedResultType
             // If this is a POST request and there are parameters, put them in the URL. There is a body already defined so we don't want to blow it away.
             // This use case will not likely come up often, and should be well documented in order to be understood.
             if (hasParameters && self.parameterMode == RZWebserviceRequestParameterModeDefault && [self.httpMethod isEqualToString:@"POST"]){
-                self.urlRequest.URL = [self.url URLByAddingParameters:self.parameters];
+                self.urlRequest.URL = [self.url URLByAddingParameters:self.parameters arrayDelimiter:self.parameterArrayDelimiter];
             }
             
             // If no body type is specified, can we make an assumption?
@@ -625,7 +634,7 @@ expectedResultType:(NSString *)expectedResultType
             else if ([self.bodyType isEqualToString:kRZWebserviceDataTypeURLEncoded] && [self.requestBody isKindOfClass:[NSDictionary class]]){
                 // convert to URL-encoded parameter string
                 NSArray *bodyParameters = [(NSDictionary*)self.requestBody convertToURLEncodedParameters];
-                self.urlRequest.HTTPBody = [[NSURL URLQueryStringFromParameters:bodyParameters] dataUsingEncoding:NSUTF8StringEncoding];
+                self.urlRequest.HTTPBody = [[NSURL URLQueryStringFromParameters:bodyParameters arrayDelimiter:self.parameterArrayDelimiter] dataUsingEncoding:NSUTF8StringEncoding];
                 [self.urlRequest setValue:@"application/x-www-form-urlencoded" forHTTPHeaderField:@"Content-Type"];
                 
             }
@@ -679,7 +688,7 @@ expectedResultType:(NSString *)expectedResultType
         else if (hasParameters && (self.parameterMode == RZWebServiceRequestParameterModeBody || (self.parameterMode == RZWebserviceRequestParameterModeDefault && [self.httpMethod isEqualToString:@"POST"]))){
             // If the parameter mode is Body and no requestBody has been set, OR if the parameter mode is default and the HTTP method is POST, add the parameters to the body
             // Currently only support for encoding as URLEncoded parameters - may want to handle serializing to JSON from parameter dict as well
-            self.urlRequest.HTTPBody = [[NSURL URLQueryStringFromParameters:self.parameters] dataUsingEncoding:NSUTF8StringEncoding];
+            self.urlRequest.HTTPBody = [[NSURL URLQueryStringFromParameters:self.parameters arrayDelimiter:self.parameterArrayDelimiter] dataUsingEncoding:NSUTF8StringEncoding];
             [self.urlRequest setValue:@"application/x-www-form-urlencoded" forHTTPHeaderField:@"Content-Type"];
         }
         
