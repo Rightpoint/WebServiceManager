@@ -475,6 +475,58 @@
     }
 }
 
+- (void)test24ParameterArrays
+{
+    // Make a request to a bogus url, but check the query string for an expected result
+    
+    RZWebServiceRequest *request = [[RZWebServiceRequest alloc] initWithURL:[NSURL URLWithString:@"http://testingarrayparameters.raiz"]
+                                                                 httpMethod:@"GET"
+                                                         expectedResultType:kRZWebserviceDataTypeText
+                                                                   bodyType:@"NONE"
+                                                                 parameters:@{ @"Testing" : @[@"1", @"2", @"3"] }
+                                                                 completion:^(BOOL succeeded, id data, NSError *error, RZWebServiceRequest *request) {
+                                                                     
+                                                                     STAssertFalse(succeeded, @"This request should have failed");
+                                                                     
+                                                                     NSString *queryString = [request.urlRequest.URL query];
+                                                                     STAssertEqualObjects(queryString, @"Testing=1+2+3", @"Incorrect query string for proivded parameter array and delimiter");
+                                                                     
+                                                                     self.apiCallCompleted = YES;
+                                                                 }];
+    
+    [self.webServiceManager enqueueRequest:request];
+    
+    while (!self.apiCallCompleted){
+        [[NSRunLoop currentRunLoop] runUntilDate:[NSDate dateWithTimeIntervalSinceNow:1]];
+    }
+    
+    // Repeat, changing the delimiter
+    self.apiCallCompleted = NO;
+    request = [[RZWebServiceRequest alloc] initWithURL:[NSURL URLWithString:@"http://testingarrayparameters.raiz"]
+                                            httpMethod:@"GET"
+                                    expectedResultType:kRZWebserviceDataTypeText
+                                              bodyType:@"NONE"
+                                            parameters:@{ @"Testing" : @[@"1", @"2", @"3"] }
+                                            completion:^(BOOL succeeded, id data, NSError *error, RZWebServiceRequest *request) {
+                                                
+                                                STAssertFalse(succeeded, @"This request should have failed");
+                                                
+                                                NSString *queryString = [request.urlRequest.URL query];
+                                                STAssertEqualObjects(queryString, @"Testing=1:2:3", @"Incorrect query string for proivded parameter array and delimiter");
+                                                
+                                                self.apiCallCompleted = YES;
+                                            }];
+    
+    [request setParameterArrayDelimiter:@":"];
+    
+    [self.webServiceManager enqueueRequest:request];
+    
+    while (!self.apiCallCompleted){
+        [[NSRunLoop currentRunLoop] runUntilDate:[NSDate dateWithTimeIntervalSinceNow:1]];
+    }
+}
+
+
 //
 // Image callbacks.
 //
