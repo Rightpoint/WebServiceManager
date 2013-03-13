@@ -871,6 +871,10 @@ expectedResultType:(NSString *)expectedResultType
             return NO;
         }
         
+        //Convert data from ASCII to UTF8 and back to data again to clean up extended ASCII characters.
+        NSString *tempData = [[NSString alloc] initWithData:self.receivedData encoding:NSASCIIStringEncoding];
+        self.receivedData = [[tempData dataUsingEncoding:NSUTF8StringEncoding] mutableCopy];
+        
         //
         // if we're supporting anything earlier than 5.0, use JSONKit.
         //
