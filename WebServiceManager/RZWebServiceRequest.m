@@ -872,7 +872,7 @@ expectedResultType:(NSString *)expectedResultType
         }
         
         //Convert data from ASCII to UTF8 and back to data again to clean up extended ASCII characters.
-        NSString *tempData = [[NSString alloc] initWithData:self.receivedData encoding:NSASCIIStringEncoding];
+        NSString *tempData = [[[NSString alloc] initWithData:self.receivedData encoding:NSASCIIStringEncoding] stringByReplacingOccurrencesOfString:@"&nbsp;" withString:@" "];
         self.receivedData = [[tempData dataUsingEncoding:NSUTF8StringEncoding] mutableCopy];
         
         //
