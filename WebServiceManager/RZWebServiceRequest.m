@@ -1186,12 +1186,12 @@ totalBytesExpectedToWrite:(NSInteger)totalBytesExpectedToWrite
                 //We have an invalid cert, which may be self-signed, expired, or have another error. Lets see if we know how to handle it.
                 switch (self.sslTrustType)
                 {
-                    case RZWebServiceRequestSSLTrustTypeAll:
+                  case RZWebServiceRequestSSLTrustTypeAll:
                       allow = YES;
                       break;
                     
                   case RZWebServiceRequestSSLTrustTypeCA:
-                      allow = NO;
+                      allow = [self.manager sslCachePermits:challenge];
                       break;
                     
                   case RZWebServiceRequestSSLTrustTypePromptAndCache:
