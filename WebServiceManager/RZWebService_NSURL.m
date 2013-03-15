@@ -9,7 +9,19 @@
 #import "RZWebService_NSURL.h"
 #import "RZWebServiceRequest.h"
 
+NSString * const kRZWebServiceRequestDefaultQueryParameterArrayDelimiter = @"+";
+
 @implementation NSURL (RZWebService_NSURL)
+
++(NSString*)URLQueryStringFromParameters:(NSArray*)parameters
+{
+    return [self URLQueryStringFromParameters:parameters arrayDelimiter:kRZWebServiceRequestDefaultQueryParameterArrayDelimiter encode:YES];
+}
+
++(NSString*)URLQueryStringFromParameters:(NSArray *)parameters encode:(BOOL)encode
+{
+    return [self URLQueryStringFromParameters:parameters arrayDelimiter:kRZWebServiceRequestDefaultQueryParameterArrayDelimiter encode:encode];
+}
 
 +(NSString*)URLQueryStringFromParameters:(NSArray*)parameters arrayDelimiter:(NSString*)arrayDelimiter;
 {

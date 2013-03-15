@@ -398,7 +398,7 @@ expectedResultType:(NSString *)expectedResultType
 - (NSString*)parameterArrayDelimiter
 {
     if (_parameterArrayDelimiter == nil){
-        _parameterArrayDelimiter = @"+";
+        _parameterArrayDelimiter = kRZWebServiceRequestDefaultQueryParameterArrayDelimiter;
     }
     return _parameterArrayDelimiter;
 }
