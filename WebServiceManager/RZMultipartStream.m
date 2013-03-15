@@ -12,15 +12,12 @@
 #import "RZMultipartStream.h"
 
 @interface RZMultipartStream ()
-{
-    // TODO: make these properties
-	id <NSStreamDelegate> delegate;
-    NSStreamStatus streamStatus;
-	
-	CFReadStreamClientCallBack copiedCallback;
-	CFStreamClientContext copiedContext;
-	CFOptionFlags requestedEvents;
-}
+
+@property (weak, nonatomic) id<NSStreamDelegate> streamDelegate;
+@property (assign, nonatomic) NSStreamStatus streamStatus;
+@property (assign, nonatomic) CFReadStreamClientCallBack copiedCallback;
+@property (assign, nonatomic) CFStreamClientContext copiedContext;
+@property (assign, nonatomic) CFOptionFlags requestedEvents;
 @property (nonatomic) NSUInteger readOffset;
 
 - (NSInteger)readData:(NSData *)data intoBuffer:(uint8_t *)buffer maxLength:(NSUInteger)length;
@@ -36,6 +33,11 @@
 @synthesize currentStreamStage = _currentStreamStage;
 @synthesize parameterEnumerator = _parameterEnumerator;
 @synthesize contentLength = _contentLength;
+@synthesize streamDelegate = _streamDelegate;
+@synthesize streamStatus = _streamStatus;
+@synthesize copiedCallback = _copiedCallback;
+@synthesize copiedContext = _copiedContext;
+@synthesize requestedEvents = _requestedEvents;
 
 // Derived from http://stackoverflow.com/q/2633801/2633948#2633948
 + (NSString *)genRandNumberLength:(int)len
@@ -54,8 +56,7 @@
     if (self)
     {
         self.parameters = parameters;
-        streamStatus = NSStreamStatusNotOpen;
-        [self setDelegate:self];
+        self.streamStatus = NSStreamStatusNotOpen;
     }
     return self;
 }
@@ -94,10 +95,10 @@
 
 - (void)open
 {
-    if (streamStatus == NSStreamStatusOpen)
+    if (self.streamStatus == NSStreamStatusOpen)
         return;
     
-    streamStatus = NSStreamStatusOpen;
+    self.streamStatus = NSStreamStatusOpen;
     self.currentStreamStage = RZWebServiceMultipartStreamStageInit;
     self.parameterEnumerator = [self.parameters objectEnumerator];
     self.currentStreamingParameter = [self.parameterEnumerator nextObject];
@@ -105,20 +106,17 @@
 
 - (void)close
 {
-    streamStatus = NSStreamStatusClosed;
+    self.streamStatus = NSStreamStatusClosed;
 }
 
 - (id<NSStreamDelegate>)delegate
 {
-    return delegate;
+    return self.streamDelegate;
 }
 
 - (void)setDelegate:(id<NSStreamDelegate>)aDelegate
 {
-    delegate = aDelegate;
-    if (delegate == nil) {
-    	delegate = self;
-    }
+    self.streamDelegate = aDelegate;
 }
 
 - (void)scheduleInRunLoop:(NSRunLoop *)runLoop forMode:(NSString *)mode
@@ -141,7 +139,7 @@
 
 - (NSStreamStatus)streamStatus
 {
-    return streamStatus;
+    return _streamStatus;
 }
 
 - (NSError *)streamError
@@ -328,22 +326,22 @@
 {
 	
 	if (inCallback != NULL) {
-		requestedEvents = inFlags;
-		copiedCallback = inCallback;
-		memcpy(&copiedContext, inContext, sizeof(CFStreamClientContext));
+		self.requestedEvents = inFlags;
+		self.copiedCallback = inCallback;
+		memcpy(&_copiedContext, inContext, sizeof(CFStreamClientContext));
 		
-		if (copiedContext.info && copiedContext.retain) {
-			copiedContext.retain(copiedContext.info);
+		if (self.copiedContext.info && self.copiedContext.retain) {
+			self.copiedContext.retain(self.copiedContext.info);
 		}
 	}
 	else {
-		requestedEvents = kCFStreamEventNone;
-		copiedCallback = NULL;
-		if (copiedContext.info && copiedContext.release) {
-			copiedContext.release(copiedContext.info);
+		self.requestedEvents = kCFStreamEventNone;
+		self.copiedCallback = NULL;
+		if (self.copiedContext.info && self.copiedContext.release) {
+			self.copiedContext.release(self.copiedContext.info);
 		}
 		
-		memset(&copiedContext, 0, sizeof(CFStreamClientContext));
+		memset(&_copiedContext, 0, sizeof(CFStreamClientContext));
 	}
 	
 	return YES;
@@ -361,34 +359,34 @@
 	
 	switch (eventCode) {
 		case NSStreamEventOpenCompleted:
-			if (requestedEvents & kCFStreamEventOpenCompleted) {
-				copiedCallback((__bridge CFReadStreamRef)self,
+			if (self.requestedEvents & kCFStreamEventOpenCompleted) {
+				self.copiedCallback((__bridge CFReadStreamRef)self,
 							   kCFStreamEventOpenCompleted,
-							   copiedContext.info);
+							   self.copiedContext.info);
 			}
 			break;
 			
 		case NSStreamEventHasBytesAvailable:
-			if (requestedEvents & kCFStreamEventHasBytesAvailable) {
-				copiedCallback((__bridge CFReadStreamRef)self,
+			if (self.requestedEvents & kCFStreamEventHasBytesAvailable) {
+				self.copiedCallback((__bridge CFReadStreamRef)self,
 							   kCFStreamEventHasBytesAvailable,
-							   copiedContext.info);
+							   self.copiedContext.info);
 			}
 			break;
 			
 		case NSStreamEventErrorOccurred:
-			if (requestedEvents & kCFStreamEventErrorOccurred) {
-				copiedCallback((__bridge CFReadStreamRef)self,
+			if (self.requestedEvents & kCFStreamEventErrorOccurred) {
+				self.copiedCallback((__bridge CFReadStreamRef)self,
 							   kCFStreamEventErrorOccurred,
-							   copiedContext.info);
+							   self.copiedContext.info);
 			}
 			break;
 			
 		case NSStreamEventEndEncountered:
-			if (requestedEvents & kCFStreamEventEndEncountered) {
-				copiedCallback((__bridge CFReadStreamRef)self,
+			if (self.requestedEvents & kCFStreamEventEndEncountered) {
+				self.copiedCallback((__bridge CFReadStreamRef)self,
 							   kCFStreamEventEndEncountered,
-							   copiedContext.info);
+							   self.copiedContext.info);
 			}
 			break;
 			

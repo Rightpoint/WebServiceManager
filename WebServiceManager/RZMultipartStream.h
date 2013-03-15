@@ -20,11 +20,12 @@ typedef enum {
 } RZWebServiceMultipartStreamStage;
 
 @interface RZMultipartStream : NSInputStream <NSStreamDelegate>
+
 @property (strong, nonatomic) NSArray* parameters;
 @property (strong, nonatomic) RZWebServiceRequestParameter* currentStreamingParameter;
 @property (readonly, nonatomic) NSString* stringBoundary;
 @property (readonly, nonatomic) unsigned long long contentLength;
-@property (nonatomic) RZWebServiceMultipartStreamStage currentStreamStage;
+@property (assign, nonatomic) RZWebServiceMultipartStreamStage currentStreamStage;
 @property (strong, nonatomic) NSEnumerator *parameterEnumerator;
 
 + (NSString *)genRandNumberLength:(int)len;
