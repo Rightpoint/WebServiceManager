@@ -10,6 +10,7 @@
 //
 
 #import "RZMultipartStream.h"
+#import "RZFileManager.h"
 
 @interface RZMultipartStream ()
 
@@ -18,7 +19,8 @@
 @property (assign, nonatomic) CFReadStreamClientCallBack copiedCallback;
 @property (assign, nonatomic) CFStreamClientContext copiedContext;
 @property (assign, nonatomic) CFOptionFlags requestedEvents;
-@property (nonatomic) NSUInteger readOffset;
+@property (assign, nonatomic) NSUInteger readOffset;
+@property (strong, nonatomic) NSInputStream* currentReadStream;
 
 - (NSInteger)readData:(NSData *)data intoBuffer:(uint8_t *)buffer maxLength:(NSUInteger)length;
 
@@ -38,6 +40,7 @@
 @synthesize copiedCallback = _copiedCallback;
 @synthesize copiedContext = _copiedContext;
 @synthesize requestedEvents = _requestedEvents;
+@synthesize currentReadStream = _currentReadStream;
 
 // Derived from http://stackoverflow.com/q/2633801/2633948#2633948
 + (NSString *)genRandNumberLength:(int)len
@@ -48,6 +51,54 @@
         [randomString appendFormat: @"%C", [letters characterAtIndex: arc4random()%[letters length]] ];
     }
     return [randomString copy];
+}
+
++ (NSInputStream *)readStreamWithParameter:(RZWebServiceRequestParameter*)parameter
+{
+    if ([parameter.parameterValue isKindOfClass:[NSData class]]) {
+        return [NSInputStream inputStreamWithData:parameter.parameterValue];
+    }
+    else if ([parameter.parameterValue isKindOfClass:[NSString class]]) {
+        return [NSInputStream inputStreamWithData:[(NSString*)parameter.parameterValue dataUsingEncoding:NSUTF8StringEncoding]];
+    }
+    else if ([parameter.parameterValue isKindOfClass:[NSURL class]]) {
+        return [NSInputStream inputStreamWithURL:parameter.parameterValue];
+    }
+    
+    return nil;
+}
+
++ (NSData*)headerDataWithParameter:(RZWebServiceRequestParameter*)parameter
+{
+    return [[RZMultipartStream headerStringWithParameter:parameter] dataUsingEncoding:NSUTF8StringEncoding];
+}
+
++ (NSString*)headerStringWithParameter:(RZWebServiceRequestParameter*)parameter
+{
+    NSString* headerString = @"";
+    
+    switch (parameter.parameterType) {
+        case RZWebServiceRequestParamterTypeQueryString:
+            headerString = [NSString stringWithFormat:@"Content-Disposition: form-data; name=\"%@\"\r\nContent-Type: text/plain\r\n\r\n",
+                            parameter.parameterName];
+            break;
+        case RZWebServiceRequestParamterTypeFile:
+            // Determine MIME Type
+            headerString = [NSString stringWithFormat:@"Content-Disposition: form-data; name=\"%@\"; filename=\"%@\"\r\nContent-Type: %@\r\n\r\n",
+                            parameter.parameterName,
+                            [(NSURL*)parameter.parameterValue lastPathComponent],
+                            [RZFileManager mimeTypeForFileURL:(NSURL *)parameter.parameterValue]];
+            break;
+        case RZWebServiceRequestParamterTypeBinaryData:
+            headerString = [NSString stringWithFormat:@"Content-Disposition: form-data; name=\"%@\"; filename=\"%@\"\r\nContent-Type: application/octet-stream\r\n\r\n",
+                            parameter.parameterName,
+                            [(NSURL*)parameter.parameterValue lastPathComponent]];
+            break;
+        default:
+            break;
+    }
+    
+    return headerString;
 }
 
 - (id)initWithParameterArray:(NSArray *)parameters
@@ -80,7 +131,7 @@
             // Main body content length
             _contentLength += [po contentLength];
             // Item header length
-            _contentLength += po.parameterHeaderData.length;
+            _contentLength += [RZMultipartStream headerDataWithParameter:po].length;
             // Item end boundary except for last item
             if (!([self.parameters indexOfObject:po] == self.parameters.count -1))
                 _contentLength += [self.endItemBoundary dataUsingEncoding:NSUTF8StringEncoding].length;
@@ -129,12 +180,12 @@
 
 - (id)propertyForKey:(NSString *)key
 {
-    return [self.currentStreamingParameter.parameterReadStream propertyForKey:key];
+    return [self.currentReadStream propertyForKey:key];
 }
 
 - (BOOL)setProperty:(id)property forKey:(NSString *)key
 {
-    return [self.currentStreamingParameter.parameterReadStream setProperty:property forKey:key];
+    return [self.currentReadStream setProperty:property forKey:key];
 }
 
 - (NSStreamStatus)streamStatus
@@ -181,16 +232,19 @@
 
 - (void)completeStreamStage
 {
+    
     switch (self.currentStreamStage) {
         case RZWebServiceMultipartStreamStageInit:           
             // Move to writing the header for the next parameter object
             [self setCurrentStreamStage:RZWebServiceMultipartStreamStageHeaders];
+
             break;
             
         case RZWebServiceMultipartStreamStageHeaders:
             // Open the parameter data for streaming
-            [self.currentStreamingParameter.parameterReadStream scheduleInRunLoop:[NSRunLoop currentRunLoop] forMode:NSRunLoopCommonModes];
-            [self.currentStreamingParameter.parameterReadStream open];
+            self.currentReadStream = [RZMultipartStream readStreamWithParameter:self.currentStreamingParameter];
+            [self.currentReadStream scheduleInRunLoop:[NSRunLoop currentRunLoop] forMode:NSRunLoopCommonModes];
+            [self.currentReadStream open];
             
             // Move to writing body data for the current parameter object
             [self setCurrentStreamStage:RZWebServiceMultipartStreamStageBody];
@@ -198,8 +252,9 @@
             
         case RZWebServiceMultipartStreamStageBody:
             // Close the parameter data from streaming
-            [self.currentStreamingParameter.parameterReadStream close];
-            [self.currentStreamingParameter.parameterReadStream removeFromRunLoop:[NSRunLoop currentRunLoop] forMode:NSRunLoopCommonModes];
+            [self.currentReadStream close];
+            [self.currentReadStream removeFromRunLoop:[NSRunLoop currentRunLoop] forMode:NSRunLoopCommonModes];
+            self.currentReadStream = nil;
             
             // If there are no more objects, move to wrapping up the Multipart stream
             if ([self.parameters indexOfObject:self.currentStreamingParameter] == self.parameters.count -1) {
@@ -238,25 +293,25 @@
     {
         switch (self.currentStreamStage) {
             case RZWebServiceMultipartStreamStageInit:
-                
+            {
                 #ifdef DEBUG
                     NSLog(@"Item Boundary Streamed: %@", self.beginPOSTBoundary);
                 #endif
                 
                 bytesRead += [self readData:[self.beginPOSTBoundary dataUsingEncoding:NSUTF8StringEncoding] intoBuffer:&buffer[bytesRead] maxLength:(length - (NSUInteger)bytesRead)];
                 break;
-    
+            }
             case RZWebServiceMultipartStreamStageHeaders:
-                
+            {
                 #ifdef DEBUG
-                    NSLog(@"Item Header Streamed: %@", [self.currentStreamingParameter headerString]);
+                    NSLog(@"Item Header Streamed: %@", [RZMultipartStream headerStringWithParameter:self.currentStreamingParameter]);
                 #endif
                 
-                bytesRead += [self readData:self.currentStreamingParameter.parameterHeaderData intoBuffer:&buffer[bytesRead] maxLength:(length - (NSUInteger)bytesRead)];
+                bytesRead += [self readData:[RZMultipartStream headerDataWithParameter:self.currentStreamingParameter] intoBuffer:&buffer[bytesRead] maxLength:(length - (NSUInteger)bytesRead)];
                 break;
-                
+            }
             case RZWebServiceMultipartStreamStageBody:
-                
+            {
                 #ifdef DEBUG
                 if (self.currentStreamingParameter.parameterType == RZWebServiceRequestParamterTypeQueryString) {
                     NSLog(@"Item Value Streamed: %@", self.currentStreamingParameter.parameterValue);
@@ -264,16 +319,17 @@
                 #endif
                 
                 // Stream content from the current paramater's parameterReadStream for the body
-                if ([self.currentStreamingParameter.parameterReadStream hasBytesAvailable]) {
-                    bytesRead += [self.currentStreamingParameter.parameterReadStream read:&buffer[bytesRead] maxLength:(length - (NSUInteger)bytesRead)];
+                NSInputStream* currentReadStream = [self currentReadStream];
+                if ([currentReadStream hasBytesAvailable]) {
+                    bytesRead += [currentReadStream read:&buffer[bytesRead] maxLength:(length - (NSUInteger)bytesRead)];
                 }
                 else {
                     [self completeStreamStage];
                 }
                 break;
-                
+            }
             case RZWebServiceMultipartStreamStageWrapup:
-                
+            {
                 #ifdef DEBUG
                     NSLog(@"Item Boundary Streamed: %@", self.endItemBoundary);
                 #endif
@@ -281,9 +337,9 @@
                 // Stream itemboundary if not last item
                 bytesRead += [self readData:[self.endItemBoundary dataUsingEncoding:NSUTF8StringEncoding] intoBuffer:&buffer[bytesRead] maxLength:(length - (NSUInteger)bytesRead)];
                 break;
-                
+            }
             case RZWebServiceMultipartStreamStageFinal:
-                
+            {
                 #ifdef DEBUG
                     NSLog(@"POST Boundary Streamed: %@", self.endPOSTBoundary);
                 #endif
@@ -291,11 +347,13 @@
                 // Stream Final Boundary
                 bytesRead += [self readData:[self.endPOSTBoundary dataUsingEncoding:NSUTF8StringEncoding] intoBuffer:&buffer[bytesRead] maxLength:(length - (NSUInteger)bytesRead)];
                 break;
-                
+            }
             default:
             case RZWebServiceMultipartStreamStageDone:
+            {
                 done = YES;
                 break;
+            }
         }
     }
 	
@@ -355,7 +413,7 @@
 
 - (void)stream:(NSStream *)aStream handleEvent:(NSStreamEvent)eventCode {
 	
-	assert(aStream == self.currentStreamingParameter.parameterReadStream);
+	assert(aStream == [self currentReadStream]);
 	
 	switch (eventCode) {
 		case NSStreamEventOpenCompleted:

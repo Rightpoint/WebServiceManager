@@ -29,6 +29,9 @@ typedef enum {
 @property (strong, nonatomic) NSEnumerator *parameterEnumerator;
 
 + (NSString *)genRandNumberLength:(int)len;
++ (NSInputStream *)readStreamWithParameter:(RZWebServiceRequestParameter*)parameter;
++ (NSData*)headerDataWithParameter:(RZWebServiceRequestParameter*)parameter;
++ (NSString*)headerStringWithParameter:(RZWebServiceRequestParameter*)parameter;
 
 - (id)initWithParameterArray:(NSArray *)parameters;
 

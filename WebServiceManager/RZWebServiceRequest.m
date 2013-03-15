@@ -1300,8 +1300,6 @@ totalBytesExpectedToWrite:(NSInteger)totalBytesExpectedToWrite
 @synthesize parameterName = _parameterName;
 @synthesize parameterValue = _parameterValue;
 @synthesize parameterType = _parameterType;
-@synthesize parameterReadStream = _parameterReadStream;
-@synthesize parameterHeaderData = _parameterHeaderData;
 
 + (id)parameterWithName:(NSString*)name value:(id)value type:(RZWebServiceRequestParameterType)type
 {
@@ -1318,61 +1316,6 @@ totalBytesExpectedToWrite:(NSInteger)totalBytesExpectedToWrite
     }
     
     return self;
-}
-
-- (NSInputStream *)parameterReadStream
-{
-    if (!_parameterReadStream)
-    {
-        if ([self.parameterValue isKindOfClass:[NSData class]]) {
-            _parameterReadStream = [NSInputStream inputStreamWithData:self.parameterValue];
-        }
-        else if ([self.parameterValue isKindOfClass:[NSString class]]) {
-            _parameterReadStream = [NSInputStream inputStreamWithData:[(NSString*)self.parameterValue dataUsingEncoding:NSUTF8StringEncoding]];
-        }
-        else if ([self.parameterValue isKindOfClass:[NSURL class]]) {
-            _parameterReadStream = [NSInputStream inputStreamWithURL:self.parameterValue];
-        }
-    }
-    
-    return _parameterReadStream;
-}
-
-- (NSData*)parameterHeaderData
-{
-    if (!_parameterHeaderData) {
-      _parameterHeaderData = [[self headerString] dataUsingEncoding:NSUTF8StringEncoding];
-    }
-    
-    return _parameterHeaderData;
-}
-
-- (NSString*)headerString
-{
-    NSString* headerString = @"";
-    
-    switch (self.parameterType) {
-        case RZWebServiceRequestParamterTypeQueryString:
-            headerString = [NSString stringWithFormat:@"Content-Disposition: form-data; name=\"%@\"\r\nContent-Type: text/plain\r\n\r\n",
-                                self.parameterName];
-            break;
-        case RZWebServiceRequestParamterTypeFile:
-            // Determine MIME Type
-            headerString = [NSString stringWithFormat:@"Content-Disposition: form-data; name=\"%@\"; filename=\"%@\"\r\nContent-Type: %@\r\n\r\n",
-                                self.parameterName,
-                                [(NSURL*)self.parameterValue lastPathComponent],
-                                [RZFileManager mimeTypeForFileURL:(NSURL *)self.parameterValue]];
-            break;
-        case RZWebServiceRequestParamterTypeBinaryData:
-            headerString = [NSString stringWithFormat:@"Content-Disposition: form-data; name=\"%@\"; filename=\"%@\"\r\nContent-Type: application/octet-stream\r\n\r\n",
-                                self.parameterName,
-                                [(NSURL*)self.parameterValue lastPathComponent]];
-            break;
-        default:
-            break;
-    }
-    
-    return headerString;
 }
 
 - (unsigned long long)contentLength
