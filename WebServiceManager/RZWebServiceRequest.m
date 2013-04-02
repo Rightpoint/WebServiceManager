@@ -267,28 +267,9 @@ expectedResultType:(NSString *)expectedResultType
         self.expectedResultType = expectedResultType;
         self.bodyType = bodyType;
         self.copyToTargetAtomically = NO;
-        
-        // convert the parameters to a sorted array of parameter objects
-        NSArray* sortedKeys = [[parameters allKeys] sortedArrayUsingSelector:@selector(compare:)];
-        self.parameters = [NSMutableArray arrayWithCapacity:sortedKeys.count];
-        
-        for (NSString* key in sortedKeys) {
-            id value = [parameters objectForKey:key];
-            RZWebServiceRequestParameterType type = RZWebServiceRequestParamterTypeQueryString;
-            
-            if ([value isKindOfClass:[NSString class]]) {
-                type = RZWebServiceRequestParamterTypeQueryString;
-            }
-            else if ([value isKindOfClass:[NSURL class]]) {
-                type = RZWebServiceRequestParamterTypeFile;
-            }
-            else {
-                type = RZWebServiceRequestParamterTypeBinaryData;
-            }
-            
-            RZWebServiceRequestParameter* parameter = [RZWebServiceRequestParameter parameterWithName:key value:value type:type];
-            [self.parameters addObject:parameter];
-        }
+
+        self.parameterMode = RZWebserviceRequestParameterModeDefault;
+        self.parameters = [parameters convertToURLEncodedParameters];
         
         self.urlRequest = [[NSMutableURLRequest alloc] initWithURL:self.url];
         
@@ -364,6 +345,20 @@ expectedResultType:(NSString *)expectedResultType
     return _fallbackCompletionBlock;
 }
 
+- (void)addPreProcessingBlock:(RZWebServiceRequestPreProcessBlock)block
+{
+    NSMutableArray *preBlocks = [self.preProcessBlocks mutableCopy];
+    [preBlocks addObject:[block copy]];
+    self.preProcessBlocks = preBlocks;
+}
+
+- (void)addPostProcessingBlock:(RZWebServiceRequestPostProcessBlock)block
+{
+    NSMutableArray *postBlocks = [self.postProcessBlocks mutableCopy];
+    [postBlocks addObject:[block copy]];
+    self.postProcessBlocks = postBlocks;
+}
+
 #pragma mark - Property Overrides
 
 - (void)setTarget:(id)target
@@ -395,6 +390,15 @@ expectedResultType:(NSString *)expectedResultType
     }
     
     return _progressObservers;
+}
+
+// Lazy load default delimiter of +
+- (NSString*)parameterArrayDelimiter
+{
+    if (_parameterArrayDelimiter == nil){
+        _parameterArrayDelimiter = kRZWebServiceRequestDefaultQueryParameterArrayDelimiter;
+    }
+    return _parameterArrayDelimiter;
 }
 
 #pragma mark - Header Manipulation Methods
@@ -544,36 +548,62 @@ expectedResultType:(NSString *)expectedResultType
         
         _executing = YES;
         [self didChangeValueForKey:@"isExecuting"];    
+                
+        
+        // --------------- Headers ----------------
         
         self.urlRequest.HTTPMethod = self.httpMethod;
         
-        
-        // If this is a get request and there are parameters, format them as part of the URL, and reset the URL on the request. 
-        if(self.parameters && self.parameters.count > 0)
-        {
-            if ([self.httpMethod isEqualToString:@"GET"] || [self.httpMethod isEqualToString:@"PUT"] || [self.httpMethod isEqualToString:@"DELETE"]) {
-                self.urlRequest.URL = [self.url URLByAddingParameters:self.parameters];
-            }
-            else if(!self.requestBody && ([self.httpMethod isEqualToString:@"POST"] ))
-            {
-                // Set the post body to the formatted parameters, but not if we already have a body set and the data is not multipart
-                if (![self.bodyType isEqualToString:kRZWebserviceDataTypeMultipart]) {
-                    self.urlRequest.HTTPBody = [[NSURL URLQueryStringFromParameters:self.parameters] dataUsingEncoding:NSUTF8StringEncoding];
-                }
-                // If the data is multipart, set the bodystream
-                else {
-                    RZMultipartStream* bodyStream = [[RZMultipartStream alloc] initWithParameterArray:[NSArray arrayWithArray:self.parameters]];
-                    self.urlRequest.HTTPBodyStream = bodyStream;
-                    
-                    [self.urlRequest setValue: [NSString stringWithFormat:@"multipart/form-data; boundary=%@", bodyStream.stringBoundary] forHTTPHeaderField:@"Content-Type"];
-                }
+        // add the string/string pairs as headers.
+        for (id key in self.headers) {
+            id value = [self.headers objectForKey:key];
+            if ([key isKindOfClass:[NSString class]] && [value isKindOfClass:[NSString class]]) {
+                [self.urlRequest setValue:value forHTTPHeaderField:key];
             }
             
         }
         
-        // If there is a request body, try to serialize to type defined in bodyType
-        if (self.requestBody && !self.urlRequest.HTTPBody)
+        // if the expected type is JSON, we should add a header declaring we accept that type.
+        if ([[self.expectedResultType uppercaseString] isEqualToString:@"JSON"]) {
+            [self.urlRequest setValue:@"application/json" forHTTPHeaderField:@"Accept"];
+        }
+        
+        
+        // ------------ URL Parameters --------------
+        
+        
+        // Put parameters in the URL if the method supports it or if the mode has been overridden
+        BOOL hasParameters = (self.parameters && self.parameters.count > 0);
+        
+        if (hasParameters)
         {
+            BOOL methodSupportsURLParams = ([self.httpMethod isEqualToString:@"GET"] || [self.httpMethod isEqualToString:@"PUT"] || [self.httpMethod isEqualToString:@"DELETE"]);
+            if ((self.parameterMode == RZWebserviceRequestParameterModeDefault && methodSupportsURLParams) || self.parameterMode == RZWebServiceRequestParameterModeURL) {
+                    self.urlRequest.URL = [self.url URLByAddingParameters:self.parameters arrayDelimiter:self.parameterArrayDelimiter];
+            }
+            
+        }
+    
+    
+        // --------------- Request Body and File URL Stream ----------------
+          
+        // Can't have both a body and a body stream. Need to perform mutual exclusion here, file stream takes priority
+      
+        if (self.uploadFileURL != nil && [self.uploadFileURL isFileURL])
+        {
+          NSInputStream *fileStream = [NSInputStream inputStreamWithURL:self.uploadFileURL];
+          self.urlRequest.HTTPBodyStream = fileStream;
+        }
+        // If there is a request body, try to serialize to type defined in bodyType
+        else if (self.requestBody != nil)
+        {
+    
+            // If this is a POST request and there are parameters, put them in the URL. There is a body already defined so we don't want to blow it away.
+            // This use case will not likely come up often, and should be well documented in order to be understood.
+            if (hasParameters && self.parameterMode == RZWebserviceRequestParameterModeDefault && [self.httpMethod isEqualToString:@"POST"]){
+                self.urlRequest.URL = [self.url URLByAddingParameters:self.parameters arrayDelimiter:self.parameterArrayDelimiter];
+            }
+            
             // If no body type is specified, can we make an assumption?
             if (!self.bodyType)
             {
@@ -600,6 +630,13 @@ expectedResultType:(NSString *)expectedResultType
             if ([self.requestBody isKindOfClass:[NSData class]])
             {
                 self.urlRequest.HTTPBody = (NSData*)self.requestBody;
+            }
+            else if ([self.bodyType isEqualToString:kRZWebserviceDataTypeURLEncoded] && [self.requestBody isKindOfClass:[NSDictionary class]]){
+                // convert to URL-encoded parameter string
+                NSArray *bodyParameters = [(NSDictionary*)self.requestBody convertToURLEncodedParameters];
+                self.urlRequest.HTTPBody = [[NSURL URLQueryStringFromParameters:bodyParameters arrayDelimiter:self.parameterArrayDelimiter] dataUsingEncoding:NSUTF8StringEncoding];
+                [self.urlRequest setValue:@"application/x-www-form-urlencoded" forHTTPHeaderField:@"Content-Type"];
+                
             }
             else if ([self.bodyType isEqualToString:kRZWebserviceDataTypeJSON])
             {
@@ -646,27 +683,32 @@ expectedResultType:(NSString *)expectedResultType
             {
                 [self.urlRequest setValue:[NSString stringWithFormat:@"%u", [self.urlRequest.HTTPBody length]] forHTTPHeaderField:@"Content-Length"];
             }
+            
         }
-        
-        if (self.uploadFileURL && [self.uploadFileURL isFileURL])
-        {
-            NSInputStream *fileStream = [NSInputStream inputStreamWithURL:self.uploadFileURL];
-            self.urlRequest.HTTPBodyStream = fileStream;
-        }
-        
-        // add the string/string pairs as headers.
-        for (id key in self.headers) {
-            id value = [self.headers objectForKey:key];
-            if ([key isKindOfClass:[NSString class]] && [value isKindOfClass:[NSString class]]) {
-                [self.urlRequest setValue:value forHTTPHeaderField:key];
+        else if (hasParameters && (self.parameterMode == RZWebServiceRequestParameterModeBody || (self.parameterMode == RZWebserviceRequestParameterModeDefault && [self.httpMethod isEqualToString:@"POST"]))){
+            if ([self.bodyType isEqualToString:kRZWebserviceDataTypeMultipart]) {
+                // If the body type is multipart and no requestBody, set the body to stream out
+                RZMultipartStream* bodyStream = [[RZMultipartStream alloc] initWithParameterArray:[NSArray arrayWithArray:self.parameters]];
+                self.urlRequest.HTTPBodyStream = bodyStream;
+                
+                [self.urlRequest setValue: [NSString stringWithFormat:@"multipart/form-data; boundary=%@", bodyStream.stringBoundary] forHTTPHeaderField:@"Content-Type"];
             }
-
+            else {
+                // If the parameter mode is Body and no requestBody has been set, OR if the parameter mode is default and the HTTP method is POST, add the parameters to the body
+                // Currently only support for encoding as URLEncoded parameters - may want to handle serializing to JSON from parameter dict as well
+                self.urlRequest.HTTPBody = [[NSURL URLQueryStringFromParameters:self.parameters arrayDelimiter:self.parameterArrayDelimiter] dataUsingEncoding:NSUTF8StringEncoding];
+                [self.urlRequest setValue:@"application/x-www-form-urlencoded" forHTTPHeaderField:@"Content-Type"];
+            }
         }
         
-        // if the expected type is JSON, we should add a header declaring we accept that type. 
-        if ([[self.expectedResultType uppercaseString] isEqualToString:@"JSON"]) {
-            [self.urlRequest setValue:@"application/json" forHTTPHeaderField:@"Accept"];
-        }
+        // ------------ Perform preprocessing blocks ------------
+        
+        for (RZWebServiceRequestPreProcessBlock block in self.preProcessBlocks){
+            block(self);
+        };
+    
+        // ------------ Start the HTTP Connection ---------------
+        
         
         // create and start the connection.
         self.connection = [[NSURLConnection alloc] initWithRequest:self.urlRequest delegate:self startImmediately:YES];
@@ -699,8 +741,8 @@ expectedResultType:(NSString *)expectedResultType
             [self didChangeValueForKey:@"isExecuting"];
             [self didChangeValueForKey:@"isFinished"];
         }
-
-    }
+        
+    } // @autoreleasepool
 }
 
 - (BOOL)isConcurrent {
@@ -885,6 +927,13 @@ expectedResultType:(NSString *)expectedResultType
 
 -(void) callCompletionBlockWithSucceeded:(BOOL)succeeded data:(id)data error:(NSError*)error
 {
+    // Call postprocessing blocks.
+    for (RZWebServiceRequestPostProcessBlock block in self.postProcessBlocks)
+    {
+        block(self, &data, &succeeded, &error);
+    }
+    
+    // Call completion block
     if (nil != self.requestCompletionBlock)
     {
         dispatch_sync(dispatch_get_main_queue(), ^{
@@ -1112,60 +1161,7 @@ totalBytesExpectedToWrite:(NSInteger)totalBytesExpectedToWrite
         }
     }
 }
-/*
-- (BOOL)connection:(NSURLConnection *)connection canAuthenticateAgainstProtectionSpace:(NSURLProtectionSpace *)protectionSpace {
-    return [protectionSpace.authenticationMethod isEqualToString:NSURLAuthenticationMethodServerTrust];
-}
 
-
-- (void)connection:(NSURLConnection *)connection didReceiveAuthenticationChallenge:(NSURLAuthenticationChallenge *)challenge {
-    
-    if(self.ignoreCertificateValidity &&
-       [challenge.protectionSpace.authenticationMethod isEqualToString:NSURLAuthenticationMethodServerTrust])
-    {
-        [challenge.sender useCredential:[NSURLCredential credentialForTrust:challenge.protectionSpace.serverTrust] forAuthenticationChallenge:challenge];
-        
-        [challenge.sender continueWithoutCredentialForAuthenticationChallenge:challenge];
-    }
-    else {
-        
-        /////////////////////////////////////////////////////////////////////////////////////////////////////
-        //
-        // Our default implementation as per the doc's description:
-        //
-        // If the delegate does not implement this method the default implementation is used. 
-        // If a valid credential for the request is provided as part of the URL, or is available
-        // from the NSURLCredentialStorage the [challenge sender] is sent a 
-        // useCredential:forAuthenticationChallenge: with the credential. If the challenge has no credential
-        // or the credentials fail to authorize access, then continueWithoutCredentialForAuthenticationChallenge: 
-        // is sent to [challenge sender] instead.
-        /////////////////////////////////////////////////////////////////////////////////////////////////////
-        
-        NSURLCredential* credential = nil;
-        
-        NSURL* url = connection.currentRequest.URL;
-        NSString* user = [url user];
-        NSString* password = [url password];
-        
-        if(nil != user && nil != password)
-        {
-            credential = [[NSURLCredential alloc] initWithUser:user password:password persistence:NSURLCredentialPersistenceNone];
-        }
-        else {
-            credential = [[NSURLCredentialStorage sharedCredentialStorage] defaultCredentialForProtectionSpace:challenge.protectionSpace];
-        }
-        
-        // if there is now a valid credential use it for authentication. Otherwise, continue without authentication
-        if(nil != credential)
-        {
-            [[challenge sender] useCredential:credential forAuthenticationChallenge:challenge];
-        }
-        else {
-            [challenge.sender continueWithoutCredentialForAuthenticationChallenge:challenge];
-        }
-               
-    }
-}*/
 - (BOOL)connection:(NSURLConnection *)connection canAuthenticateAgainstProtectionSpace:(NSURLProtectionSpace *)protectionSpace {
     @synchronized(self){
         return [protectionSpace.authenticationMethod isEqualToString:NSURLAuthenticationMethodServerTrust];
@@ -1199,12 +1195,12 @@ totalBytesExpectedToWrite:(NSInteger)totalBytesExpectedToWrite
                 //We have an invalid cert, which may be self-signed, expired, or have another error. Lets see if we know how to handle it.
                 switch (self.sslTrustType)
                 {
-                    case RZWebServiceRequestSSLTrustTypeAll:
+                  case RZWebServiceRequestSSLTrustTypeAll:
                       allow = YES;
                       break;
                     
                   case RZWebServiceRequestSSLTrustTypeCA:
-                      allow = NO;
+                      allow = [self.manager sslCachePermits:challenge];
                       break;
                     
                   case RZWebServiceRequestSSLTrustTypePromptAndCache:
@@ -1324,11 +1320,11 @@ totalBytesExpectedToWrite:(NSInteger)totalBytesExpectedToWrite
     NSDictionary *fileAttributes = nil;
     
     switch (self.parameterType) {
-        case RZWebServiceRequestParamterTypeQueryString:
+        case RZWebServiceRequestParameterTypeQueryString:
             contentLength = [(NSString*)self.parameterValue dataUsingEncoding:NSUTF8StringEncoding].length;
             break;
-        case RZWebServiceRequestParamterTypeFile:
-        case RZWebServiceRequestParamterTypeBinaryData:
+        case RZWebServiceRequestParameterTypeFile:
+        case RZWebServiceRequestParameterTypeBinaryData:
             fileAttributes = [[NSFileManager defaultManager] attributesOfItemAtPath:[(NSURL*)self.parameterValue path] error:nil];
             contentLength = [[fileAttributes objectForKey:NSFileSize] unsignedLongLongValue];
             break;
@@ -1338,6 +1334,38 @@ totalBytesExpectedToWrite:(NSInteger)totalBytesExpectedToWrite
     }
     
     return contentLength;
+}
+
+@end
+
+@implementation NSDictionary (RZWebServiceRequestParameters)
+
+- (NSMutableArray*)convertToURLEncodedParameters{
+
+    NSArray* sortedKeys = [[self allKeys] sortedArrayUsingSelector:@selector(compare:)];
+    NSMutableArray *parameters = [NSMutableArray arrayWithCapacity:sortedKeys.count];
+    
+    for (NSString* key in sortedKeys) {
+        
+        id value = [self objectForKey:key];
+        
+        RZWebServiceRequestParameterType type = RZWebServiceRequestParameterTypeQueryString;
+        
+        if ([value isKindOfClass:[NSString class]]) {
+            type = RZWebServiceRequestParameterTypeQueryString;
+        }
+        else if ([value isKindOfClass:[NSURL class]]) {
+            type = RZWebServiceRequestParameterTypeFile;
+        }
+        else {
+            type = RZWebServiceRequestParameterTypeBinaryData;
+        }
+        
+        RZWebServiceRequestParameter* parameter = [RZWebServiceRequestParameter parameterWithName:key value:value type:type];
+        [parameters addObject:parameter];
+    }
+    
+    return parameters;
 }
 
 @end

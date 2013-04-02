@@ -10,6 +10,7 @@
 #import "RZWebServiceRequest.h"
 
 extern NSString* const kRZWebserviceDataTypeJSON;
+extern NSString* const kRZWebserviceDataTypeURLEncoded;
 extern NSString* const kRZWebserviceDataTypeFile;
 extern NSString* const kRZWebserviceDataTypeText;
 extern NSString* const kRZWebserviceDataTypeImage;
@@ -20,6 +21,9 @@ extern NSString* const kRZWebserviceDataTypeMultipart;
 
 @property (strong, nonatomic) NSDictionary* apiCalls;
 @property (strong, nonatomic) NSString* defaultHost;
+
+// gives the ability to set a default timeout for all requests.
+@property (assign, nonatomic) NSTimeInterval defaultRequestTimeoutInterval;
 
 -(id) initWithCallsPath:(NSString*)callsPath;
 -(id) initWithCalls:(NSDictionary*)apiCalls;

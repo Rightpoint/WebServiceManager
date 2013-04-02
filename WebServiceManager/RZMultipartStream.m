@@ -78,18 +78,18 @@
     NSString* headerString = @"";
     
     switch (parameter.parameterType) {
-        case RZWebServiceRequestParamterTypeQueryString:
+        case RZWebServiceRequestParameterTypeQueryString:
             headerString = [NSString stringWithFormat:@"Content-Disposition: form-data; name=\"%@\"\r\nContent-Type: text/plain\r\n\r\n",
                             parameter.parameterName];
             break;
-        case RZWebServiceRequestParamterTypeFile:
+        case RZWebServiceRequestParameterTypeFile:
             // Determine MIME Type
             headerString = [NSString stringWithFormat:@"Content-Disposition: form-data; name=\"%@\"; filename=\"%@\"\r\nContent-Type: %@\r\n\r\n",
                             parameter.parameterName,
                             [(NSURL*)parameter.parameterValue lastPathComponent],
                             [RZFileManager mimeTypeForFileURL:(NSURL *)parameter.parameterValue]];
             break;
-        case RZWebServiceRequestParamterTypeBinaryData:
+        case RZWebServiceRequestParameterTypeBinaryData:
             headerString = [NSString stringWithFormat:@"Content-Disposition: form-data; name=\"%@\"; filename=\"%@\"\r\nContent-Type: application/octet-stream\r\n\r\n",
                             parameter.parameterName,
                             [(NSURL*)parameter.parameterValue lastPathComponent]];
@@ -313,7 +313,7 @@
             case RZWebServiceMultipartStreamStageBody:
             {
                 #ifdef DEBUG
-                if (self.currentStreamingParameter.parameterType == RZWebServiceRequestParamterTypeQueryString) {
+                if (self.currentStreamingParameter.parameterType == RZWebServiceRequestParameterTypeQueryString) {
                     NSLog(@"Item Value Streamed: %@", self.currentStreamingParameter.parameterValue);
                 }
                 #endif

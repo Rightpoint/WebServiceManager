@@ -7,6 +7,9 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		839EC760170B29C8004BA186 /* RZMultipartStream.h in Headers */ = {isa = PBXBuildFile; fileRef = 839EC75E170B29C8004BA186 /* RZMultipartStream.h */; };
+		839EC761170B29C8004BA186 /* RZMultipartStream.m in Sources */ = {isa = PBXBuildFile; fileRef = 839EC75F170B29C8004BA186 /* RZMultipartStream.m */; };
+		839EC762170B29C8004BA186 /* RZMultipartStream.m in Sources */ = {isa = PBXBuildFile; fileRef = 839EC75F170B29C8004BA186 /* RZMultipartStream.m */; };
 		98216E1515B062940099166B /* RZCacheSchema.h in Headers */ = {isa = PBXBuildFile; fileRef = 98216E1315B062940099166B /* RZCacheSchema.h */; };
 		98216E1615B062940099166B /* RZCacheSchema.m in Sources */ = {isa = PBXBuildFile; fileRef = 98216E1415B062940099166B /* RZCacheSchema.m */; };
 		985B2CB81594A2C000FADCCA /* RZFileManagerTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 985B2CB71594A2C000FADCCA /* RZFileManagerTests.m */; };
@@ -61,6 +64,8 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		839EC75E170B29C8004BA186 /* RZMultipartStream.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RZMultipartStream.h; sourceTree = "<group>"; };
+		839EC75F170B29C8004BA186 /* RZMultipartStream.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RZMultipartStream.m; sourceTree = "<group>"; };
 		98216E1315B062940099166B /* RZCacheSchema.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RZCacheSchema.h; sourceTree = "<group>"; };
 		98216E1415B062940099166B /* RZCacheSchema.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RZCacheSchema.m; sourceTree = "<group>"; };
 		985B2CB61594A2C000FADCCA /* RZFileManagerTests.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RZFileManagerTests.h; sourceTree = "<group>"; };
@@ -196,6 +201,8 @@
 				CB588CE81453C6B40052A336 /* RZWebServiceManager.m */,
 				CB588CE91453C6B40052A336 /* RZWebServiceRequest.h */,
 				CB588CEA1453C6B40052A336 /* RZWebServiceRequest.m */,
+				839EC75E170B29C8004BA186 /* RZMultipartStream.h */,
+				839EC75F170B29C8004BA186 /* RZMultipartStream.m */,
 				FEC9669B158F723B00E90A65 /* RZFileManager.h */,
 				FEC9669C158F723B00E90A65 /* RZFileManager.m */,
 				CB588CC31453C6730052A336 /* Supporting Files */,
@@ -291,6 +298,7 @@
 				CBD0D69F15F6EFE3009EDF49 /* NSString+RZMD5.h in Headers */,
 				CBA1822416B2E53E00FD09CC /* RZWebServiceKeychain.h in Headers */,
 				CB81758016B6AD0300D2801F /* NSURLAuthenticationChallenge+Fingerprint.h in Headers */,
+				839EC760170B29C8004BA186 /* RZMultipartStream.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -339,7 +347,7 @@
 		CB588CB41453C6730052A336 /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
-				LastUpgradeCheck = 0420;
+				LastUpgradeCheck = 0460;
 				ORGANIZATIONNAME = "Raizlabs Corporation";
 			};
 			buildConfigurationList = CB588CB71453C6730052A336 /* Build configuration list for PBXProject "WebServiceManager" */;
@@ -406,6 +414,7 @@
 				CBD0D6A015F6EFE3009EDF49 /* NSString+RZMD5.m in Sources */,
 				CBA1822516B2E53E00FD09CC /* RZWebServiceKeychain.m in Sources */,
 				CB81758116B6AD0300D2801F /* NSURLAuthenticationChallenge+Fingerprint.m in Sources */,
+				839EC761170B29C8004BA186 /* RZMultipartStream.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -422,6 +431,7 @@
 				CBD0D6A115F6EFE3009EDF49 /* NSString+RZMD5.m in Sources */,
 				CBA1822616B2E53E00FD09CC /* RZWebServiceKeychain.m in Sources */,
 				CB81758216B6AD0300D2801F /* NSURLAuthenticationChallenge+Fingerprint.m in Sources */,
+				839EC762170B29C8004BA186 /* RZMultipartStream.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -453,6 +463,10 @@
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				ARCHS = "$(ARCHS_STANDARD_32_BIT)";
 				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COPY_PHASE_STRIP = NO;
 				GCC_C_LANGUAGE_STANDARD = gnu99;
 				GCC_DYNAMIC_NO_PIC = NO;
@@ -465,6 +479,7 @@
 				GCC_VERSION = com.apple.compilers.llvm.clang.1_0;
 				GCC_WARN_ABOUT_MISSING_PROTOTYPES = YES;
 				GCC_WARN_ABOUT_RETURN_TYPE = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 5.0;
 				SDKROOT = iphoneos;
@@ -477,11 +492,16 @@
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				ARCHS = "$(ARCHS_STANDARD_32_BIT)";
 				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COPY_PHASE_STRIP = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu99;
 				GCC_VERSION = com.apple.compilers.llvm.clang.1_0;
 				GCC_WARN_ABOUT_MISSING_PROTOTYPES = YES;
 				GCC_WARN_ABOUT_RETURN_TYPE = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 5.0;
 				SDKROOT = iphoneos;
