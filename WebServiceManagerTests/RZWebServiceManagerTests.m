@@ -8,22 +8,26 @@
 
 #import "RZWebServiceManagerTests.h"
 
+#define kRZWebServiceTestImage      @"raizlabs-logo-sheetrock.png"
+#define kRZWebServiceTestImageURL   @"http://www.raizlabs.com/cms/wp-content/uploads/2011/06/raizlabs-logo-sheetrock.png"
+#define kRZWebServiceTestJSON       @"TestData.json"
+#define kRZWebServiceTestJSONURL    @"http://raw.github.com/Raizlabs/WebServiceManager/master/WebServiceManagerTests/TestData.json"
+
 @interface RZWebServiceManagerTests()
 @property (nonatomic, assign) NSUInteger concurrencyCallbackCount;
 @property (nonatomic, strong) NSDictionary* echoGetResult;
 @property (nonatomic, strong) NSDictionary* echoPostResult;
+@property (nonatomic, strong) NSDictionary* echoMultipartPostResult;
+@property (nonatomic, strong) NSDictionary* echoMultipartPostFileResult;
 @property (nonatomic, strong) NSDictionary* responseHeaders;
 @property (nonatomic, strong) NSError* error;
+
+-(void) verifyImage:(UIImage*)image withTestNamed:(NSString*)testName;
+-(void) verifyJSON:(NSDictionary*)json withTestNamed:(NSString*)testName;
+
 @end
 
 @implementation RZWebServiceManagerTests
-@synthesize apiCallCompleted = _apiCallCompleted;
-@synthesize webServiceManager = _webServiceManager;
-@synthesize concurrencyCallbackCount = _concurrencyCallbackCount;
-@synthesize echoGetResult = _echoGetResult;
-@synthesize echoPostResult = _echoPostResult;
-@synthesize responseHeaders = _responseHeaders;
-@synthesize error = _error;
 
 -(NSString*) bundlePath
 {
@@ -146,7 +150,7 @@
 {
 
     // sometimes you want to add your own request, without relying on the PList. Create a request, and add it to the queue.
-    RZWebServiceRequest* request = [[RZWebServiceRequest alloc] initWithURL:[NSURL URLWithString:@"http://www.raizlabs.com/cms/wp-content/uploads/2011/06/raizlabs-logo-sheetrock.png"]
+    RZWebServiceRequest* request = [[RZWebServiceRequest alloc] initWithURL:[NSURL URLWithString:kRZWebServiceTestImageURL]
                                                                                      httpMethod:@"GET"
                                                                                       andTarget:self
                                                                                 successCallback:@selector(logoCompleted:request:)
@@ -299,7 +303,7 @@
     
 -(void) test16GetContentWithDynamicPath
 {
-    RZWebServiceRequest *request = [self.webServiceManager makeRequestWithTarget:self andFormatKey:@"getContentWithDynamicPath", @"TestData.json"];
+    RZWebServiceRequest *request = [self.webServiceManager makeRequestWithTarget:self andFormatKey:@"getContentWithDynamicPath", kRZWebServiceTestJSON];
     [request setSSLCertificateType:RZWebServiceRequestSSLTrustTypeAll WithChallengeBlock:nil];
     
     while (!self.apiCallCompleted) {
@@ -314,7 +318,7 @@
     
     [self.webServiceManager setHost:@"https://raw.github.com" forApiKey:apiKey];
 
-    RZWebServiceRequest  *request = [self.webServiceManager makeRequestWithTarget:self andFormatKey:apiKey, @"TestData.json"];
+    RZWebServiceRequest  *request = [self.webServiceManager makeRequestWithTarget:self andFormatKey:apiKey, kRZWebServiceTestJSON];
     [request setSSLCertificateType:RZWebServiceRequestSSLTrustTypeAll WithChallengeBlock:nil];
     
     while (!self.apiCallCompleted) {
@@ -330,7 +334,7 @@
     [self.webServiceManager setHost:nil forApiKey:apiKey];
     [self.webServiceManager setDefaultHost:@"https://raw.github.com"];
     
-    RZWebServiceRequest *request = [self.webServiceManager makeRequestWithTarget:self andFormatKey:apiKey, @"TestData.json"];
+    RZWebServiceRequest *request = [self.webServiceManager makeRequestWithTarget:self andFormatKey:apiKey, kRZWebServiceTestJSON];
     [request setSSLCertificateType:RZWebServiceRequestSSLTrustTypeAll WithChallengeBlock:nil];
     
     while (!self.apiCallCompleted) {
@@ -341,7 +345,7 @@
 
 -(void) test19EchoUploadFile
 {
-    NSURL *fileURL = [NSURL fileURLWithPath:[[self bundlePath] stringByAppendingPathComponent:@"TestData.json"]];
+    NSURL *fileURL = [NSURL fileURLWithPath:[[self bundlePath] stringByAppendingPathComponent:kRZWebServiceTestJSON]];
     
     RZWebServiceRequest *uploadRequest = [self.webServiceManager makeRequestWithKey:@"echoPUTFile" andTarget:self enqueue:NO];
     uploadRequest.uploadFileURL = fileURL;
@@ -358,7 +362,7 @@
 {
     
     // sometimes you want to add your own request, without relying on the PList. Create a request, and add it to the queue.
-    RZWebServiceRequest* request = [[RZWebServiceRequest alloc] initWithURL:[NSURL URLWithString:@"http://www.raizlabs.com/cms/wp-content/uploads/2011/06/raizlabs-logo-sheetrock.png"]
+    RZWebServiceRequest* request = [[RZWebServiceRequest alloc] initWithURL:[NSURL URLWithString:kRZWebServiceTestImageURL]
                                                                  httpMethod:@"GET"
                                                          expectedResultType:@"Image"
                                                                    bodyType:@"NONE"
@@ -428,7 +432,7 @@
     
     // Change the url to another url
     [request addPreProcessingBlock:^(RZWebServiceRequest *request) {
-        request.url = [NSURL URLWithString:@"http://raw.github.com/Raizlabs/WebServiceManager/master/WebServiceManagerTests/TestData.json"];
+        request.url = [NSURL URLWithString:kRZWebServiceTestJSONURL];
         request.urlRequest.URL = request.url;
     }];
     
@@ -441,7 +445,7 @@
 
 -(void)test23PostProcessingBlock
 {
-    NSURL *plistURL = [NSURL URLWithString:@"http://raw.github.com/Raizlabs/WebServiceManager/master/WebServiceManagerTests/TestData.json"];
+    NSURL *plistURL = [NSURL URLWithString:kRZWebServiceTestJSONURL];
     
     RZWebServiceRequest *request = [[RZWebServiceRequest alloc] initWithURL:plistURL
                                                                  httpMethod:@"GET"
@@ -526,6 +530,59 @@
     }
 }
 
+-(void) test25EchoMultipartUploadImage
+{
+    NSURL *fileURL = [NSURL fileURLWithPath:[[self bundlePath] stringByAppendingPathComponent:kRZWebServiceTestImage]];
+    NSDictionary *params = @{ @"file" : fileURL };
+    
+    [self.webServiceManager makeRequestWithKey:@"echoMultipartPOSTImage" andTarget:self andParameters:params enqueue:YES];
+    
+    while (!self.apiCallCompleted){
+        [[NSRunLoop currentRunLoop] runUntilDate:[NSDate dateWithTimeIntervalSinceNow:1]];
+    }
+}
+
+-(void) test26EchoMultipartUploadFile
+{
+    
+    NSURL *fileURL = [NSURL fileURLWithPath:[[self bundlePath] stringByAppendingPathComponent:kRZWebServiceTestJSON]];
+    NSDictionary *params = @{ @"file" : fileURL };
+    
+    [self.webServiceManager makeRequestWithKey:@"echoMultipartPOSTFile" andTarget:self andParameters:params enqueue:YES];
+    
+    while (!self.apiCallCompleted) {
+        [[NSRunLoop currentRunLoop] runUntilDate:[NSDate dateWithTimeIntervalSinceNow:1]];
+    }
+}
+
+#pragma mark - Verification Methods
+
+-(void) verifyImage:(UIImage*)image withTestNamed:(NSString*)testName
+{
+    NSLog(@"Recieved image %lf wide by %lf high", image.size.width, image.size.height);
+    
+    NSURL *originalImageURL = [NSURL fileURLWithPath:[[self bundlePath] stringByAppendingPathComponent:kRZWebServiceTestImage]];
+    NSData *originalImageData = [NSData dataWithContentsOfURL:originalImageURL];
+    UIImage* originalImage = [UIImage imageWithData:originalImageData];
+    
+    STAssertTrue(((originalImage.size.width == image.size.width) && (originalImage.size.height == image.size.height))
+                    , @"%@ failed: images are different sizes", testName);
+    STAssertNotNil(image, @"%@ failed: no image returned", testName);
+}
+
+-(void) verifyJSON:(NSDictionary*)json withTestNamed:(NSString*)testName
+{
+    NSString* testDataPath = [[self bundlePath] stringByAppendingPathComponent:kRZWebServiceTestJSON];
+    NSInputStream* stream = [NSInputStream inputStreamWithFileAtPath:testDataPath];
+
+    [stream open];
+    NSDictionary* testData = [NSJSONSerialization JSONObjectWithStream:stream options:0 error:nil];
+    [stream close];
+    
+    STAssertTrue([testData isEqualToDictionary:json], @"%@: json data: %@ does not match expected results,: %@", testName, json, testData);
+}
+
+#pragma mark - Validation Callbacks
 
 //
 // Image callbacks.
@@ -533,24 +590,15 @@
 -(void) logoCompleted:(NSObject*)photo request:(RZWebServiceRequest*)request
 {
     if ([photo isKindOfClass:[UIImage class]]) {
-        
         UIImage* image = (UIImage*)photo;
-        
-        NSLog(@"Recieved photo %lf wide by %lf high", image.size.width, image.size.height);
-        
-        STAssertNotNil(image, @"getLogo failed: no image returned");
+        [self verifyImage:image withTestNamed:@"logoCompleted"];
     }
     else if([photo isKindOfClass:[NSURL class]])
     {
         NSURL* url = (NSURL*)photo;
         NSData* data = [NSData dataWithContentsOfURL:url];
         UIImage* image = [[UIImage alloc] initWithData:data];
-        
-        // make sure we can optn the file provided by streaming to disk
-        
-        NSLog(@"Recieved photo %lf wide by %lf high", image.size.width, image.size.height);
-        
-        STAssertNotNil(image, @"getLogo failed: no image returned");
+        [self verifyImage:image withTestNamed:@"logoCompleted"];
     }
     else if([request.httpMethod isEqualToString:@"HEAD"])
     {
@@ -596,7 +644,7 @@
 {
     if ([data isKindOfClass:[NSDictionary class]]) {
         
-        // compare this dictionary to the included data, which should match. 
+        // compare this dictionary to the included data, which should match.
         NSDictionary* receivedData = (NSDictionary*)data;
         
         NSString* testDataPath = [[self bundlePath] stringByAppendingPathComponent:@"TestData.plist"];
@@ -623,22 +671,14 @@
 -(void) jsonCompleted:(id)data
 {
     if ([data isKindOfClass:[NSDictionary class]]) {
-        
         // compare this dictionary to the included data, which should match. 
         NSDictionary* receivedData = (NSDictionary*)data;
         
-        NSString* testDataPath = [[self bundlePath] stringByAppendingPathComponent:@"TestData.json"];
-        NSInputStream* stream = [NSInputStream inputStreamWithFileAtPath:testDataPath];
-        [stream open];
-        NSDictionary* testData = [NSJSONSerialization JSONObjectWithStream:stream options:0 error:nil];
-        [stream close];
-        
-        STAssertTrue([testData isEqualToDictionary:receivedData], @"json data: %@ does not match expected results,: %@", receivedData, testData);
-        
+        [self verifyJSON:receivedData withTestNamed:@"jsonCompleted"];
     }
     else
     {
-        STAssertTrue(NO, @"plist operation returned wrong data type: %@", data);
+        STAssertTrue(NO, @"JSON operation returned wrong data type: %@", data);
     }
     
     self.apiCallCompleted = YES;
@@ -700,6 +740,84 @@
 }
 
 //
+// Echo Multipart POST callbacks
+//
+
+-(void) echoMultipartPOSTCompleted:(NSDictionary*)results
+{
+    self.echoMultipartPostResult = results;
+    // TODO: verify that the multipartpostresults are what is expected
+    self.apiCallCompleted = YES;
+}
+
+-(void) echoMultipartPOSTFailed:(NSError*)error
+{
+    STAssertTrue(NO, @"echoMultipartPost failed with error: %@", error);
+    self.apiCallCompleted = YES;
+}
+
+//
+// Echo Multipart POST Image callbacks
+//
+
+-(void) echoMultipartPOSTImageCompleted:(NSObject*)image request:(RZWebServiceRequest*)request
+{
+    if ([image isKindOfClass:[UIImage class]]) {
+        UIImage* recievedImage = (UIImage*)image;
+        [self verifyImage:recievedImage withTestNamed:@"echoMultipartPOSTImage"];
+    }
+    else if([image isKindOfClass:[NSURL class]])
+    {
+        NSURL* url = (NSURL*)image;
+        NSData* data = [NSData dataWithContentsOfURL:url];
+        UIImage* recievedImage = [[UIImage alloc] initWithData:data];
+        [self verifyImage:recievedImage withTestNamed:@"echoMultipartPOSTImage"];
+    }
+    else if([request.httpMethod isEqualToString:@"HEAD"])
+    {
+        // only requested headers. Make sure data is empty and we have headers
+        STAssertTrue(request.data.length == 0, @"Content size should be zero since a HEAD request was performed.");
+        STAssertTrue(request.responseHeaders.count != 0, @"Should have received response headers for the HEAD request");
+    }
+    else
+    {
+        STAssertTrue(NO, @"Invalid class for image object.");
+    }
+    
+    self.apiCallCompleted = YES;
+}
+
+-(void) echoMultipartPOSTImageFailed:(NSError*)error
+{
+    STAssertTrue(NO, @"echoMultipartPostImage failed with error: %@", error);
+    self.apiCallCompleted = YES;
+}
+
+//
+// Echo Multipart POST JSON File callbacks
+//
+
+-(void) echoMultipartPOSTFileCompleted:(NSDictionary*)results request:(RZWebServiceRequest*)request
+{
+    if ([results isKindOfClass:[NSDictionary class]]) {
+        // compare this dictionary to the included data, which should match.
+        [self verifyJSON:results withTestNamed:@"echoMultipartPOSTFile"];
+    }
+    else
+    {
+        STAssertTrue(NO, @"Invalid class for JSON File return object.");
+    }
+    
+    self.apiCallCompleted = YES;
+}
+
+-(void) echoMultipartPOSTFileFailed:(NSError*)error
+{
+    STAssertTrue(NO, @"echoMultipartPostFile failed with error: %@", error);
+    self.apiCallCompleted = YES;
+}
+
+//
 // expectError callbacks
 //
 -(void) expectError:(NSError*)error
@@ -714,22 +832,13 @@
 }
 
 //
-// postFile callbacks
+// putFile callbacks
 //
 -(void) echoPutFileCompleted:(NSDictionary*)results
 {
     if ([results isKindOfClass:[NSDictionary class]]) {
-        
         // compare this dictionary to the included data, which should match.
-        
-        NSString* testDataPath = [[self bundlePath] stringByAppendingPathComponent:@"TestData.json"];
-        NSInputStream* stream = [NSInputStream inputStreamWithFileAtPath:testDataPath];
-        [stream open];
-        NSDictionary* testData = [NSJSONSerialization JSONObjectWithStream:stream options:0 error:nil];
-        [stream close];
-        
-        STAssertTrue([testData isEqualToDictionary:results], @"json data: %@ does not match expected results,: %@", results, testData);
-        
+        [self verifyJSON:results withTestNamed:@"echoPutFileCompleted"];
     }
     else
     {
