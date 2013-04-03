@@ -1351,10 +1351,7 @@ totalBytesExpectedToWrite:(NSInteger)totalBytesExpectedToWrite
         
         RZWebServiceRequestParameterType type = RZWebServiceRequestParameterTypeQueryString;
         
-        if ([value isKindOfClass:[NSString class]]) {
-            type = RZWebServiceRequestParameterTypeQueryString;
-        }
-        else if ([value isKindOfClass:[NSURL class]]) {
+        if ([value isKindOfClass:[NSURL class]]) {
             type = RZWebServiceRequestParameterTypeFile;
         }
         else if ([value isKindOfClass:[NSData class]]) {
