@@ -564,7 +564,7 @@ expectedResultType:(NSString *)expectedResultType
         }
         
         // if the expected type is JSON, we should add a header declaring we accept that type.
-        if ([[self.expectedResultType uppercaseString] isEqualToString:@"JSON"]) {
+        if ([[self.expectedResultType uppercaseString] isEqualToString:kRZWebserviceDataTypeJSON]) {
             [self.urlRequest setValue:@"application/json" forHTTPHeaderField:@"Accept"];
         }
         
