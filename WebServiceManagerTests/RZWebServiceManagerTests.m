@@ -18,7 +18,6 @@
 @property (nonatomic, strong) NSDictionary* echoGetResult;
 @property (nonatomic, strong) NSDictionary* echoPostResult;
 @property (nonatomic, strong) NSDictionary* echoMultipartPostResult;
-@property (nonatomic, strong) NSDictionary* echoMultipartPostFileResult;
 @property (nonatomic, strong) NSDictionary* responseHeaders;
 @property (nonatomic, strong) NSError* error;
 
@@ -532,6 +531,7 @@
 
 -(void) test25EchoMultipartUploadImage
 {
+    // Test uploading a JSON file via multipart POST
     NSURL *fileURL = [NSURL fileURLWithPath:[[self bundlePath] stringByAppendingPathComponent:kRZWebServiceTestImage]];
     NSDictionary *params = @{ @"file" : fileURL };
     
@@ -544,7 +544,7 @@
 
 -(void) test26EchoMultipartUploadFile
 {
-    
+    // Test uploading an image via multipart POST
     NSURL *fileURL = [NSURL fileURLWithPath:[[self bundlePath] stringByAppendingPathComponent:kRZWebServiceTestJSON]];
     NSDictionary *params = @{ @"file" : fileURL };
     
@@ -552,6 +552,94 @@
     
     while (!self.apiCallCompleted) {
         [[NSRunLoop currentRunLoop] runUntilDate:[NSDate dateWithTimeIntervalSinceNow:1]];
+    }
+}
+
+-(void) test27EchoMultipartPOST
+{
+    // Test multiple parameters sent via multipart POST
+    NSURL *fileURL = [NSURL fileURLWithPath:[[self bundlePath] stringByAppendingPathComponent:kRZWebServiceTestImage]];
+    NSDictionary *params = @{
+                             @"imageTitle" : @"logo",
+                             @"description" : @"The logo image",
+                             @"image" : fileURL };
+    
+    [self.webServiceManager makeRequestWithKey:@"echoMultipartPOST" andTarget:self andParameters:params enqueue:YES];
+    
+    while (!self.apiCallCompleted) {
+        [[NSRunLoop currentRunLoop] runUntilDate:[NSDate dateWithTimeIntervalSinceNow:1]];
+    }
+    
+    // Return JSON should be
+    /*{
+        "postData": {
+            "imageTItle": "logo",
+            "description": "The logo image"
+        },
+        "postBinaryData": {
+            "image": {
+                "name": "raizlabs-logo-sheetrock.png",
+                "type": "image/png",
+                "tmp_name": "/Applications/MAMP/tmp/php/php30sNW7", // Variable
+                "error": 0,
+                "size": 22697
+            }
+        }
+    }*/
+    
+    if ([self.echoMultipartPostResult isKindOfClass:[NSDictionary class]])
+    {
+        NSDictionary* postData = [self.echoMultipartPostResult objectForKey:@"postData"];
+        if (postData && [postData isKindOfClass:[NSDictionary class]]) {
+            NSString* value = [postData objectForKey:@"imageTitle"];
+            if (value == nil || ![value isEqualToString:@"logo"]) {
+                STAssertTrue(NO, @"Multipart POST *imageTitle* data did not echo properly.");
+            }
+            
+            value = [postData objectForKey:@"description"];
+            if (value == nil || ![value isEqualToString:@"The logo image"]) {
+                STAssertTrue(NO, @"Multipart POST *description* data did not echo properly.");
+            }
+        }
+        else {
+            STAssertTrue(NO, @"Multipart POST form data did not echo properly.");
+        }
+        
+        NSDictionary* postBinaryData = [self.echoMultipartPostResult objectForKey:@"postBinaryData"];
+        if (postBinaryData && [postBinaryData isKindOfClass:[NSDictionary class]]) {
+            NSDictionary* imageData = [postBinaryData objectForKey:@"image"];
+            if (imageData && [imageData isKindOfClass:[NSDictionary class]]) {
+                NSString* value = [imageData objectForKey:@"name"];
+                if (value == nil || ![value isEqualToString:@"raizlabs-logo-sheetrock.png"]) {
+                    STAssertTrue(NO, @"Multipart Binary POST *name* data did not echo properly.");
+                }
+                
+                value = [imageData objectForKey:@"type"];
+                if (value == nil || ![value isEqualToString:@"image/png"]) {
+                    STAssertTrue(NO, @"Multipart Binary POST *type* data did not echo properly.");
+                }
+                
+                NSNumber* errorValue = [imageData objectForKey:@"error"];
+                if (errorValue == nil || !([errorValue integerValue] == 0)) {
+                    STAssertTrue(NO, @"Multipart Binary POST data error code %d.", [errorValue integerValue]);
+                }
+                
+                NSNumber* dataSize = [imageData objectForKey:@"size"];
+                if (dataSize == nil || ([dataSize integerValue] != 22697)) {
+                    STAssertTrue(NO, @"Multipart Binary POST size returned incorrect");
+                }
+            }
+            else {
+                STAssertTrue(NO, @"Multipart Binary POST form data did not echo properly.");
+            }
+        }
+        else {
+            STAssertTrue(NO, @"Multipart Binary POST form data did not echo properly.");
+        }
+    }
+    else
+    {
+        STAssertTrue(NO, @"Invalid class for JSON return object.");
     }
 }
 
@@ -746,7 +834,6 @@
 -(void) echoMultipartPOSTCompleted:(NSDictionary*)results
 {
     self.echoMultipartPostResult = results;
-    // TODO: verify that the multipartpostresults are what is expected
     self.apiCallCompleted = YES;
 }
 

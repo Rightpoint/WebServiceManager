@@ -1,7 +1,7 @@
 <?php
 	$data = [
-		"postFields" => $_POST,
-		"postData" => $_FILES,
+		"postData" => $_POST,
+		"postBinaryData" => $_FILES,
 	];
 
     echo json_encode($data);
