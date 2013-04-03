@@ -7,6 +7,7 @@
 //
 
 #import <Foundation/Foundation.h>
+#import <MobileCoreServices/MobileCoreServices.h>
 
 @class RZWebServiceRequest;
 @class RZWebServiceManager;
@@ -47,6 +48,9 @@ extern NSString* const RZFileManagerFileUploadCompletedNotification;
 // Class methods for docs/cache directory
 + (NSURL*)defaultDocumentsDirectoryURL;
 + (NSURL*)defaultDownloadCacheURL;
+
+// Helper method to determine a file's MIME Type and return it as a string
++ (NSString*) mimeTypeForFileURL: (NSURL *) fileURL;
 
 // Download File Request Methods
 - (RZWebServiceRequest*)downloadFileFromURL:(NSURL*)remoteURL withProgressDelegate:(id<RZFileProgressDelegate>)progressDelegate completion:(RZFileManagerDownloadCompletionBlock)completionBlock;

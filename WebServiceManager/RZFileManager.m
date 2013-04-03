@@ -132,6 +132,19 @@ NSString* const RZFileManagerFileUploadCompletedNotification = @"RZFileManagerFi
     
 }
 
+// Adjusted from:
+// http://stackoverflow.com/questions/5996797/determine-mime-type-of-nsdata-loaded-from-a-file
++ (NSString*) mimeTypeForFileURL:(NSURL *)fileURL {
+    CFStringRef UTI = UTTypeCreatePreferredIdentifierForTag(kUTTagClassFilenameExtension, (__bridge CFStringRef)[fileURL pathExtension], NULL);
+    CFStringRef mimeType = UTTypeCopyPreferredTagWithClass (UTI, kUTTagClassMIMEType);
+    CFRelease(UTI);
+    
+    if (!mimeType) {
+        return @"application/octet-stream";
+    }
+    return (__bridge NSString *)mimeType;
+}
+
 
 - (id)init
 {
