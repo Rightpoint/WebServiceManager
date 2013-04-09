@@ -70,7 +70,11 @@ NSString * const kRZWebServiceRequestDefaultQueryParameterArrayDelimiter = @"+";
                     }
                 }
                 
-                value = valueString;
+                value = (__bridge_transfer NSString * )CFURLCreateStringByAddingPercentEscapes(kCFAllocatorDefault,
+                                                                                                     (__bridge CFStringRef)valueString,
+                                                                                                     NULL,
+                                                                                                     CFSTR(":/?#[]@!$&’()*+,;="),
+                                                                                                     kCFStringEncodingUTF8);                
             }
         }
         
