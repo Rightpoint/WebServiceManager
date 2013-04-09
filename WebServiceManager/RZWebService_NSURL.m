@@ -52,6 +52,14 @@ NSString * const kRZWebServiceRequestDefaultQueryParameterArrayDelimiter = @"+";
             else if ([value isKindOfClass:[NSArray class]]){
                 
                 NSMutableString *valueString = [NSMutableString stringWithCapacity:64];
+                
+                // Escape the delimiter if it's not a legal URL character already
+                arrayDelimiter = (__bridge_transfer NSString * )CFURLCreateStringByAddingPercentEscapes(kCFAllocatorDefault,
+                                                                                                        (__bridge CFStringRef)arrayDelimiter,
+                                                                                                        NULL,
+                                                                                                        NULL,
+                                                                                                        kCFStringEncodingUTF8);
+                
                 for (NSUInteger subValueIdx=0; subValueIdx < [(NSArray*)value count]; subValueIdx++){
                     
                     id subValue = [value objectAtIndex:subValueIdx];
@@ -70,11 +78,7 @@ NSString * const kRZWebServiceRequestDefaultQueryParameterArrayDelimiter = @"+";
                     }
                 }
                 
-                value = (__bridge_transfer NSString * )CFURLCreateStringByAddingPercentEscapes(kCFAllocatorDefault,
-                                                                                                     (__bridge CFStringRef)valueString,
-                                                                                                     NULL,
-                                                                                                     NULL,
-                                                                                                     kCFStringEncodingUTF8);                
+                value = valueString;
             }
         }
         
