@@ -11,6 +11,7 @@
 #import "RZFileManager.h"
 #import "RZWebServiceManager.h"
 #import "NSString+RZMD5.h"
+#import "RZMultipartStream.h"
 #import <CommonCrypto/CommonCrypto.h>
 
 #if __IPHONE_OS_VERSION_MIN_REQUIRED < __IPHONE_5_0
@@ -266,11 +267,8 @@ expectedResultType:(NSString *)expectedResultType
         self.expectedResultType = expectedResultType;
         self.bodyType = bodyType;
         self.copyToTargetAtomically = NO;
+
         self.parameterMode = RZWebserviceRequestParameterModeDefault;
-        
-        // convert the parameters to a sorted array of parameter objects
-        // TODO: Check value's class and change parameter type accordingly
-        // ???: Will these types of parameters ever be used for multipart form posts?
         self.parameters = [parameters convertToURLEncodedParameters];
         
         self.urlRequest = [[NSMutableURLRequest alloc] initWithURL:self.url];
@@ -543,7 +541,7 @@ expectedResultType:(NSString *)expectedResultType
         }
 
         
-        // keep track of the current thread
+        // Keep track of the current thread
         self.connectionThread = [NSThread currentThread];
         
         self.bytesReceived = 0;
@@ -566,7 +564,7 @@ expectedResultType:(NSString *)expectedResultType
         }
         
         // if the expected type is JSON, we should add a header declaring we accept that type.
-        if ([[self.expectedResultType uppercaseString] isEqualToString:@"JSON"]) {
+        if ([[self.expectedResultType uppercaseString] isEqualToString:kRZWebserviceDataTypeJSON]) {
             [self.urlRequest setValue:@"application/json" forHTTPHeaderField:@"Accept"];
         }
         
@@ -617,6 +615,8 @@ expectedResultType:(NSString *)expectedResultType
                 {
                     self.bodyType = kRZWebserviceDataTypeText;
                 }
+                
+                // TODO: check parameters for NSURLs and assume Multipart form post -SB
                 
                 if (self.bodyType){
                     NSLog(@"[RZWebserviceRequest] No body type specified, assuming %@", self.bodyType);
@@ -686,10 +686,19 @@ expectedResultType:(NSString *)expectedResultType
             
         }
         else if (hasParameters && (self.parameterMode == RZWebServiceRequestParameterModeBody || (self.parameterMode == RZWebserviceRequestParameterModeDefault && [self.httpMethod isEqualToString:@"POST"]))){
-            // If the parameter mode is Body and no requestBody has been set, OR if the parameter mode is default and the HTTP method is POST, add the parameters to the body
-            // Currently only support for encoding as URLEncoded parameters - may want to handle serializing to JSON from parameter dict as well
-            self.urlRequest.HTTPBody = [[NSURL URLQueryStringFromParameters:self.parameters arrayDelimiter:self.parameterArrayDelimiter] dataUsingEncoding:NSUTF8StringEncoding];
-            [self.urlRequest setValue:@"application/x-www-form-urlencoded" forHTTPHeaderField:@"Content-Type"];
+            if ([self.bodyType isEqualToString:kRZWebserviceDataTypeMultipart]) {
+                // If the body type is multipart and no requestBody, set the body to stream out
+                RZMultipartStream* bodyStream = [[RZMultipartStream alloc] initWithParameterArray:[NSArray arrayWithArray:self.parameters]];
+                self.urlRequest.HTTPBodyStream = bodyStream;
+                
+                [self.urlRequest setValue: [NSString stringWithFormat:@"multipart/form-data; boundary=%@", bodyStream.stringBoundary] forHTTPHeaderField:@"Content-Type"];
+            }
+            else {
+                // If the parameter mode is Body and no requestBody has been set, OR if the parameter mode is default and the HTTP method is POST, add the parameters to the body
+                // Currently only support for encoding as URLEncoded parameters - may want to handle serializing to JSON from parameter dict as well
+                self.urlRequest.HTTPBody = [[NSURL URLQueryStringFromParameters:self.parameters arrayDelimiter:self.parameterArrayDelimiter] dataUsingEncoding:NSUTF8StringEncoding];
+                [self.urlRequest setValue:@"application/x-www-form-urlencoded" forHTTPHeaderField:@"Content-Type"];
+            }
         }
         
         // ------------ Perform preprocessing blocks ------------
@@ -1305,6 +1314,28 @@ totalBytesExpectedToWrite:(NSInteger)totalBytesExpectedToWrite
     return self;
 }
 
+- (unsigned long long)contentLength
+{
+    unsigned long long contentLength = 0;
+    NSDictionary *fileAttributes = nil;
+    
+    switch (self.parameterType) {
+        case RZWebServiceRequestParameterTypeQueryString:
+            contentLength = [(NSString*)self.parameterValue dataUsingEncoding:NSUTF8StringEncoding].length;
+            break;
+        case RZWebServiceRequestParameterTypeFile:
+        case RZWebServiceRequestParameterTypeBinaryData:
+            fileAttributes = [[NSFileManager defaultManager] attributesOfItemAtPath:[(NSURL*)self.parameterValue path] error:nil];
+            contentLength = [[fileAttributes objectForKey:NSFileSize] unsignedLongLongValue];
+            break;
+        default:
+            contentLength = 0;
+            break;
+    }
+    
+    return contentLength;
+}
+
 @end
 
 @implementation NSDictionary (RZWebServiceRequestParameters)
@@ -1314,11 +1345,23 @@ totalBytesExpectedToWrite:(NSInteger)totalBytesExpectedToWrite
     NSArray* sortedKeys = [[self allKeys] sortedArrayUsingSelector:@selector(compare:)];
     NSMutableArray *parameters = [NSMutableArray arrayWithCapacity:sortedKeys.count];
     
-    RZWebServiceRequestParameterType type = RZWebServiceRequestParameterTypeQueryString;
-    
     for (NSString* key in sortedKeys) {
         
         id value = [self objectForKey:key];
+        
+        RZWebServiceRequestParameterType type = RZWebServiceRequestParameterTypeQueryString;
+        
+        if ([value isKindOfClass:[NSURL class]]) {
+            type = RZWebServiceRequestParameterTypeFile;
+        }
+        else if ([value isKindOfClass:[NSData class]]) {
+            type = RZWebServiceRequestParameterTypeBinaryData;
+        }
+        else {
+            // Default to Query String parameter type
+            type = RZWebServiceRequestParameterTypeQueryString;
+        }
+        
         RZWebServiceRequestParameter* parameter = [RZWebServiceRequestParameter parameterWithName:key value:value type:type];
         [parameters addObject:parameter];
     }

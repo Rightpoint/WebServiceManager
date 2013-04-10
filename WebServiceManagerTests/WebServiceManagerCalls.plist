@@ -2,6 +2,51 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
+	<key>echoMultipartPOSTFile</key>
+	<dict>
+		<key>BodyType</key>
+		<string>Multipart</string>
+		<key>URL</key>
+		<string>http://localhost:8888/echoPOSTFile.php</string>
+		<key>Method</key>
+		<string>POST</string>
+		<key>ExpectedResultType</key>
+		<string>JSON</string>
+		<key>FailureHandler</key>
+		<string>echoMultipartPOSTFileFailed:</string>
+		<key>SuccessHandler</key>
+		<string>echoMultipartPOSTFileCompleted:request:</string>
+	</dict>
+	<key>echoMultipartPOSTImage</key>
+	<dict>
+		<key>BodyType</key>
+		<string>Multipart</string>
+		<key>URL</key>
+		<string>http://localhost:8888/echoPOSTFile.php</string>
+		<key>Method</key>
+		<string>POST</string>
+		<key>ExpectedResultType</key>
+		<string>Image</string>
+		<key>FailureHandler</key>
+		<string>echoMultipartPOSTImageFailed:</string>
+		<key>SuccessHandler</key>
+		<string>echoMultipartPOSTImageCompleted:request:</string>
+	</dict>
+	<key>echoMultipartPOST</key>
+	<dict>
+		<key>BodyType</key>
+		<string>Multipart</string>
+		<key>URL</key>
+		<string>http://localhost:8888/echoMultipartPost.php</string>
+		<key>Method</key>
+		<string>POST</string>
+		<key>ExpectedResultType</key>
+		<string>JSON</string>
+		<key>FailureHandler</key>
+		<string>echoMultipartPOSTFailed:</string>
+		<key>SuccessHandler</key>
+		<string>echoMultipartPOSTCompleted:</string>
+	</dict>
 	<key>getLogo</key>
 	<dict>
 		<key>URL</key>

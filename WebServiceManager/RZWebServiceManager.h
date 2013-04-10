@@ -15,6 +15,7 @@ extern NSString* const kRZWebserviceDataTypeFile;
 extern NSString* const kRZWebserviceDataTypeText;
 extern NSString* const kRZWebserviceDataTypeImage;
 extern NSString* const kRZWebserviceDataTypePlist;
+extern NSString* const kRZWebserviceDataTypeMultipart;
 
 @interface RZWebServiceManager : NSObject
 
