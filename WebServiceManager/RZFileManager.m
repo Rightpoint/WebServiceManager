@@ -472,20 +472,20 @@ NSString* const RZFileManagerFileUploadCompletedNotification = @"RZFileManagerFi
 
 - (NSMutableSet*)downloadRequests
 {
-    static dispatch_once_t onceToken;
-    dispatch_once(&onceToken, ^{
+    if(_downloadRequests == nil)
+    {
         _downloadRequests = [NSMutableSet set];
-    });
+    }
     
     return _downloadRequests;
 }
 
 - (NSMutableSet*)uploadRequests
 {
-    static dispatch_once_t onceToken;
-    dispatch_once(&onceToken, ^{
+    if(_uploadRequests == nil)
+    {
         _uploadRequests = [NSMutableSet set];
-    });
+    }
     
     return _uploadRequests;
 }
