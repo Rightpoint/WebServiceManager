@@ -168,6 +168,9 @@ expectedResultType:(NSString *)expectedResultType
 @property (strong, readonly, nonatomic) NSDictionary* responseHeaders;
 @property (assign, readonly, nonatomic) NSInteger statusCode;
 
+// Set to NO to prevent caching URL response. Recommended for large file downloads. Default is YES
+@property (assign, nonatomic) BOOL shouldCacheResponse;
+
 @property (assign, nonatomic) BOOL ignoreCertificateValidity;
 
 // Note: These pre/post process blocks are not used at the moment.
