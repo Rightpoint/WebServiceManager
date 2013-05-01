@@ -267,6 +267,8 @@ expectedResultType:(NSString *)expectedResultType
         self.expectedResultType = expectedResultType;
         self.bodyType = bodyType;
         self.copyToTargetAtomically = NO;
+        
+        self.shouldCacheResponse = YES;
 
         self.parameterMode = RZWebserviceRequestParameterModeDefault;
         self.parameters = [parameters convertToURLEncodedParameters];
@@ -1124,6 +1126,11 @@ totalBytesExpectedToWrite:(NSInteger)totalBytesExpectedToWrite
         
         self.done = YES;
     }
+}
+
+- (NSCachedURLResponse*)connection:(NSURLConnection *)connection willCacheResponse:(NSCachedURLResponse *)cachedResponse
+{
+    return self.shouldCacheResponse ? cachedResponse : nil;
 }
 
 - (void)connection:(NSURLConnection *)connection didReceiveResponse:(NSURLResponse *)response
