@@ -200,6 +200,7 @@ NSString* const RZFileManagerFileUploadCompletedNotification = @"RZFileManagerFi
     [self putObject:progressDelegate inRequest:request atKey:kProgressDelegateKey];
     [self addBlock:completionBlock toRequest:request atKey:kCompletionBlockKey];
     request.targetFileURL = cacheURL;
+    request.shouldCacheResponse = self.shouldCacheDownloads;
     [request addProgressObserver:self];
     
     [self.downloadRequests addObject:request];
