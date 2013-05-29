@@ -391,7 +391,7 @@
 {
     
     // sometimes you want to add your own request, without relying on the PList. Create a request, and add it to the queue.
-    RZWebServiceRequest* request = [[RZWebServiceRequest alloc] initWithURL:[NSURL URLWithString:@"http://localhost:8888/thisfiledoesnotexist"]
+    RZWebServiceRequest* request = [[RZWebServiceRequest alloc] initWithURL:[NSURL URLWithString:@"http://localhost:88888/thisfiledoesnotexist"]
                                                                  httpMethod:@"GET"
                                                          expectedResultType:@"JSON"
                                                                    bodyType:@"NONE"
@@ -903,6 +903,50 @@
     STAssertTrue(NO, @"echoMultipartPostFile failed with error: %@", error);
     self.apiCallCompleted = YES;
 }
+
+// Test request replay (black box copy verify)
+-(void) testReplayRequest
+{
+    NSDictionary* parameters = [NSDictionary dictionaryWithObjectsAndKeys:@"Hello, world!", @"hello",nil];
+
+    // sometimes you want to add your own request, without relying on the PList. Create a request, and add it to the queue.
+    __block int reqCount = 0;
+    RZWebServiceRequest* request = [[RZWebServiceRequest alloc] initWithURL:[NSURL URLWithString:@"http://localhost:8888/echoGet.php"]
+                                                                 httpMethod:@"GET"
+                                                         expectedResultType:@"JSON"
+                                                                   bodyType:@"NONE"
+                                                                 parameters:parameters
+                                                                 completion:^(BOOL succeeded, id data, NSError *error, RZWebServiceRequest *request) {
+                                                                     if (succeeded) {
+                                                                         reqCount++;
+                                                                         self.apiCallCompleted = YES;
+                                                                         STAssertEqualObjects(data[@"hello"], @"Hello, world!", nil);
+                                                                     } else {
+                                                                         STFail(@"Request failed with error:%@", error);
+                                                                     }
+                                                                 }];
+    
+    RZWebServiceRequest* reqCopy = [request copy];
+    
+    [self.webServiceManager enqueueRequest:request];
+    int tries = 0;
+    while (!self.apiCallCompleted && tries < 5) {
+        [[NSRunLoop currentRunLoop] runUntilDate:[NSDate dateWithTimeIntervalSinceNow:1]];
+        tries++;
+    }
+    self.apiCallCompleted = NO;
+    
+    // now enqueue the copy
+    [self.webServiceManager enqueueRequest:reqCopy];
+    tries = 0;
+    while (!self.apiCallCompleted && tries < 5) {
+        [[NSRunLoop currentRunLoop] runUntilDate:[NSDate dateWithTimeIntervalSinceNow:1]];
+        tries++;
+    }
+    
+    STAssertTrue(reqCount == 2, @"We should have issued 2 requests");
+}
+
 
 //
 // expectError callbacks
