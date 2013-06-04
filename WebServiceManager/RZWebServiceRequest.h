@@ -105,7 +105,7 @@ expectedResultType:(NSString *)expectedResultType
 - (void)removeAllProgressObservers;
 
 //! Parameter mode override
-/*
+/*!
     If the mode is the default (RZWebserviceRequestParameterModeDefault), the HTTP method
     will determine whether the parameters are added to the URL or to the reqest body, based
     on HTTP standards (GET, PUT, DELETE go in the URL, POST goes in the body). Otherwise,
@@ -114,9 +114,9 @@ expectedResultType:(NSString *)expectedResultType
 @property (assign, nonatomic) RZWebServiceRequestParameterMode parameterMode;
 
 // the WebServiceManager that has queued this request.
-@property (unsafe_unretained, nonatomic) RZWebServiceManager* manager;
+@property (weak, nonatomic) RZWebServiceManager* manager;
 
-@property (unsafe_unretained, nonatomic) id target; // Deprecated - Use CompletionBlocks instead
+@property (weak, nonatomic)   id target; // Deprecated - Use CompletionBlocks instead
 @property (assign, nonatomic) SEL successHandler;   // Deprecated - Use CompletionBlocks instead
 @property (assign, nonatomic) SEL failureHandler;   // Deprecated - Use CompletionBlocks instead
 @property (strong, nonatomic) NSMutableURLRequest* urlRequest;

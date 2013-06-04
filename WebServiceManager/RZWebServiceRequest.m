@@ -294,8 +294,8 @@ expectedResultType:(NSString *)expectedResultType
         copy.parameterArrayDelimiter = [self.parameterArrayDelimiter copy];
         copy.sslTrustType = self.sslTrustType;
         copy.sslChallengeBlock = self.sslChallengeBlock;
-        copy.manager = [self.manager copy];
-        copy.target = [self.target copy];
+        copy.manager = self.manager;
+        copy.target = self.target;
         copy.httpMethod = [self.httpMethod copy];
         copy.receivedData = [self.receivedData copy];
         copy.bytesReceived = self.bytesReceived;

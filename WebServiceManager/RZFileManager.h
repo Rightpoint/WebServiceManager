@@ -36,7 +36,7 @@ extern NSString* const RZFileManagerFileUploadCompletedNotification;
 // Cache Dir URL - Directory will be created if it does not exist and set to not sync/backup
 @property (assign, nonatomic) BOOL shouldCacheDownloads;                        // Turns download caching on/off - Defaults to YES
 
-@property (nonatomic, unsafe_unretained) RZWebServiceManager* webManager;
+@property (nonatomic, weak)   RZWebServiceManager* webManager;
 @property (nonatomic, strong) RZCacheSchema* cacheSchema;
 
 @property (strong, nonatomic) NSOperationQueue *downloadsQueue;
