@@ -44,11 +44,7 @@ NSString* const kRZWebserviceCachedCertFingerprints = @"CachedCertFingerprints";
 
 
 @implementation RZWebServiceManager
-@synthesize requests = _requests;
-@synthesize apiCalls = _apiCalls;
-@synthesize defaultHost = _defaultHost;
-@synthesize apiSpecificHosts = _apiSpecificHosts;
-@synthesize defaultRequestTimeoutInterval = _defaultRequestTimeoutInterval;
+
 
 -(id)init{
     if (self = [super init]){
