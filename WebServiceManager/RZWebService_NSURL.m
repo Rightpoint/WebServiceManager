@@ -44,6 +44,7 @@ NSString * const kRZWebServiceRequestDefaultQueryParameterArrayDelimiter = @"+";
         RZWebServiceRequestParameter* parameter = [queryParameters objectAtIndex:parameterIdx];
         NSString *key = parameter.parameterName;
         id value = parameter.parameterValue;
+        BOOL appendKey = YES;
         
         if(encode){
             if([value isKindOfClass:[NSString class]])
@@ -55,8 +56,10 @@ NSString * const kRZWebServiceRequestDefaultQueryParameterArrayDelimiter = @"+";
                                                                                                kCFStringEncodingUTF8);
             }
             else if ([value isKindOfClass:[NSArray class]])
-            {    
+            {
                 NSMutableString *valueString = [NSMutableString stringWithCapacity:64];
+                // If the data is an array type, the key will be added into the value string
+                appendKey = !flattenArray;
                 
                 // Escape the delimiter if it's not a legal URL character already
                 arrayDelimiter = (__bridge_transfer NSString * )CFURLCreateStringByAddingPercentEscapes(kCFAllocatorDefault,
@@ -97,11 +100,11 @@ NSString * const kRZWebServiceRequestDefaultQueryParameterArrayDelimiter = @"+";
             }
         }
         
-        if (flattenArray) {
-            [queryString appendString:value];
+        if (appendKey) {
+            [queryString appendFormat:@"%@=%@", key, value];
         }
         else {
-            [queryString appendFormat:@"%@=%@", key, value];
+            [queryString appendString:value];
         }
         
         if (parameterIdx < queryParameters.count - 1) {
