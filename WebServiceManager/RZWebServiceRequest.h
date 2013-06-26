@@ -136,6 +136,10 @@ expectedResultType:(NSString *)expectedResultType
 // This is the delimiter that will be used for parameters with an array of values
 @property (strong, nonatomic) NSString* parameterArrayDelimiter;
 
+// If set to true, parameters with an array value will be converted into multiple parameters
+// all with the same key value for each array value.
+@property (assign, nonatomic) BOOL flattenArrayParameters;
+
 // these properties will be populated when the request completes
 // error will remain nil if there is no error
 @property (strong, nonatomic) NSError *error;
