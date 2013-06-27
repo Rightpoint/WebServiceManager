@@ -15,20 +15,25 @@ NSString * const kRZWebServiceRequestDefaultQueryParameterArrayDelimiter = @"+";
 
 +(NSString*)URLQueryStringFromParameters:(NSArray*)parameters
 {
-    return [self URLQueryStringFromParameters:parameters arrayDelimiter:kRZWebServiceRequestDefaultQueryParameterArrayDelimiter encode:YES];
+    return [self URLQueryStringFromParameters:parameters arrayDelimiter:kRZWebServiceRequestDefaultQueryParameterArrayDelimiter flattenArray:NO encode:YES];
+}
+
++(NSString*)URLQueryStringFromParameters:(NSArray*)parameters flattenArray:(BOOL)flattenArray
+{
+    return [self URLQueryStringFromParameters:parameters arrayDelimiter:kRZWebServiceRequestDefaultQueryParameterArrayDelimiter flattenArray:flattenArray encode:YES];
 }
 
 +(NSString*)URLQueryStringFromParameters:(NSArray *)parameters encode:(BOOL)encode
 {
-    return [self URLQueryStringFromParameters:parameters arrayDelimiter:kRZWebServiceRequestDefaultQueryParameterArrayDelimiter encode:encode];
+    return [self URLQueryStringFromParameters:parameters arrayDelimiter:kRZWebServiceRequestDefaultQueryParameterArrayDelimiter flattenArray:NO encode:encode];
 }
 
-+(NSString*)URLQueryStringFromParameters:(NSArray*)parameters arrayDelimiter:(NSString*)arrayDelimiter;
++(NSString*)URLQueryStringFromParameters:(NSArray*)parameters arrayDelimiter:(NSString*)arrayDelimiter flattenArray:(BOOL)flattenArray;
 {
-    return [self URLQueryStringFromParameters:parameters arrayDelimiter:arrayDelimiter encode:YES];
+    return [self URLQueryStringFromParameters:parameters arrayDelimiter:arrayDelimiter flattenArray:flattenArray encode:YES];
 }
 
-+(NSString*)URLQueryStringFromParameters:(NSArray *)parameters arrayDelimiter:(NSString*)arrayDelimiter encode:(BOOL)encode
++(NSString*)URLQueryStringFromParameters:(NSArray *)parameters arrayDelimiter:(NSString*)arrayDelimiter flattenArray:(BOOL)flattenArray encode:(BOOL)encode
 {
     NSMutableString* queryString = [NSMutableString stringWithCapacity:100];
     NSArray *queryParameters = [parameters filteredArrayUsingPredicate:[NSPredicate predicateWithFormat:@"parameterType == %d", RZWebServiceRequestParameterTypeQueryString]];
@@ -39,6 +44,7 @@ NSString * const kRZWebServiceRequestDefaultQueryParameterArrayDelimiter = @"+";
         RZWebServiceRequestParameter* parameter = [queryParameters objectAtIndex:parameterIdx];
         NSString *key = parameter.parameterName;
         id value = parameter.parameterValue;
+        BOOL appendKey = YES;
         
         if(encode){
             if([value isKindOfClass:[NSString class]])
@@ -49,9 +55,11 @@ NSString * const kRZWebServiceRequestDefaultQueryParameterArrayDelimiter = @"+";
                                                                                                CFSTR(":/?#[]@!$&’()*+,;="),
                                                                                                kCFStringEncodingUTF8);
             }
-            else if ([value isKindOfClass:[NSArray class]]){
-                
+            else if ([value isKindOfClass:[NSArray class]])
+            {
                 NSMutableString *valueString = [NSMutableString stringWithCapacity:64];
+                // If the data is an array type, the key will be added into the value string
+                appendKey = !flattenArray;
                 
                 // Escape the delimiter if it's not a legal URL character already
                 arrayDelimiter = (__bridge_transfer NSString * )CFURLCreateStringByAddingPercentEscapes(kCFAllocatorDefault,
@@ -60,29 +68,45 @@ NSString * const kRZWebServiceRequestDefaultQueryParameterArrayDelimiter = @"+";
                                                                                                         NULL,
                                                                                                         kCFStringEncodingUTF8);
                 
-                for (NSUInteger subValueIdx=0; subValueIdx < [(NSArray*)value count]; subValueIdx++){
-                    
-                    id subValue = [value objectAtIndex:subValueIdx];
-                    
-                    if ([subValue isKindOfClass:[NSString class]]){
-                        subValue = (__bridge_transfer NSString * )CFURLCreateStringByAddingPercentEscapes(kCFAllocatorDefault,
-                                                                                                          (__bridge CFStringRef)subValue,
-                                                                                                          NULL,
-                                                                                                          CFSTR(":/?#[]@!$&’()*+,;="),
-                                                                                                          kCFStringEncodingUTF8);
+
+                    for (NSUInteger subValueIdx=0; subValueIdx < [(NSArray*)value count]; subValueIdx++)
+                    {
+                        id subValue = [value objectAtIndex:subValueIdx];
+                        
+                        if ([subValue isKindOfClass:[NSString class]]){
+                            subValue = (__bridge_transfer NSString * )CFURLCreateStringByAddingPercentEscapes(kCFAllocatorDefault,
+                                                                                                              (__bridge CFStringRef)subValue,
+                                                                                                              NULL,
+                                                                                                              CFSTR(":/?#[]@!$&’()*+,;="),
+                                                                                                              kCFStringEncodingUTF8);
+                        }
+                        
+                        // Produce a key:value pair for each value with the same key
+                        if (flattenArray) {
+                            [valueString appendFormat:@"%@=%@", key, subValue];
+                            if (subValueIdx != [(NSArray*)value count] - 1){
+                                [valueString appendString:@"&"];
+                            }
+                        }
+                        // Concatenate all array values with the array delimeter
+                        else {
+                            [valueString appendFormat:@"%@", subValue];
+                            if (subValueIdx != [(NSArray*)value count] - 1){
+                                [valueString appendString:arrayDelimiter];
+                            }
+                        }
                     }
-                    
-                    [valueString appendFormat:@"%@", subValue];
-                    if (subValueIdx != [(NSArray*)value count] - 1){
-                        [valueString appendString:arrayDelimiter];
-                    }
-                }
-                
                 value = valueString;
             }
         }
         
-        [queryString appendFormat:@"%@=%@", key, value];
+        if (appendKey) {
+            [queryString appendFormat:@"%@=%@", key, value];
+        }
+        else {
+            [queryString appendString:value];
+        }
+        
         if (parameterIdx < queryParameters.count - 1) {
             [queryString appendString:@"&"]; // add separator before next parameter
         }
@@ -92,9 +116,9 @@ NSString * const kRZWebServiceRequestDefaultQueryParameterArrayDelimiter = @"+";
     return queryString;
 }
 
-- (NSURL *)URLByAddingParameters:(NSArray *)parameters arrayDelimiter:(NSString *)arrayDelimiter {
-    
-    NSString *parameterString = [NSURL URLQueryStringFromParameters:parameters arrayDelimiter:arrayDelimiter];
+- (NSURL *)URLByAddingParameters:(NSArray *)parameters arrayDelimiter:(NSString *)arrayDelimiter flattenArray:(BOOL)flattenArray
+{    
+    NSString *parameterString = [NSURL URLQueryStringFromParameters:parameters arrayDelimiter:arrayDelimiter flattenArray:NO];
     
     NSMutableString *urlString = [NSMutableString stringWithString:[self absoluteString]];
     
@@ -112,7 +136,6 @@ NSString * const kRZWebServiceRequestDefaultQueryParameterArrayDelimiter = @"+";
     }
     
     return [NSURL URLWithString:urlString];
-    
 }
 
 @end

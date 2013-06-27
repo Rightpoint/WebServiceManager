@@ -15,11 +15,12 @@ extern NSString * const kRZWebServiceRequestDefaultQueryParameterArrayDelimiter;
 // generate the URL query string for a list or parameters. Default behavior is to URL encode
 // the keys and values.
 +(NSString*)URLQueryStringFromParameters:(NSArray*)parameters;
++(NSString*)URLQueryStringFromParameters:(NSArray*)parameters flattenArray:(BOOL)flattenArray;
 +(NSString*)URLQueryStringFromParameters:(NSArray *)parameters encode:(BOOL)encode;
-+(NSString*)URLQueryStringFromParameters:(NSArray*)parameters arrayDelimiter:(NSString*)arrayDelimiter;
-+(NSString*)URLQueryStringFromParameters:(NSArray *)parameters arrayDelimiter:(NSString*)arrayDelimiter encode:(BOOL)encode;
++(NSString*)URLQueryStringFromParameters:(NSArray*)parameters arrayDelimiter:(NSString*)arrayDelimiter flattenArray:(BOOL)flattenArray;
++(NSString*)URLQueryStringFromParameters:(NSArray *)parameters arrayDelimiter:(NSString*)arrayDelimiter flattenArray:(BOOL)flattenArray encode:(BOOL)encode;
 
 // return a full url with the parameters query added in.
-- (NSURL *)URLByAddingParameters:(NSArray *)parameters arrayDelimiter:(NSString*)arrayDelimiter;
+- (NSURL *)URLByAddingParameters:(NSArray *)parameters arrayDelimiter:(NSString *)arrayDelimiter flattenArray:(BOOL)flattenArray;
 
 @end
