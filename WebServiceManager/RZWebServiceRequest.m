@@ -745,8 +745,9 @@ expectedResultType:(NSString *)expectedResultType
                 RZMultipartStream* bodyStream = [[RZMultipartStream alloc] initWithParameterArray:[NSArray arrayWithArray:self.parameters]];
                 self.urlRequest.HTTPBodyStream = bodyStream;
                 
+                self.contentLength = bodyStream.contentLength;
                 [self.urlRequest setValue: [NSString stringWithFormat:@"multipart/form-data; boundary=%@", bodyStream.stringBoundary] forHTTPHeaderField:@"Content-Type"];
-                [self.urlRequest setValue: [NSString stringWithFormat:@"%llu", bodyStream.contentLength] forHTTPHeaderField:@"Content-Length"];
+                [self.urlRequest setValue: [NSString stringWithFormat:@"%llu", self.contentLength] forHTTPHeaderField:@"Content-Length"];
             }
             else {
                 // If the parameter mode is Body and no requestBody has been set, OR if the parameter mode is default and the HTTP method is POST, add the parameters to the body
