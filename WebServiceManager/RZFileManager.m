@@ -142,7 +142,9 @@ NSString* const RZFileManagerFileUploadCompletedNotification = @"RZFileManagerFi
     if (!mimeType) {
         return @"application/octet-stream";
     }
-    return (__bridge NSString *)mimeType;
+    NSString* stringMimeType = (__bridge NSString *)mimeType;
+    CFRelease(mimeType);
+    return stringMimeType;
 }
 
 
