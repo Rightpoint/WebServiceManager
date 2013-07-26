@@ -65,15 +65,15 @@ NSString* const RZFileManagerFileUploadCompletedNotification = @"RZFileManagerFi
 @synthesize downloadRequests = _downloadRequests;
 @synthesize uploadRequests = _uploadRequests;
 
-+ (RZFileManager*)defaultManager
++ (instancetype)defaultManager
 {
-    static RZFileManager* s_RZFileManager = nil;
+    static RZFileManager * s_defaultManager = nil;
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
-        s_RZFileManager = [[RZFileManager alloc] init];
+        s_defaultManager = [[self alloc] init];
     });
     
-    return s_RZFileManager;
+    return s_defaultManager;
 }
 
 

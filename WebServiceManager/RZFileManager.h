@@ -43,7 +43,7 @@ extern NSString* const RZFileManagerFileUploadCompletedNotification;
 @property (strong, nonatomic) NSOperationQueue *uploadsQueue;
 
 // Shared Instance Method
-+ (RZFileManager*)defaultManager;
++ (instancetype)defaultManager;
 
 // Class methods for docs/cache directory
 + (NSURL*)defaultDocumentsDirectoryURL;
