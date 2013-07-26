@@ -15,6 +15,7 @@
 @interface RZMultipartStream ()
 
 @property (weak, nonatomic) id<NSStreamDelegate> streamDelegate;
+
 @property (assign, nonatomic) NSStreamStatus streamStatus;
 @property (assign, nonatomic) CFReadStreamClientCallBack copiedCallback;
 @property (assign, nonatomic) CFStreamClientContext copiedContext;
@@ -28,19 +29,8 @@
 
 @implementation RZMultipartStream
 
-@synthesize parameters = _parameters;
-@synthesize currentStreamingParameter = _currentStreamingParameter;
 @synthesize stringBoundary = _stringBoundary;
-@synthesize readOffset = _readOffset;
-@synthesize currentStreamStage = _currentStreamStage;
-@synthesize parameterEnumerator = _parameterEnumerator;
 @synthesize contentLength = _contentLength;
-@synthesize streamDelegate = _streamDelegate;
-@synthesize streamStatus = _streamStatus;
-@synthesize copiedCallback = _copiedCallback;
-@synthesize copiedContext = _copiedContext;
-@synthesize requestedEvents = _requestedEvents;
-@synthesize currentReadStream = _currentReadStream;
 
 // Derived from http://stackoverflow.com/q/2633801/2633948#2633948
 + (NSString *)genRandNumberLength:(int)len

@@ -9,10 +9,8 @@
 #import "RZCacheSchema.h"
 
 @implementation RZCacheSchema
-@synthesize downloadCacheDirectory = _downloadCacheDirectory;
 
 - (NSURL *)cacheURLFromRemoteURL:(NSURL *)remoteURL { return nil; }
 - (NSURL *)cacheURLFromCustomName:(NSString *)name { return nil; }
-
 
 @end

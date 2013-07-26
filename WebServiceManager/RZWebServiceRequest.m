@@ -101,52 +101,6 @@ NSTimeInterval const kDefaultTimeout = 60;
 
 
 @implementation RZWebServiceRequest
-@synthesize manager = _manager;
-@synthesize target = _target;
-@synthesize httpMethod = _httpMethod;
-@synthesize receivedData = _receivedData;
-@synthesize bytesReceived = _bytesReceived;
-@synthesize connection = _connection;
-@synthesize connectionThread = _connectionThread;
-@synthesize backgroundTaskId = _backgroundTaskId;
-@synthesize url = _url;
-@synthesize redirectedURL = _redirectedURL;
-@synthesize successHandler = _successHandler;
-@synthesize failureHandler = _failureHandler;
-@synthesize parameters = _parameters;
-@synthesize requestBody = _requestBody;
-@synthesize bodyType = _bodyType;
-@synthesize urlRequest = _urlRequest;
-@synthesize expectedResultType = _expectedResultType;
-@synthesize responseHeaders = _responseHeaders;
-@synthesize statusCode = _statusCode;
-@synthesize headers = _headers;
-@synthesize userInfo = _userInfo;
-@synthesize error = _error;
-@synthesize convertedData = _convertedData;
-@synthesize targetFileURL = _targetFileURL;
-@synthesize flattenArrayParameters = _flattenArrayParameters;
-@synthesize copyToTargetAtomically = _copyToTargetAtomically;
-@synthesize uploadFileURL = _uploadFileURL;
-@synthesize targetFileHandle = _targetFileHandle;
-@synthesize atomicTempTargetPath = _atomicTempTargetPath;
-@synthesize responseSize = _responseSize;
-@synthesize timeoutInterval = _timeoutInterval;
-@synthesize timeoutSelector = _timeoutSelector;
-
-@synthesize contentLength = _contentLength;
-@synthesize done = _done;
-@synthesize finished = _finished;
-@synthesize executing = _executing;
-@synthesize ignoreCertificateValidity = _ignoreCertificateValidity;
-@synthesize progressObservers = _progressObservers;
-
-@synthesize preProcessBlocks = _preProcessBlocks;
-@synthesize postProcessBlocks = _postProcessBlocks;
-
-@synthesize requestCompletionBlock = _requestCompletionBlock;
-
-@synthesize fallbackCompletionBlock = _fallbackCompletionBlock;
 
 -(id) initWithApiInfo:(NSDictionary *)apiInfo target:(id)target
 {

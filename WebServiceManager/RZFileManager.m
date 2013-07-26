@@ -55,13 +55,8 @@ NSString* const RZFileManagerFileUploadStartedNotification = @"RZFileManagerFile
 NSString* const RZFileManagerFileUploadCompletedNotification = @"RZFileManagerFileUploadCompletedNotification";
 
 @implementation RZFileManager
-@synthesize shouldCacheDownloads = _shouldCacheDownloads;
-@synthesize webManager = _webManager;
-@synthesize cacheSchema = _cacheSchema;
 
-@synthesize downloadsQueue = _downloadsQueue;
-@synthesize uploadsQueue = _uploadsQueue;
-
+// Need to synthesize these because they are readonly, lazy loaded
 @synthesize downloadRequests = _downloadRequests;
 @synthesize uploadRequests = _uploadRequests;
 
