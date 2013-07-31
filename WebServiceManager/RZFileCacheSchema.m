@@ -9,21 +9,7 @@
 #import "RZFileCacheSchema.h"
 #import "NSString+RZMD5.h"
 
-@interface RZFileCacheSchema ()
-@property (strong, nonatomic) NSString *hashSecret;
-@end
-
 @implementation RZFileCacheSchema
-@synthesize downloadCacheDirectory = _downloadCacheDirectory;
-@synthesize hashSecret = _hashSecret;
-
-- (id)init {
-    self = [super init];
-    if (self) {
-        //self.hashSecret = @"rzfileschema";
-    }
-    return self;
-}
 
 - (NSURL *)cacheURLFromRemoteURL:(NSURL *)remoteURL {
     NSString* cacheName = [remoteURL absoluteString];
@@ -37,4 +23,5 @@
     NSURL* cacheURL = [[self downloadCacheDirectory] URLByAppendingPathComponent:[NSString stringWithFormat:@"%@", [name digest]]];
     return cacheURL;
 }
+
 @end
