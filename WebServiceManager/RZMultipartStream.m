@@ -125,7 +125,7 @@
     if (_contentLength == 0)
     {
         // Initial boundary
-        _contentLength += [self.endItemBoundary dataUsingEncoding:NSUTF8StringEncoding].length;
+        _contentLength += [self.beginPOSTBoundary dataUsingEncoding:NSUTF8StringEncoding].length;
         for (RZWebServiceRequestParameter* po in self.parameters)
         {
             // Main body content length
