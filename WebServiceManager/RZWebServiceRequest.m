@@ -856,7 +856,7 @@ expectedResultType:(NSString *)expectedResultType
     @synchronized(self){
         [self cancelTimeout];
         
-        [self callCompletionBlockWithSucceeded:NO data:nil error:error];
+        [self callCompletionBlockWithSucceeded:NO data:self.convertedData error:error];
     }
 }
 
