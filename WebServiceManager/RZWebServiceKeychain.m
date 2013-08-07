@@ -65,7 +65,7 @@
     
     if ([serviceObj isKindOfClass:[NSDictionary class]]) {
         serviceObj = [[NSMutableDictionary alloc] initWithDictionary:serviceObj copyItems:NO];
-        [serviceObj setValue:value forKey:key];
+        [serviceObj setObject:value forKey:key];
     }
     
     [self save:service data:serviceObj];
@@ -91,7 +91,7 @@
     
     id serviceObj = [self load:service];
     if ([serviceObj isKindOfClass:[NSDictionary class]]) {
-        val = [serviceObj valueForKey:key];
+        val = [serviceObj objectForKey:key];
     }
     
     return val;
