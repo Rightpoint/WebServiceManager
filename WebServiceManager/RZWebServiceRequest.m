@@ -1303,6 +1303,10 @@ totalBytesExpectedToWrite:(NSInteger)totalBytesExpectedToWrite
     [challenge.sender continueWithoutCredentialForAuthenticationChallenge:challenge];
 }
 
+- (NSString *)debugDescription {
+    return [NSString stringWithFormat:@"%@ - RequestURL:%@ - Parameters:%@ - RequestBody:%@ - DataReturned:%@", [super debugDescription], self.url, self.parameters, self.requestBody, self.convertedData];
+}
+
 @end
 
 
@@ -1349,6 +1353,10 @@ totalBytesExpectedToWrite:(NSInteger)totalBytesExpectedToWrite
     }
     
     return contentLength;
+}
+
+- (NSString *)debugDescription {
+    return [NSString stringWithFormat:@"%@ - Parameter Name:%@ - Parameter Value:%@", [super debugDescription], self.parameterName, self.parameterValue];
 }
 
 @end
