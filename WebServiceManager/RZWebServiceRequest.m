@@ -26,7 +26,7 @@ NSString *const kFailureHandlerKey = @"FailureHandler";
 NSString *const kSuccessHandlerKey = @"SuccessHandler";
 NSString *const kTimeoutKey = @"Timeout";
 
-NSTimeInterval const kRZDefaultTimeout = 60;
+NSTimeInterval const kRZWebServiceRequestDefaultTimeout = 60;
 
 @interface RZWebServiceRequest()
 
@@ -725,7 +725,7 @@ expectedResultType:(NSString *)expectedResultType
         
         // setup our timeout callback. 
         if(self.timeoutInterval <= 0)
-            self.timeoutInterval = kRZDefaultTimeout;
+            self.timeoutInterval = kRZWebServiceRequestDefaultTimeout;
         [self scheduleTimeout];
                 
         while (!self.done && !self.isCancelled) {
