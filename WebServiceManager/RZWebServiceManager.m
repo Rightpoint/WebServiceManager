@@ -108,7 +108,7 @@ NSString* const kRZWebserviceCachedCertFingerprints = @"CachedCertFingerprints";
 {
     if (_defaultRequestTimeoutInterval <= 0)
     {
-        _defaultRequestTimeoutInterval = kDefaultTimeout;
+        _defaultRequestTimeoutInterval = kRZDefaultTimeout;
     }
     return _defaultRequestTimeoutInterval;
 }

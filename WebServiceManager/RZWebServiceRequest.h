@@ -15,7 +15,7 @@ extern NSString* const kFailureHandlerKey;
 extern NSString* const kSuccessHandlerKey;
 extern NSString* const kTimeoutKey;
 
-extern NSTimeInterval const kDefaultTimeout;
+extern NSTimeInterval const kRZDefaultTimeout;
 
 @class RZWebServiceRequest;
 @class RZWebServiceManager;
