@@ -897,16 +897,7 @@ expectedResultType:(NSString *)expectedResultType
         // if we're supporting anything earlier than 5.0, use JSONKit.
         //
         
-#if __IPHONE_OS_VERSION_MIN_REQUIRED < __IPHONE_5_0
-        convertedResult = [self.receivedData objectFromJSONData];
-        
-        //
-        // if we're 5.0 or above, use the build in JSON deserialization
-        //
-#else
-        convertedResult = [NSJSONSerialization JSONObjectWithData:self.receivedData options:0 error:&jsonError];
-#endif
-        
+        convertedResult = [NSJSONSerialization JSONObjectWithData:self.receivedData options:0 error:&jsonError];        
         
         if (jsonError) {
             NSString* str = [[NSString alloc] initWithData:self.receivedData encoding:NSUTF8StringEncoding];

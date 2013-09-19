@@ -7,9 +7,6 @@
 //
 
 #import "RZWebServiceManager.h"
-#if __IPHONE_OS_VERSION_MIN_REQUIRED < __IPHONE_5_0
-#import "JSONKit.h"
-#endif
 #import "RZWebServiceKeychain.h"
 #import "NSURLAuthenticationChallenge+Fingerprint.h"
 
