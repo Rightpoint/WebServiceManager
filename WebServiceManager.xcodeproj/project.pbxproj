@@ -173,7 +173,6 @@
 		CB588CB21453C6730052A336 = {
 			isa = PBXGroup;
 			children = (
-				839EC770170B6058004BA186 /* MobileCoreServices.framework */,
 				CBFFEB3D14566BDD00A003D6 /* README.md */,
 				CB588CC21453C6730052A336 /* WebServiceManager */,
 				CB588CD61453C6730052A336 /* WebServiceManagerTests */,
@@ -194,6 +193,7 @@
 		CB588CBF1453C6730052A336 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				839EC770170B6058004BA186 /* MobileCoreServices.framework */,
 				FEBD24C516A84E1A00DF7BA7 /* Security.framework */,
 				CB588CC01453C6730052A336 /* Foundation.framework */,
 				CB588CCE1453C6730052A336 /* SenTestingKit.framework */,

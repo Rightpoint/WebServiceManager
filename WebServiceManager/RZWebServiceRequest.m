@@ -35,6 +35,9 @@ NSTimeInterval const kRZWebServiceRequestDefaultTimeout = 60;
 @property (strong, nonatomic, readwrite) NSDictionary *responseHeaders;
 @property (assign, nonatomic, readwrite) NSInteger statusCode;
 
+@property (strong, nonatomic) NSArray *preProcessBlocks;
+@property (strong, nonatomic) NSArray *postProcessBlocks;
+
 @property (assign, readwrite) NSUInteger bytesReceived;
 @property (strong, nonatomic) NSMutableData* receivedData;
 @property (strong, nonatomic) NSURLConnection* connection;
@@ -285,8 +288,8 @@ expectedResultType:(NSString *)expectedResultType
         copy.executing = self.executing;
         copy.ignoreCertificateValidity = self.ignoreCertificateValidity;
         copy.progressObservers = [self.progressObservers copy];
-        copy.preProcessBlocks = self.preProcessBlocks;
-        copy.postProcessBlocks = self.postProcessBlocks;
+        copy.preProcessBlocks = [[NSArray alloc] initWithArray:self.preProcessBlocks copyItems:YES];
+        copy.postProcessBlocks = [[NSArray alloc] initWithArray:self.postProcessBlocks copyItems:YES];;
         copy.requestCompletionBlock = self.requestCompletionBlock;
         copy.fallbackCompletionBlock = self.fallbackCompletionBlock;
     }
