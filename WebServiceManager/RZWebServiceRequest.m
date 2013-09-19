@@ -35,6 +35,7 @@ NSTimeInterval const kRZWebServiceRequestDefaultTimeout = 60;
 @property (strong, nonatomic, readwrite) NSDictionary *responseHeaders;
 @property (assign, nonatomic, readwrite) NSInteger statusCode;
 
+@property (strong, nonatomic) NSArray *completionBlocks;
 @property (strong, nonatomic) NSArray *preProcessBlocks;
 @property (strong, nonatomic) NSArray *postProcessBlocks;
 
@@ -233,10 +234,9 @@ expectedResultType:(NSString *)expectedResultType
         
         self.urlRequest = [[NSMutableURLRequest alloc] initWithURL:self.url];
         
+        self.completionBlocks = [[NSArray alloc] initWithArray:@[completionBlock] copyItems:YES];
         self.preProcessBlocks = [[NSArray alloc] initWithArray:preProcessBlocks copyItems:YES];
         self.postProcessBlocks = [[NSArray alloc] initWithArray:postProcessBlocks copyItems:YES];
-        
-        self.requestCompletionBlock = completionBlock;
     }
     
     return self;
@@ -288,9 +288,9 @@ expectedResultType:(NSString *)expectedResultType
         copy.executing = self.executing;
         copy.ignoreCertificateValidity = self.ignoreCertificateValidity;
         copy.progressObservers = [self.progressObservers copy];
+        copy.completionBlocks = [[NSArray alloc] initWithArray:self.completionBlocks copyItems:YES];
         copy.preProcessBlocks = [[NSArray alloc] initWithArray:self.preProcessBlocks copyItems:YES];
-        copy.postProcessBlocks = [[NSArray alloc] initWithArray:self.postProcessBlocks copyItems:YES];;
-        copy.requestCompletionBlock = self.requestCompletionBlock;
+        copy.postProcessBlocks = [[NSArray alloc] initWithArray:self.postProcessBlocks copyItems:YES];
         copy.fallbackCompletionBlock = self.fallbackCompletionBlock;
     }
     
@@ -340,16 +340,6 @@ expectedResultType:(NSString *)expectedResultType
     return [compBlock copy];
 }
 
-- (RZWebServiceRequestCompletionBlock)requestCompletionBlock
-{
-    if (_requestCompletionBlock == nil && self.target != nil && self.successHandler != nil && self.failureHandler != nil)
-    {
-        return self.fallbackCompletionBlock;
-    }
-    
-    return _requestCompletionBlock;
-}
-
 - (RZWebServiceRequestCompletionBlock)fallbackCompletionBlock
 {
     if (_fallbackCompletionBlock == nil && self.target != nil && self.successHandler != nil && self.failureHandler != nil)
@@ -360,18 +350,34 @@ expectedResultType:(NSString *)expectedResultType
     return _fallbackCompletionBlock;
 }
 
+- (void)addCompletionBlock:(RZWebServiceRequestCompletionBlock)block
+{
+    @synchronized(self)
+    {
+        NSMutableArray *compBlocks = [self.completionBlocks mutableCopy];
+        [compBlocks addObject:[block copy]];
+        self.completionBlocks = compBlocks;
+    }
+}
+
 - (void)addPreProcessingBlock:(RZWebServiceRequestPreProcessBlock)block
 {
-    NSMutableArray *preBlocks = [self.preProcessBlocks mutableCopy];
-    [preBlocks addObject:[block copy]];
-    self.preProcessBlocks = preBlocks;
+    @synchronized(self)
+    {
+        NSMutableArray *preBlocks = [self.preProcessBlocks mutableCopy];
+        [preBlocks addObject:[block copy]];
+        self.preProcessBlocks = preBlocks;
+    }
 }
 
 - (void)addPostProcessingBlock:(RZWebServiceRequestPostProcessBlock)block
 {
-    NSMutableArray *postBlocks = [self.postProcessBlocks mutableCopy];
-    [postBlocks addObject:[block copy]];
-    self.postProcessBlocks = postBlocks;
+    @synchronized(self)
+    {
+        NSMutableArray *postBlocks = [self.postProcessBlocks mutableCopy];
+        [postBlocks addObject:[block copy]];
+        self.postProcessBlocks = postBlocks;
+    }
 }
 
 #pragma mark - Property Overrides
@@ -716,9 +722,12 @@ expectedResultType:(NSString *)expectedResultType
         
         // ------------ Perform preprocessing blocks ------------
         
-        for (RZWebServiceRequestPreProcessBlock block in self.preProcessBlocks){
-            block(self);
-        };
+        @synchronized(self)
+        {
+            for (RZWebServiceRequestPreProcessBlock block in self.preProcessBlocks){
+                block(self);
+            };
+        }
     
         // ------------ Start the HTTP Connection ---------------
         
@@ -931,18 +940,31 @@ expectedResultType:(NSString *)expectedResultType
 
 -(void) callCompletionBlockWithSucceeded:(BOOL)succeeded data:(id)data error:(NSError*)error
 {
-    // Call postprocessing blocks.
-    for (RZWebServiceRequestPostProcessBlock block in self.postProcessBlocks)
+    @synchronized(self)
     {
-        block(self, &data, &succeeded, &error);
-    }
-    
-    // Call completion block
-    if (nil != self.requestCompletionBlock)
-    {
-        dispatch_sync(dispatch_get_main_queue(), ^{
-            self.requestCompletionBlock(succeeded, data, error, self);
-        });
+        // Call postprocessing blocks.
+        for (RZWebServiceRequestPostProcessBlock block in self.postProcessBlocks)
+        {
+            block(self, &data, &succeeded, &error);
+        }
+        
+        // Call completion block
+        if (self.completionBlocks.count > 0)
+        {
+            dispatch_sync(dispatch_get_main_queue(), ^{
+                
+                for (RZWebServiceRequestCompletionBlock completion in self.completionBlocks)
+                {
+                    completion(succeeded, data, error, self);
+                }
+            });
+        }
+        else if (self.fallbackCompletionBlock)
+        {
+            dispatch_sync(dispatch_get_main_queue(), ^{
+                self.fallbackCompletionBlock(succeeded, data, error, self);
+            });
+        }
     }
 }
 

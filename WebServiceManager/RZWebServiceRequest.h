@@ -89,6 +89,9 @@ expectedResultType:(NSString *)expectedResultType
 
 - (id)copyWithZone:(NSZone *)zone;
 
+// add additional completion blocks
+- (void)addCompletionBlock:(RZWebServiceRequestCompletionBlock)block;
+
 // add pre or post processing blocks
 - (void)addPreProcessingBlock:(RZWebServiceRequestPreProcessBlock)block;
 - (void)addPostProcessingBlock:(RZWebServiceRequestPostProcessBlock)block;
@@ -179,8 +182,6 @@ expectedResultType:(NSString *)expectedResultType
 
 @property (assign, nonatomic) BOOL ignoreCertificateValidity;
 
-// Note: Completion Blocks take precidence over success/failure callbacks
-@property (copy, nonatomic) RZWebServiceRequestCompletionBlock requestCompletionBlock;
 
 @end
 
