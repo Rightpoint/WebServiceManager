@@ -182,6 +182,8 @@ expectedResultType:(NSString *)expectedResultType
 
 @property (assign, nonatomic) BOOL ignoreCertificateValidity;
 
+// Note: Completion Blocks take precidence over success/failure callbacks
+@property (copy, nonatomic) RZWebServiceRequestCompletionBlock requestCompletionBlock;
 
 @end
 
