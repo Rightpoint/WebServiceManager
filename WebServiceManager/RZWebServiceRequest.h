@@ -89,9 +89,6 @@ expectedResultType:(NSString *)expectedResultType
 
 - (id)copyWithZone:(NSZone *)zone;
 
-// add additional completion blocks
-- (void)addCompletionBlock:(RZWebServiceRequestCompletionBlock)block;
-
 // add pre or post processing blocks
 - (void)addPreProcessingBlock:(RZWebServiceRequestPreProcessBlock)block;
 - (void)addPostProcessingBlock:(RZWebServiceRequestPostProcessBlock)block;
