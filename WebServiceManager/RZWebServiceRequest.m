@@ -14,10 +14,6 @@
 #import "RZMultipartStream.h"
 #import <CommonCrypto/CommonCrypto.h>
 
-#if __IPHONE_OS_VERSION_MIN_REQUIRED < __IPHONE_5_0
-#import "JSONKit.h"
-#endif
-
 NSString *const kURLkey = @"URL";
 NSString *const kHTTPMethodKey = @"Method";
 NSString *const kExpectedResultTypeKey = @"ExpectedResultType";
@@ -34,6 +30,9 @@ NSTimeInterval const kRZWebServiceRequestDefaultTimeout = 60;
 @property (strong, nonatomic, readwrite) id convertedData;
 @property (strong, nonatomic, readwrite) NSDictionary *responseHeaders;
 @property (assign, nonatomic, readwrite) NSInteger statusCode;
+
+@property (strong, nonatomic) NSArray *preProcessBlocks;
+@property (strong, nonatomic) NSArray *postProcessBlocks;
 
 @property (assign, readwrite) NSUInteger bytesReceived;
 @property (strong, nonatomic) NSMutableData* receivedData;
@@ -285,8 +284,8 @@ expectedResultType:(NSString *)expectedResultType
         copy.executing = self.executing;
         copy.ignoreCertificateValidity = self.ignoreCertificateValidity;
         copy.progressObservers = [self.progressObservers copy];
-        copy.preProcessBlocks = self.preProcessBlocks;
-        copy.postProcessBlocks = self.postProcessBlocks;
+        copy.preProcessBlocks = [[NSArray alloc] initWithArray:self.preProcessBlocks copyItems:YES];
+        copy.postProcessBlocks = [[NSArray alloc] initWithArray:self.postProcessBlocks copyItems:YES];;
         copy.requestCompletionBlock = self.requestCompletionBlock;
         copy.fallbackCompletionBlock = self.fallbackCompletionBlock;
     }
@@ -359,16 +358,22 @@ expectedResultType:(NSString *)expectedResultType
 
 - (void)addPreProcessingBlock:(RZWebServiceRequestPreProcessBlock)block
 {
-    NSMutableArray *preBlocks = [self.preProcessBlocks mutableCopy];
-    [preBlocks addObject:[block copy]];
-    self.preProcessBlocks = preBlocks;
+    @synchronized(self)
+    {
+        NSMutableArray *preBlocks = [self.preProcessBlocks mutableCopy];
+        [preBlocks addObject:[block copy]];
+        self.preProcessBlocks = preBlocks;
+    }
 }
 
 - (void)addPostProcessingBlock:(RZWebServiceRequestPostProcessBlock)block
 {
-    NSMutableArray *postBlocks = [self.postProcessBlocks mutableCopy];
-    [postBlocks addObject:[block copy]];
-    self.postProcessBlocks = postBlocks;
+    @synchronized(self)
+    {
+        NSMutableArray *postBlocks = [self.postProcessBlocks mutableCopy];
+        [postBlocks addObject:[block copy]];
+        self.postProcessBlocks = postBlocks;
+    }
 }
 
 #pragma mark - Property Overrides
@@ -713,9 +718,12 @@ expectedResultType:(NSString *)expectedResultType
         
         // ------------ Perform preprocessing blocks ------------
         
-        for (RZWebServiceRequestPreProcessBlock block in self.preProcessBlocks){
-            block(self);
-        };
+        @synchronized(self)
+        {
+            for (RZWebServiceRequestPreProcessBlock block in self.preProcessBlocks){
+                block(self);
+            };
+        }
     
         // ------------ Start the HTTP Connection ---------------
         
@@ -894,16 +902,7 @@ expectedResultType:(NSString *)expectedResultType
         // if we're supporting anything earlier than 5.0, use JSONKit.
         //
         
-#if __IPHONE_OS_VERSION_MIN_REQUIRED < __IPHONE_5_0
-        convertedResult = [self.receivedData objectFromJSONData];
-        
-        //
-        // if we're 5.0 or above, use the build in JSON deserialization
-        //
-#else
-        convertedResult = [NSJSONSerialization JSONObjectWithData:self.receivedData options:0 error:&jsonError];
-#endif
-        
+        convertedResult = [NSJSONSerialization JSONObjectWithData:self.receivedData options:0 error:&jsonError];        
         
         if (jsonError) {
             NSString* str = [[NSString alloc] initWithData:self.receivedData encoding:NSUTF8StringEncoding];
@@ -937,18 +936,21 @@ expectedResultType:(NSString *)expectedResultType
 
 -(void) callCompletionBlockWithSucceeded:(BOOL)succeeded data:(id)data error:(NSError*)error
 {
-    // Call postprocessing blocks.
-    for (RZWebServiceRequestPostProcessBlock block in self.postProcessBlocks)
+    @synchronized(self)
     {
-        block(self, &data, &succeeded, &error);
-    }
-    
-    // Call completion block
-    if (nil != self.requestCompletionBlock)
-    {
-        dispatch_sync(dispatch_get_main_queue(), ^{
-            self.requestCompletionBlock(succeeded, data, error, self);
-        });
+        // Call postprocessing blocks.
+        for (RZWebServiceRequestPostProcessBlock block in self.postProcessBlocks)
+        {
+            block(self, &data, &succeeded, &error);
+        }
+        
+        // Call completion block
+        if (nil != self.requestCompletionBlock)
+        {
+            dispatch_sync(dispatch_get_main_queue(), ^{
+                self.requestCompletionBlock(succeeded, data, error, self);
+            });
+        }
     }
 }
 
