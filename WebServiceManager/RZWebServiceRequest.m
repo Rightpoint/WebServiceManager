@@ -14,10 +14,6 @@
 #import "RZMultipartStream.h"
 #import <CommonCrypto/CommonCrypto.h>
 
-#if __IPHONE_OS_VERSION_MIN_REQUIRED < __IPHONE_5_0
-#import "JSONKit.h"
-#endif
-
 NSString *const kURLkey = @"URL";
 NSString *const kHTTPMethodKey = @"Method";
 NSString *const kExpectedResultTypeKey = @"ExpectedResultType";
