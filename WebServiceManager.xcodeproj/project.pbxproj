@@ -45,9 +45,6 @@
 		CBD0D6A115F6EFE3009EDF49 /* NSString+RZMD5.m in Sources */ = {isa = PBXBuildFile; fileRef = CBD0D69E15F6EFE3009EDF49 /* NSString+RZMD5.m */; };
 		CBFFEB2C1456589100A003D6 /* raizlabs-logo-sheetrock.png in Resources */ = {isa = PBXBuildFile; fileRef = CBFFEB2B1456589100A003D6 /* raizlabs-logo-sheetrock.png */; };
 		CBFFEB2D145658A900A003D6 /* TestData.plist in Resources */ = {isa = PBXBuildFile; fileRef = CBFFEB2A1456570000A003D6 /* TestData.plist */; };
-		CBFFEB3414565F1E00A003D6 /* JSONKit.h in Headers */ = {isa = PBXBuildFile; fileRef = CBFFEB3014565F1E00A003D6 /* JSONKit.h */; };
-		CBFFEB3514565F1E00A003D6 /* JSONKit.m in Sources */ = {isa = PBXBuildFile; fileRef = CBFFEB3114565F1E00A003D6 /* JSONKit.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
-		CBFFEB3614565F1E00A003D6 /* JSONKit.m in Sources */ = {isa = PBXBuildFile; fileRef = CBFFEB3114565F1E00A003D6 /* JSONKit.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
 		CBFFEB391456662300A003D6 /* TestData.json in Resources */ = {isa = PBXBuildFile; fileRef = CBFFEB381456662300A003D6 /* TestData.json */; };
 		CBFFEC1A1457936000A003D6 /* RZWebService_NSURL.h in Headers */ = {isa = PBXBuildFile; fileRef = CBFFEC181457936000A003D6 /* RZWebService_NSURL.h */; };
 		CBFFEC1B1457936000A003D6 /* RZWebService_NSURL.m in Sources */ = {isa = PBXBuildFile; fileRef = CBFFEC191457936000A003D6 /* RZWebService_NSURL.m */; };
@@ -109,8 +106,6 @@
 		CBD0D69E15F6EFE3009EDF49 /* NSString+RZMD5.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSString+RZMD5.m"; sourceTree = "<group>"; };
 		CBFFEB2A1456570000A003D6 /* TestData.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = TestData.plist; sourceTree = "<group>"; };
 		CBFFEB2B1456589100A003D6 /* raizlabs-logo-sheetrock.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "raizlabs-logo-sheetrock.png"; sourceTree = "<group>"; };
-		CBFFEB3014565F1E00A003D6 /* JSONKit.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = JSONKit.h; sourceTree = "<group>"; };
-		CBFFEB3114565F1E00A003D6 /* JSONKit.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = JSONKit.m; sourceTree = "<group>"; };
 		CBFFEB381456662300A003D6 /* TestData.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = TestData.json; sourceTree = "<group>"; };
 		CBFFEB3D14566BDD00A003D6 /* README.md */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = README.md; sourceTree = "<group>"; };
 		CBFFEC181457936000A003D6 /* RZWebService_NSURL.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RZWebService_NSURL.h; sourceTree = "<group>"; };
@@ -173,7 +168,6 @@
 		CB588CB21453C6730052A336 = {
 			isa = PBXGroup;
 			children = (
-				839EC770170B6058004BA186 /* MobileCoreServices.framework */,
 				CBFFEB3D14566BDD00A003D6 /* README.md */,
 				CB588CC21453C6730052A336 /* WebServiceManager */,
 				CB588CD61453C6730052A336 /* WebServiceManagerTests */,
@@ -194,6 +188,7 @@
 		CB588CBF1453C6730052A336 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				839EC770170B6058004BA186 /* MobileCoreServices.framework */,
 				FEBD24C516A84E1A00DF7BA7 /* Security.framework */,
 				CB588CC01453C6730052A336 /* Foundation.framework */,
 				CB588CCE1453C6730052A336 /* SenTestingKit.framework */,
@@ -208,7 +203,6 @@
 				CBA1822016B2E52F00FD09CC /* Keychain */,
 				98216E1815B066510099166B /* CacheSchema */,
 				9885D142159A3DF8003DECDF /* Categories */,
-				CBFFEB2E14565F1E00A003D6 /* JSONKit */,
 				CB588CE71453C6B40052A336 /* RZWebServiceManager.h */,
 				CB588CE81453C6B40052A336 /* RZWebServiceManager.m */,
 				CB588CE91453C6B40052A336 /* RZWebServiceRequest.h */,
@@ -288,15 +282,6 @@
 			name = "Test Data";
 			sourceTree = "<group>";
 		};
-		CBFFEB2E14565F1E00A003D6 /* JSONKit */ = {
-			isa = PBXGroup;
-			children = (
-				CBFFEB3014565F1E00A003D6 /* JSONKit.h */,
-				CBFFEB3114565F1E00A003D6 /* JSONKit.m */,
-			);
-			path = JSONKit;
-			sourceTree = "<group>";
-		};
 /* End PBXGroup section */
 
 /* Begin PBXHeadersBuildPhase section */
@@ -306,7 +291,6 @@
 			files = (
 				CB588CEB1453C6B40052A336 /* RZWebServiceManager.h in Headers */,
 				CB588CEE1453C6B40052A336 /* RZWebServiceRequest.h in Headers */,
-				CBFFEB3414565F1E00A003D6 /* JSONKit.h in Headers */,
 				CBFFEC1A1457936000A003D6 /* RZWebService_NSURL.h in Headers */,
 				FEC9669D158F723B00E90A65 /* RZFileManager.h in Headers */,
 				9885D140159A382A003DECDF /* RZFileCacheSchema.h in Headers */,
@@ -426,7 +410,6 @@
 			files = (
 				CB588CEC1453C6B40052A336 /* RZWebServiceManager.m in Sources */,
 				CB588CEF1453C6B40052A336 /* RZWebServiceRequest.m in Sources */,
-				CBFFEB3514565F1E00A003D6 /* JSONKit.m in Sources */,
 				CBFFEC1B1457936000A003D6 /* RZWebService_NSURL.m in Sources */,
 				FEC9669E158F723B00E90A65 /* RZFileManager.m in Sources */,
 				9885D141159A382A003DECDF /* RZFileCacheSchema.m in Sources */,
@@ -445,7 +428,6 @@
 				CB588CDE1453C6730052A336 /* RZWebServiceManagerTests.m in Sources */,
 				CB588CED1453C6B40052A336 /* RZWebServiceManager.m in Sources */,
 				CB588CF01453C6B40052A336 /* RZWebServiceRequest.m in Sources */,
-				CBFFEB3614565F1E00A003D6 /* JSONKit.m in Sources */,
 				CBFFEC1C1457936000A003D6 /* RZWebService_NSURL.m in Sources */,
 				985B2CB81594A2C000FADCCA /* RZFileManagerTests.m in Sources */,
 				CBD0D6A115F6EFE3009EDF49 /* NSString+RZMD5.m in Sources */,
