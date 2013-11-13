@@ -694,7 +694,7 @@ expectedResultType:(NSString *)expectedResultType
             }
             else
             {
-                [self.urlRequest setValue:[NSString stringWithFormat:@"%lu", [self.urlRequest.HTTPBody length]] forHTTPHeaderField:@"Content-Length"];
+                [self.urlRequest setValue:[NSString stringWithFormat:@"%lu", (unsigned long)[self.urlRequest.HTTPBody length]] forHTTPHeaderField:@"Content-Length"];
             }
             
         }
