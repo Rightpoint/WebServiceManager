@@ -15,7 +15,7 @@
 {
 	const char* str = [self UTF8String];
 	unsigned char result[CC_MD5_DIGEST_LENGTH];
-	CC_MD5(str, strlen(str), result);
+	CC_MD5(str, (CC_LONG) strlen(str), result);
 	
 	return [NSString stringWithFormat:
 			@"%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x",
