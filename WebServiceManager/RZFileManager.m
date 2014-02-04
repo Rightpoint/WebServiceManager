@@ -82,7 +82,6 @@ NSString* const RZFileManagerFileUploadCompletedNotification = @"RZFileManagerFi
     if (cachePath)
     {
         NSError* error = nil;
-        cacheURL = [NSURL fileURLWithPath:cachePath isDirectory:YES];
         NSString* fullPath = [cachePath stringByAppendingPathComponent:@"DownloadCache"];
         if (![[NSFileManager defaultManager] fileExistsAtPath:fullPath])
         {
@@ -109,7 +108,6 @@ NSString* const RZFileManagerFileUploadCompletedNotification = @"RZFileManagerFi
     if (cachePath)
     {
         NSError* error = nil;
-        cacheURL = [NSURL fileURLWithPath:cachePath isDirectory:YES];
         NSString* fullPath = [cachePath stringByAppendingPathComponent:@"DownloadCache"];
         if (![[NSFileManager defaultManager] fileExistsAtPath:fullPath])
         {
