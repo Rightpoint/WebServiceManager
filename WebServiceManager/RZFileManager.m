@@ -266,7 +266,7 @@ NSString* const RZFileManagerFileUploadCompletedNotification = @"RZFileManagerFi
                 // Fail Silently, We will just return our cached version.
                 RZFileManagerLog(@"File Attributes could not be fetched, for file: %@ - error: %@",cacheURL, error);
             }
-            // Either case we want to return the image we currently have so it's not a blank screen while we wait.
+            // Either case we want to return the File we currently have so not to hold up the application when downloading.  It will be called again with the update.
             if (completionBlock != nil)
             {
                 completionBlock(YES,cacheURL,nil);
