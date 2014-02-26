@@ -253,6 +253,7 @@ NSString* const RZFileManagerFileUploadCompletedNotification = @"RZFileManagerFi
                             {
                                 RZWebServiceRequest* updateRequest = fileDownloadBlock();
                                 
+                                // Remove our old file.  At this point we know its stale.
                                 [diskFileManager removeItemAtPath:[cacheURL path] error:nil];
                                 if (updateBlock)
                                 {
