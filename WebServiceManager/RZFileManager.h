@@ -58,7 +58,7 @@ extern NSString* const RZFileManagerFileUploadCompletedNotification;
 - (RZWebServiceRequest*)downloadFileFromURL:(NSURL*)remoteURL withProgressDelegate:(id<RZFileProgressDelegate>)progressDelegate enqueue:(BOOL)enqueue completion:(RZFileManagerDownloadCompletionBlock)completionBlock;
 - (RZWebServiceRequest*)downloadFileFromURL:(NSURL*)remoteURL withProgressDelegateSet:(NSSet *)progressDelegate enqueue:(BOOL)enqueue completion:(RZFileManagerDownloadCompletionBlock)completionBlock;
 
-// The Update Block will function as a flag as to weather or not we should perform a HEAD request to see if a newer version of an image is present.
+// The Update Block will function as a flag as to whether or not we should perform a HEAD request to see if a newer version of an image is present.
 // The Update block will contain the request for the updated image as well as the file url assuming a newer version of the image exists.
 - (RZWebServiceRequest*)downloadFileFromURL:(NSURL*)remoteURL withProgressDelegateSet:(NSSet *)progressDelegate enqueue:(BOOL)enqueue completion:(RZFileManagerDownloadCompletionBlock)completionBlock updateFileBlock:(RZFileManagerDownloadUpdateFileBlock)updateBlock;
 
