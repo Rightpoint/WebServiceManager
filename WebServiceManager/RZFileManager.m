@@ -11,6 +11,12 @@
 #import "RZWebServiceRequest.h"
 #import "RZFileCacheSchema.h"
 
+#ifdef DEBUG
+#define RZFileManagerLog(fmt, ...) NSLog((@"[RZFileManager] : " fmt), ##__VA_ARGS__)
+#else
+#define RZFileManagerLog(...)
+#endif
+
 @interface RZFileManager () <RZWebServiceRequestProgressObserver>
 
 @property (strong, nonatomic, readonly) NSMutableSet *downloadRequests;
@@ -19,6 +25,11 @@
 - (NSSet*)requestsWithDownloadURL:(NSURL*)downloadURL;
 - (NSSet*)requestsWithUploadURL:(NSURL*)uploadURL;
 - (NSSet*)requestsWithUploadFileURL:(NSURL*)uploadFileURL;
+
+- (RZWebServiceRequest *)fileDownloadRequestWithProgressDelegates:(NSSet *)progressDelegates
+                                                        remoteURL:(NSURL *)remoteURL
+                                                         cacheURL:(NSURL *)cacheURL
+                                                  completionBlock:(RZFileManagerDownloadCompletionBlock)completionBlock;
 
 - (void)addProgressDelegate:(id<RZFileProgressDelegate>)delegate toRequests:(NSSet*)requests;
 - (void)removeProgressDelegate:(id<RZFileProgressDelegate>)delegate fromRequests:(NSSet*)requests;
@@ -41,6 +52,7 @@
 
 @end
 
+NSString* const RZFileManagerDefaultServerTimeFormat = @"EEE, d MMM yyyy HH:mm:ss zzz";
 
 NSString* const kCompletionBlockKey = @"completionBlockKey";
 NSString* const kProgressDelegateKey = @"progressDelegateKey";
@@ -90,7 +102,7 @@ NSString* const RZFileManagerFileUploadCompletedNotification = @"RZFileManagerFi
                                                        attributes:nil
                                                             error:&error];
             if (error != nil)
-                NSLog(@"Error:%@:",error);
+                RZFileManagerLog(@"Error:%@:",error);
         }
         cacheURL = [NSURL fileURLWithPath:fullPath];
     }
@@ -116,7 +128,7 @@ NSString* const RZFileManagerFileUploadCompletedNotification = @"RZFileManagerFi
                                                        attributes:nil
                                                             error:&error];
             if (error != nil) {
-                NSLog(@"Error:%@:",error);
+                RZFileManagerLog(@"Error:%@:",error);
             }
         }
         cacheURL = [NSURL fileURLWithPath:fullPath];
@@ -166,10 +178,19 @@ NSString* const RZFileManagerFileUploadCompletedNotification = @"RZFileManagerFi
     return [self downloadFileFromURL:remoteURL withProgressDelegateSet:progressDelegateSet enqueue:enqueue completion:completionBlock];
 }
 
+
 - (RZWebServiceRequest*)downloadFileFromURL:(NSURL*)remoteURL withProgressDelegateSet:(NSSet *)progressDelegate enqueue:(BOOL)enqueue completion:(RZFileManagerDownloadCompletionBlock)completionBlock
+{
+    return [self downloadFileFromURL:remoteURL withProgressDelegateSet:progressDelegate enqueue:enqueue completion:completionBlock updateFileBlock:nil];
+}
+
+- (RZWebServiceRequest *)downloadFileFromURL:(NSURL *)remoteURL withProgressDelegateSet:(NSSet *)progressDelegate enqueue:(BOOL)enqueue completion:(RZFileManagerDownloadCompletionBlock)completionBlock updateFileBlock:(RZFileManagerDownloadUpdateFileBlock)updateBlock
 {
     // Check if already downloading - if so, just add completion handlers
     // *SHOULD* only be one request for a given URL at a time... they will get the same hashed cache name
+    
+    RZWebServiceRequest* returnRequest = nil;
+    
     NSSet *downloadsInProgress = [self requestsWithDownloadURL:remoteURL];
     if ([downloadsInProgress count])
     {
@@ -184,29 +205,92 @@ NSString* const RZFileManagerFileUploadCompletedNotification = @"RZFileManagerFi
         return [downloadsInProgress anyObject];
     }
     
+    
+    
     NSURL* cacheURL = nil;
     cacheURL = [self.cacheSchema cacheURLFromRemoteURL:remoteURL];
     
-    BOOL fileExists = [[NSFileManager defaultManager] fileExistsAtPath:[cacheURL path]];
-    if (fileExists) {
-        completionBlock(YES,cacheURL,nil);
-        return nil;
+    NSFileManager* diskFileManager = [NSFileManager defaultManager];
+    BOOL fileExists = [diskFileManager fileExistsAtPath:[cacheURL path]];
+    if (fileExists)
+    {
+        // Check to see if we should make a HEAD request for an update.
+        if (updateBlock != nil)
+        {
+            NSError* error = nil;
+            NSDictionary* fileAttributes = [diskFileManager attributesOfItemAtPath:[cacheURL path] error:&error];
+            if (error == nil && fileAttributes)
+            {
+                NSDate* modifiedDate = [fileAttributes objectForKey:NSFileModificationDate];
+                __weak __typeof(self)wself = self;
+                RZWebServiceRequest* request = [self.webManager requestWithURL:remoteURL parameters:nil enqueue:NO completion:^(BOOL succeeded, id data, NSError *error, RZWebServiceRequest *request) {
+                    if (succeeded)
+                    {
+                        NSString* currentLastModifiedDate = [request.responseHeaders objectForKey:@"Last-Modified"];
+                        if (currentLastModifiedDate != nil)
+                        {
+                            static NSDateFormatter* formatter = nil;
+                            if (formatter == nil)
+                            {
+                                formatter = [[NSDateFormatter alloc] init];
+                                formatter.dateFormat = RZFileManagerDefaultServerTimeFormat;
+                            }
+                            
+                            NSDate* currentDate = [formatter dateFromString:currentLastModifiedDate];
+                            if ([currentDate compare:modifiedDate] == NSOrderedDescending)
+                            {
+                                RZWebServiceRequest* updateRequest = [wself fileDownloadRequestWithProgressDelegates:progressDelegate remoteURL:remoteURL cacheURL:cacheURL completionBlock:completionBlock];
+                                
+                                // Remove our old file.  At this point we know its stale.
+                                [diskFileManager removeItemAtPath:[cacheURL path] error:nil];
+                                
+                                // we are making a new request, we can call the updateBlock with the newRequest/URL.
+                                if (updateBlock)
+                                {
+                                    updateBlock(remoteURL, updateRequest);
+                                }
+                            }
+                        }
+                        else
+                        {
+                            RZFileManagerLog(@"Modified Date is not set for File: %@",cacheURL);
+                        }
+                    }
+                }];
+                request.httpMethod = @"HEAD";
+                [self.webManager enqueueRequest:request];
+                returnRequest = request;
+            }
+            else
+            {
+                // Fail Silently, We will just return our cached version.
+                RZFileManagerLog(@"File Attributes could not be fetched, for file: %@ - error: %@",cacheURL, error);
+            }
+            // Either case we want to return the File we currently have so not to hold up the application when downloading.  It will be called again with the update.
+            if (completionBlock != nil)
+            {
+                completionBlock(YES,cacheURL,nil);
+            }
+
+            
+        }
+        else
+        {
+            // We have the file, but we don't care about updating it if its stale.
+            if (completionBlock != nil)
+            {
+                completionBlock(YES,cacheURL,nil);
+            }
+        }
+    }
+    else
+    {
+        // We don'thave the file.  Lets download it.
+        RZWebServiceRequest* request = [self fileDownloadRequestWithProgressDelegates:progressDelegate remoteURL:remoteURL cacheURL:cacheURL completionBlock:completionBlock];
+        returnRequest = request;
     }
     
-    RZWebServiceRequest * request = [self.webManager makeRequestWithURL:remoteURL target:self successCallback:@selector(downloadRequestComplete:request:) failureCallback:@selector(downloadRequestFailed:request:) parameters:nil enqueue:NO];
-    [self putObject:progressDelegate inRequest:request atKey:kProgressDelegateKey];
-    [self addBlock:completionBlock toRequest:request atKey:kCompletionBlockKey];
-    request.targetFileURL = cacheURL;
-    request.shouldCacheResponse = self.shouldCacheDownloads;
-    [request addProgressObserver:self];
-    
-    [self.downloadRequests addObject:request];
-    
-    if (enqueue) {
-        [self enqueueDownloadRequest:request];
-    }
-    
-    return request;
+    return returnRequest;
 }
 
 #pragma mark - Upload File Request Methods
@@ -579,6 +663,25 @@ NSString* const RZFileManagerFileUploadCompletedNotification = @"RZFileManagerFi
     NSSet *filteredRequests = [self.uploadRequests filteredSetUsingPredicate:[NSPredicate predicateWithFormat:@"uploadFileURL == %@", uploadFileURL]];
     
     return filteredRequests;
+}
+
+#pragma mark - Request Creation Helpers
+- (RZWebServiceRequest *)fileDownloadRequestWithProgressDelegates:(NSSet *)progressDelegates
+                                                        remoteURL:(NSURL *)remoteURL
+                                                         cacheURL:(NSURL *)cacheURL
+                                                  completionBlock:(RZFileManagerDownloadCompletionBlock)completionBlock
+{
+    RZWebServiceRequest * request = [self.webManager makeRequestWithURL:remoteURL target:self successCallback:@selector(downloadRequestComplete:request:) failureCallback:@selector(downloadRequestFailed:request:) parameters:nil enqueue:NO];
+    [self putObject:progressDelegates inRequest:request atKey:kProgressDelegateKey];
+    [self addBlock:completionBlock toRequest:request atKey:kCompletionBlockKey];
+    request.targetFileURL = cacheURL;
+    request.shouldCacheResponse = self.shouldCacheDownloads;
+    [request addProgressObserver:self];
+    
+    [self.downloadRequests addObject:request];
+    
+    [self enqueueDownloadRequest:request];
+    return request;
 }
 
 #pragma mark - Progress Delegate Mutator Helper Methods
