@@ -14,6 +14,7 @@
 @class RZCacheSchema;
 
 typedef void (^RZFileManagerDownloadCompletionBlock)(BOOL success, NSURL* downloadedFile, RZWebServiceRequest *request);
+typedef void (^RZFileManagerDownloadUpdateFileBlock)(NSURL* fileURL, RZWebServiceRequest* downloadRequest);
 typedef void (^RZFileManagerUploadCompletionBlock)(BOOL success, NSURL* uploadedFile, RZWebServiceRequest *request);
 
 @protocol RZFileProgressDelegate <NSObject>
@@ -42,6 +43,8 @@ extern NSString* const RZFileManagerFileUploadCompletedNotification;
 @property (strong, nonatomic) NSOperationQueue *downloadsQueue;
 @property (strong, nonatomic) NSOperationQueue *uploadsQueue;
 
+@property (strong, nonatomic) NSString* serverLastModifiedTimeFormat;
+
 // Shared Instance Method
 + (instancetype)defaultManager;
 
@@ -56,6 +59,7 @@ extern NSString* const RZFileManagerFileUploadCompletedNotification;
 - (RZWebServiceRequest*)downloadFileFromURL:(NSURL*)remoteURL withProgressDelegate:(id<RZFileProgressDelegate>)progressDelegate completion:(RZFileManagerDownloadCompletionBlock)completionBlock;
 - (RZWebServiceRequest*)downloadFileFromURL:(NSURL*)remoteURL withProgressDelegate:(id<RZFileProgressDelegate>)progressDelegate enqueue:(BOOL)enqueue completion:(RZFileManagerDownloadCompletionBlock)completionBlock;
 - (RZWebServiceRequest*)downloadFileFromURL:(NSURL*)remoteURL withProgressDelegateSet:(NSSet *)progressDelegate enqueue:(BOOL)enqueue completion:(RZFileManagerDownloadCompletionBlock)completionBlock;
+- (RZWebServiceRequest *)downloadFileFromURL:(NSURL *)remoteURL withProgressDelegateSet:(NSSet *)progressDelegate enqueue:(BOOL)enqueue completion:(RZFileManagerDownloadCompletionBlock)completionBlock updateFileBlock:(RZFileManagerDownloadUpdateFileBlock)updateBlock;
 
 // Upload File Request Mothods
 - (RZWebServiceRequest*)uploadFile:(NSURL*)localFile toURL:(NSURL*)remoteURL withProgressDelegate:(id<RZFileProgressDelegate>)progressDelegate completion:(RZFileManagerUploadCompletionBlock)completionBlock;
