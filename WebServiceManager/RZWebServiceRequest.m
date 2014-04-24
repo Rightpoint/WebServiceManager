@@ -1305,8 +1305,20 @@ totalBytesExpectedToWrite:(NSInteger)totalBytesExpectedToWrite
     [challenge.sender continueWithoutCredentialForAuthenticationChallenge:challenge];
 }
 
-- (NSString *)debugDescription {
-    return [NSString stringWithFormat:@"%@ - RequestURL:%@ - Parameters:%@ - RequestBody:%@ - DataReturned:%@", [super debugDescription], self.url, self.parameters, self.requestBody, self.convertedData];
+- (NSString *)debugDescription
+{
+    NSString* url = [self.url description];
+    
+    BOOL methodSupportsURLParams = ([self.httpMethod isEqualToString:@"GET"] || [self.httpMethod isEqualToString:@"PUT"] || [self.httpMethod isEqualToString:@"DELETE"]);
+    
+    if ((self.parameterMode == RZWebserviceRequestParameterModeDefault && methodSupportsURLParams)
+        || self.parameterMode == RZWebServiceRequestParameterModeURL)
+    {
+        url = [[self.url URLByAddingParameters:self.parameters arrayDelimiter:self.parameterArrayDelimiter flattenArray:self.flattenArrayParameters] description];
+    }
+    NSString *readableURL = [url stringByReplacingPercentEscapesUsingEncoding:NSUTF8StringEncoding];
+
+    return [NSString stringWithFormat:@"%@ \nRequest URL - %@ \nUnescaped URL - %@ \nParameters:%@ \nRequestBody:%@ \nDataReturned:%@", [super debugDescription], url, readableURL, self.parameters, self.requestBody, self.convertedData];
 }
 
 @end
