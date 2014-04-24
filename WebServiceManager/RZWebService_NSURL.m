@@ -118,7 +118,7 @@ NSString * const kRZWebServiceRequestDefaultQueryParameterArrayDelimiter = @"+";
 
 - (NSURL *)URLByAddingParameters:(NSArray *)parameters arrayDelimiter:(NSString *)arrayDelimiter flattenArray:(BOOL)flattenArray
 {    
-    NSString *parameterString = [NSURL URLQueryStringFromParameters:parameters arrayDelimiter:arrayDelimiter flattenArray:NO];
+    NSString *parameterString = [NSURL URLQueryStringFromParameters:parameters arrayDelimiter:arrayDelimiter flattenArray:flattenArray];
     
     NSMutableString *urlString = [NSMutableString stringWithString:[self absoluteString]];
     
