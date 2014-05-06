@@ -24,6 +24,9 @@ NSString *const kTimeoutKey = @"Timeout";
 
 NSTimeInterval const kRZWebServiceRequestDefaultTimeout = 60;
 
+// This is used to print out the date of every web call that is made.
+#define RZWebManagerDeepWebLogging DEBUG && 1
+
 @interface RZWebServiceRequest()
 
 // redeclaration
@@ -949,6 +952,9 @@ expectedResultType:(NSString *)expectedResultType
         {
             dispatch_sync(dispatch_get_main_queue(), ^{
                 self.requestCompletionBlock(succeeded, data, error, self);
+#if RZWebManagerDeepWebLogging
+                NSLog(@"Request:%@",[self debugDescription]);
+#endif
             });
         }
     }
@@ -1318,7 +1324,7 @@ totalBytesExpectedToWrite:(NSInteger)totalBytesExpectedToWrite
     }
     NSString *readableURL = [url stringByReplacingPercentEscapesUsingEncoding:NSUTF8StringEncoding];
 
-    return [NSString stringWithFormat:@"%@ \nRequest URL - %@ \nUnescaped URL - %@ \nParameters:%@ \nRequestBody:%@ \nDataReturned:%@", [super debugDescription], url, readableURL, self.parameters, self.requestBody, self.convertedData];
+    return [NSString stringWithFormat:@"%@ \nRequest URL - %@ \nUnescaped URL - %@\nRequestBody:%@ \nDataReturned:%@", [super debugDescription], url, readableURL, self.requestBody, self.convertedData];
 }
 
 @end
