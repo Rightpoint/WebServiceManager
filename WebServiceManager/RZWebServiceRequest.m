@@ -103,6 +103,9 @@ NSTimeInterval const kRZWebServiceRequestDefaultTimeout = 60;
 
 
 @implementation RZWebServiceRequest
+@synthesize executing = _executing;
+@synthesize finished = _finished;
+
 
 -(id) initWithApiInfo:(NSDictionary *)apiInfo target:(id)target
 {
