@@ -31,6 +31,7 @@
 
 @synthesize stringBoundary = _stringBoundary;
 @synthesize contentLength = _contentLength;
+@synthesize streamStatus = _streamStatus;
 
 // Derived from http://stackoverflow.com/q/2633801/2633948#2633948
 + (NSString *)genRandNumberLength:(int)len
