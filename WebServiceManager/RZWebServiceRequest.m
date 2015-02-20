@@ -24,6 +24,9 @@ NSString *const kTimeoutKey = @"Timeout";
 
 NSTimeInterval const kRZWebServiceRequestDefaultTimeout = 60;
 
+// This is used to print out the date of every web call that is made.
+#define RZWebManagerDeepWebLogging DEBUG && 1
+
 @interface RZWebServiceRequest()
 
 // redeclaration
@@ -949,6 +952,9 @@ expectedResultType:(NSString *)expectedResultType
         {
             dispatch_sync(dispatch_get_main_queue(), ^{
                 self.requestCompletionBlock(succeeded, data, error, self);
+#if RZWebManagerDeepWebLogging
+                NSLog(@"Request:%@",[self debugDescription]);
+#endif
             });
         }
     }
@@ -1305,8 +1311,20 @@ totalBytesExpectedToWrite:(NSInteger)totalBytesExpectedToWrite
     [challenge.sender continueWithoutCredentialForAuthenticationChallenge:challenge];
 }
 
-- (NSString *)debugDescription {
-    return [NSString stringWithFormat:@"%@ - RequestURL:%@ - Parameters:%@ - RequestBody:%@ - DataReturned:%@", [super debugDescription], self.url, self.parameters, self.requestBody, self.convertedData];
+- (NSString *)debugDescription
+{
+    NSString* url = [self.url description];
+    
+    BOOL methodSupportsURLParams = ([self.httpMethod isEqualToString:@"GET"] || [self.httpMethod isEqualToString:@"PUT"] || [self.httpMethod isEqualToString:@"DELETE"]);
+    
+    if ((self.parameterMode == RZWebserviceRequestParameterModeDefault && methodSupportsURLParams)
+        || self.parameterMode == RZWebServiceRequestParameterModeURL)
+    {
+        url = [[self.url URLByAddingParameters:self.parameters arrayDelimiter:self.parameterArrayDelimiter flattenArray:self.flattenArrayParameters] description];
+    }
+    NSString *readableURL = [url stringByReplacingPercentEscapesUsingEncoding:NSUTF8StringEncoding];
+
+    return [NSString stringWithFormat:@"%@ \nRequest URL - %@ \nUnescaped URL - %@\nRequestBody:%@ \nDataReturned:%@", [super debugDescription], url, readableURL, self.requestBody, self.convertedData];
 }
 
 @end
